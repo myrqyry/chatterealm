@@ -1,5 +1,5 @@
 import { Player, NPC, Item, TerrainType, Position, GameWorld, ItemType, ItemRarity } from 'shared/src/types/game';
-import { GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared/src/constants/gameConstants';
+import { GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared/src/constants';
 
 export interface GameActionResult {
   success: boolean;
@@ -22,9 +22,25 @@ export interface ItemResult extends GameActionResult {
 export class GameStateManager {
   private gameWorld: GameWorld;
   private reservedPositions: Set<string> = new Set(); // Prevents concurrent spawn races by reserving positions
+  private occupiedPositions: Set<string> = new Set();
 
   constructor(gameWorld: GameWorld) {
     this.gameWorld = gameWorld;
+    this.initializeOccupiedPositions();
+  }
+
+  private initializeOccupiedPositions(): void {
+    this.occupiedPositions.clear();
+    this.gameWorld.players.forEach(p => {
+        if (p.isAlive) {
+            this.occupiedPositions.add(`${p.position.x},${p.position.y}`);
+        }
+    });
+    this.gameWorld.npcs.forEach(n => {
+        if (n.isAlive) {
+            this.occupiedPositions.add(`${n.position.x},${n.position.y}`);
+        }
+    });
   }
 
   // Get current game world state
@@ -69,6 +85,7 @@ export class GameStateManager {
     // Assign and persist player
     player.position = spawnPosition;
     this.gameWorld.players.push(player);
+    this.occupiedPositions.add(`${spawnPosition.x},${spawnPosition.y}`);
 
     // Release reservation after successfully placing the player (reservation only prevented races during selection)
     this.releaseReservedPosition(spawnPosition);
@@ -89,6 +106,7 @@ export class GameStateManager {
     }
 
     const player = this.gameWorld.players[playerIndex];
+    this.occupiedPositions.delete(`${player.position.x},${player.position.y}`);
     this.gameWorld.players.splice(playerIndex, 1);
 
     return {
@@ -124,7 +142,11 @@ export class GameStateManager {
     }
 
     // Check collisions
-    if (this.isPositionOccupied(newPosition, playerId)) {
+    const oldPositionKey = `${player.position.x},${player.position.y}`;
+    this.occupiedPositions.delete(oldPositionKey);
+
+    if (this.isPositionOccupied(newPosition)) {
+      this.occupiedPositions.add(oldPositionKey); // Re-add original position
       // Check if there's an enemy to attack
       const enemy = this.getEnemyAtPosition(newPosition);
       if (enemy) {
@@ -135,6 +157,7 @@ export class GameStateManager {
 
     // Execute move
     player.position = newPosition;
+    this.occupiedPositions.add(`${newPosition.x},${newPosition.y}`);
     player.lastMoveTime = now;
 
     return {
@@ -189,25 +212,8 @@ export class GameStateManager {
     return false;
   }
 
-  private isPositionOccupied(position: Position, excludePlayerId?: string): boolean {
-    // Check other players
-    const otherPlayer = this.gameWorld.players.find(p =>
-      p.id !== excludePlayerId &&
-      p.position.x === position.x &&
-      p.position.y === position.y &&
-      p.isAlive
-    );
-
-    if (otherPlayer) return true;
-
-    // Check NPCs
-    const npc = this.gameWorld.npcs.find(n =>
-      n.position.x === position.x &&
-      n.position.y === position.y &&
-      n.isAlive
-    );
-
-    return !!npc;
+  private isPositionOccupied(position: Position): boolean {
+    return this.occupiedPositions.has(`${position.x},${position.y}`);
   }
 
   private getEnemyAtPosition(position: Position): Player | NPC | null {
@@ -245,6 +251,7 @@ export class GameStateManager {
     if (defender.stats.hp <= 0) {
       defender.stats.hp = 0;
       defender.isAlive = false;
+      this.occupiedPositions.delete(`${defender.position.x},${defender.position.y}`);
 
       // Award experience and potentially loot
       const isPlayerDefender = 'twitchUsername' in defender;
@@ -498,11 +505,18 @@ export class GameStateManager {
       if (now - npc.lastMoveTime > 5000 && Math.random() < 0.3) {
         const directions = ['up', 'down', 'left', 'right'] as const;
         const direction = directions[Math.floor(Math.random() * directions.length)];
-        const newPosition = this.calculateNewPosition(npc.position, direction);
+        const oldPosition = npc.position;
+        const newPosition = this.calculateNewPosition(oldPosition, direction);
 
-        if (this.isValidMove(npc.position, newPosition) && !this.isPositionOccupied(newPosition)) {
+        const oldPositionKey = `${oldPosition.x},${oldPosition.y}`;
+        this.occupiedPositions.delete(oldPositionKey);
+
+        if (this.isValidMove(oldPosition, newPosition) && !this.isPositionOccupied(newPosition)) {
           npc.position = newPosition;
+          this.occupiedPositions.add(`${newPosition.x},${newPosition.y}`);
           npc.lastMoveTime = now;
+        } else {
+          this.occupiedPositions.add(oldPositionKey);
         }
       }
     });
@@ -560,6 +574,7 @@ export class GameStateManager {
         const spawnPosition = this.findEmptySpawnPosition();
         if (spawnPosition) {
           player.position = spawnPosition;
+          this.occupiedPositions.add(`${spawnPosition.x},${spawnPosition.y}`);
         }
       }
     });
@@ -630,6 +645,7 @@ export class GameStateManager {
       };
 
       this.gameWorld.npcs.push(npc);
+      this.occupiedPositions.add(`${position.x},${position.y}`);
     }
   }
 
@@ -735,6 +751,8 @@ export class GameStateManager {
 
     // Remove disconnected players from the game world
     const initialPlayerCount = this.gameWorld.players.length;
+    const playersToRemove = this.gameWorld.players.filter(p => !p.connected);
+    playersToRemove.forEach(p => this.occupiedPositions.delete(`${p.position.x},${p.position.y}`));
     this.gameWorld.players = this.gameWorld.players.filter(player => player.connected);
 
     const removedCount = initialPlayerCount - this.gameWorld.players.length;

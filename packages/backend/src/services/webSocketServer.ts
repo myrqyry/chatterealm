@@ -7,8 +7,6 @@ export interface ClientData {
   playerId: string;
   socketId: string;
   connectedAt: number;
-  isJoinConfirmed: boolean;
-  commandQueue: QueuedCommand[];
 }
 
 export interface PlayerCommand {
@@ -17,12 +15,7 @@ export interface PlayerCommand {
   data?: any;
 }
 
-export interface QueuedCommand {
-  command: PlayerCommand;
-  timestamp: number;
-  resolve: (result: any) => void;
-  reject: (error: any) => void;
-}
+// The QueuedCommand interface is no longer needed with the simplified authentication logic.
 
 export class WebSocketServer {
   private io: SocketIOServer;
@@ -76,11 +69,6 @@ export class WebSocketServer {
         console.log(`[COMMAND_RECEIVED] Socket ${socket.id} sent command:`, command.type);
         console.log(`[COMMAND_RECEIVED] Socket in connectedClients: ${this.connectedClients.has(socket.id)}`);
         this.handlePlayerCommand(socket, command);
-      });
-
-      // Handle join confirmation from client
-      socket.on('join_confirmed', () => {
-        this.handleJoinConfirmation(socket);
       });
 
       // Handle client disconnect
@@ -153,9 +141,7 @@ export class WebSocketServer {
       const clientData: ClientData = {
         playerId: player.id,
         socketId: socket.id,
-        connectedAt: Date.now(),
-        isJoinConfirmed: false, // Will be set to true when client confirms join
-        commandQueue: [] // Queue for commands until join is confirmed
+        connectedAt: Date.now()
       };
 
       this.connectedClients.set(socket.id, clientData);
@@ -218,13 +204,8 @@ export class WebSocketServer {
         return;
       }
 
-      // If join is not confirmed, queue the command
-      if (!clientData.isJoinConfirmed) {
-        this.queueCommand(clientData, command);
-        return;
-      }
-
-      // Execute the command immediately if join is confirmed
+      // With the simplified authentication flow, the presence of clientData means the user is authenticated.
+      // There is no need to queue commands.
       const result = this.executePlayerCommand(clientData, command);
 
       // Send result back to the client
@@ -244,34 +225,6 @@ export class WebSocketServer {
       console.error('Error handling player command:', error);
       socket.emit('error', { message: 'Command execution failed' });
     }
-  }
-
-  private queueCommand(clientData: ClientData, command: PlayerCommand): void {
-    // Create a promise that will be resolved when the command is processed
-    const promise = new Promise((resolve, reject) => {
-      const queuedCommand: QueuedCommand = {
-        command,
-        timestamp: Date.now(),
-        resolve,
-        reject
-      };
-
-      clientData.commandQueue.push(queuedCommand);
-
-      // Set a timeout to reject the command if it waits too long
-      setTimeout(() => {
-        const index = clientData.commandQueue.findIndex(qc => qc === queuedCommand);
-        if (index !== -1) {
-          clientData.commandQueue.splice(index, 1);
-          reject(new Error('Command timed out while waiting for join confirmation'));
-        }
-      }, 30000); // 30 second timeout
-    });
-
-    // Handle the promise (log errors but don't crash)
-    promise.catch(error => {
-      console.error(`Queued command failed for player ${clientData.playerId}:`, error);
-    });
   }
 
   private executePlayerCommand(clientData: ClientData, command: PlayerCommand): GameActionResult | MoveResult | CombatResult | ItemResult {
@@ -328,69 +281,6 @@ export class WebSocketServer {
     }
 
     return result;
-  }
-
-  private handleJoinConfirmation(socket: Socket): void {
-    try {
-      const clientData = this.connectedClients.get(socket.id);
-      if (!clientData) {
-        return;
-      }
-
-      // Mark join as confirmed
-      clientData.isJoinConfirmed = true;
-
-      // Process any queued commands
-      this.processQueuedCommands(clientData);
-
-    } catch (error) {
-      console.error('Error handling join confirmation:', error);
-    }
-  }
-
-  private processQueuedCommands(clientData: ClientData): void {
-    if (clientData.commandQueue.length === 0) {
-      return;
-    }
-
-    // Process all queued commands
-    while (clientData.commandQueue.length > 0) {
-      const queuedCommand = clientData.commandQueue.shift()!;
-      const { command, resolve, reject } = queuedCommand;
-
-      try {
-        // Execute the command
-        const result = this.executePlayerCommand(clientData, command);
-
-        // Send result back to client
-        const socket = this.io.sockets.sockets.get(clientData.socketId);
-        if (socket) {
-          socket.emit('command_result', {
-            command: command.type,
-            success: result.success,
-            message: result.message,
-            data: result.data
-          });
-
-          // If command was successful and affects game state, broadcast update
-          if (result.success) {
-            this.broadcastGameState();
-          }
-        }
-
-        resolve(result);
-      } catch (error) {
-        console.error(`Error processing queued command for player ${clientData.playerId}:`, error);
-
-        // Send error back to client
-        const socket = this.io.sockets.sockets.get(clientData.socketId);
-        if (socket) {
-          socket.emit('error', { message: error instanceof Error ? error.message : 'Command execution failed' });
-        }
-
-        reject(error);
-      }
-    }
   }
 
   private handlePlayerDisconnect(socket: Socket): void {
@@ -545,34 +435,24 @@ export class WebSocketServer {
       for (const [socketId, clientData] of Array.from(this.connectedClients.entries())) {
         const age = now - clientData.connectedAt;
 
-        // Condition to treat entry as stale:
-        // - join never confirmed and exceeded staleTimeout
-        // - OR join confirmed but socket is no longer present in io.sockets
+        // Condition to treat entry as stale: socket is no longer present in io.sockets
         const socketExists = this.io.sockets.sockets.has(socketId);
-        const isStaleUnconfirmed = !clientData.isJoinConfirmed && age > staleTimeout;
-        const isStaleDisconnected = clientData.isJoinConfirmed && !socketExists;
 
-        if (isStaleUnconfirmed || isStaleDisconnected) {
+        if (!socketExists) {
           console.log(`[CLEANUP] Removing stale client data for socket ${socketId}:`, {
             playerId: clientData.playerId,
             ageMs: age,
-            wasConfirmed: clientData.isJoinConfirmed,
-            socketExists,
-            queuedCommands: clientData.commandQueue.length
+            socketExists
           });
 
           // Remove mappings
           this.connectedClients.delete(socketId);
           this.playerSockets.delete(clientData.playerId);
 
-          // If player was added to game world but never confirmed, remove them from game world
-          if (!clientData.isJoinConfirmed) {
-            const player = this.gameStateManager.getPlayer(clientData.playerId);
-            if (player) {
-              console.log(`[CLEANUP] Removing unconfirmed player ${player.displayName} from game world`);
-              this.gameStateManager.removePlayer(clientData.playerId);
-            }
-          }
+          // The player is intentionally left in the game world as "disconnected"
+          // This allows for potential reconnection logic in the future.
+          // If a player needs to be fully removed on disconnect, that logic
+          // should be in handlePlayerDisconnect.
 
           cleanedCount++;
         }
