@@ -1,0 +1,1975 @@
+/* Global body styles to ensure dark background */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #191724 0%, #1f1d2e 100%);
+  color: #e0def4;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  min-height: 100vh;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-container {
+  display: flex;
+  gap: 20px;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #191724 0%, #1f1d2e 100%);
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #e0def4;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+}
+
+.main-display {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 80vw; /* Allow larger canvas display */
+}
+
+.game-header {
+  background: rgba(38, 35, 58, 0.9);
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #c4a7e7;
+  box-shadow: 0 4px 8px rgba(25, 23, 36, 0.5);
+}
+
+.game-header h1 {
+  color: #ecf0f1;
+  margin: 0 0 10px 0;
+  font-size: 2em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.world-info {
+  display: flex;
+  gap: 20px;
+  color: #bdc3c7;
+  font-size: 0.9em;
+}
+
+.world-info span {
+  background: rgba(196, 167, 231, 0.2);
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #c4a7e7;
+}
+
+.game-legend {
+  display: flex;
+  gap: 15px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #e74c3c;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ecf0f1;
+  font-size: 0.8em;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ecf0f1;
+}
+
+.player-hub {
+  width: 350px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #9b59b6;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  gap: 5px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  background: rgba(49, 116, 143, 0.3);
+  border: 2px solid #31748f;
+  border-radius: 8px;
+  color: #e0def4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.tabs button:hover {
+  background: rgba(49, 116, 143, 0.5);
+  transform: translateY(-2px);
+}
+
+.tabs button.active {
+  background: #31748f;
+  box-shadow: 0 4px 8px rgba(49, 116, 143, 0.3);
+}
+
+.tab-content {
+  flex: 1;
+  min-height: 300px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 15px;
+  border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+.status-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(46, 204, 113, 0.1);
+  border-radius: 10px;
+  border: 1px solid #2ecc71;
+}
+
+.player-avatar {
+  font-size: 3em;
+  background: rgba(46, 204, 113, 0.2);
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #2ecc71;
+}
+
+.player-details h3 {
+  margin: 0 0 5px 0;
+  color: #ecf0f1;
+  font-size: 1.2em;
+}
+
+.player-class {
+  color: #bdc3c7;
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+}
+
+.player-titles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.title {
+  background: linear-gradient(45deg, #f39c12, #e67e22);
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.7em;
+  font-weight: bold;
+}
+
+.stats-section {
+  background: rgba(52, 152, 219, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #3498db;
+}
+
+.stats-section h4 {
+  margin: 0 0 15px 0;
+  color: #ecf0f1;
+  font-size: 1.1em;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  color: #bdc3c7;
+  font-size: 0.9em;
+}
+
+.stat-item span:first-child {
+  font-weight: bold;
+  color: #ecf0f1;
+}
+
+.experience-bar {
+  background: rgba(0, 0, 0, 0.3);
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #f39c12;
+}
+
+.exp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+  transition: width 0.3s ease;
+}
+
+.exp-fill span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 0.7em;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.actions-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.movement-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.move-btn {
+  width: 50px;
+  height: 50px;
+  background: rgba(46, 204, 113, 0.3);
+  border: 2px solid #2ecc71;
+  border-radius: 8px;
+  color: #ecf0f1;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.move-btn:hover {
+  background: rgba(46, 204, 113, 0.5);
+  transform: scale(1.1);
+}
+
+.horizontal-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.action-btn {
+  padding: 12px;
+  background: rgba(231, 76, 60, 0.3);
+  border: 2px solid #e74c3c;
+  border-radius: 8px;
+  color: #ecf0f1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.action-btn:hover {
+  background: rgba(231, 76, 60, 0.5);
+  transform: translateY(-2px);
+}
+
+.world-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.world-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.world-stats .stat-item {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(155, 89, 182, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #9b59b6;
+  color: #bdc3c7;
+  font-size: 0.9em;
+}
+
+.world-stats .stat-item span:first-child {
+  font-weight: bold;
+  color: #ecf0f1;
+}
+
+.leaderboard {
+  background: rgba(230, 126, 34, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #e67e22;
+}
+
+.leaderboard h5 {
+  margin: 0 0 15px 0;
+  color: #ecf0f1;
+  font-size: 1em;
+}
+
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(230, 126, 34, 0.3);
+  color: #bdc3c7;
+  font-size: 0.9em;
+}
+
+.leaderboard-item:last-child {
+  border-bottom: none;
+}
+
+.player-selector {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #95a5a6;
+}
+
+.player-selector h5 {
+  margin: 0 0 10px 0;
+  color: #ecf0f1;
+  font-size: 1em;
+}
+
+.player-select-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 5px;
+  background: rgba(149, 165, 166, 0.3);
+  border: 1px solid #95a5a6;
+  border-radius: 5px;
+  color: #ecf0f1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.player-select-btn:hover {
+  background: rgba(149, 165, 166, 0.5);
+}
+
+.player-select-btn.active {
+  background: #95a5a6;
+  border-color: #ecf0f1;
+  font-weight: bold;
+}
+
+/* Chat Test Interface Styles */
+.chat-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* Allow flex shrinking */
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  background: rgba(38, 35, 58, 0.9);
+  border-radius: 10px;
+  padding: 15px;
+  border: 2px solid #c4a7e7;
+  height: 100%;
+  min-height: 0; /* Allow flex shrinking */
+}
+
+.connection-status {
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.connection-status.connected {
+  background: rgba(49, 116, 143, 0.2);
+  color: #9ccfd8;
+  border: 1px solid #31748f;
+}
+
+.connection-status.disconnected {
+  background: rgba(235, 111, 146, 0.2);
+  color: #eb6f92;
+  border: 1px solid #eb6f92;
+}
+
+.user-settings {
+  background: rgba(49, 116, 143, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #31748f;
+  margin-bottom: 15px;
+}
+
+.user-settings h3 {
+  margin: 0 0 10px 0;
+  color: #e0def4;
+  font-size: 1.1em;
+}
+
+.user-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.user-input-grid input {
+  padding: 8px;
+  border: 2px solid #6e6a86;
+  border-radius: 5px;
+  background: rgba(38, 35, 58, 0.8);
+  color: #e0def4;
+  font-family: inherit;
+}
+
+.user-input-grid input:focus {
+  outline: none;
+  border-color: #c4a7e7;
+  box-shadow: 0 0 0 2px rgba(196, 167, 231, 0.2);
+}
+
+.players-list {
+  background: rgba(49, 116, 143, 0.1);
+  border-radius: 8px;
+  border: 1px solid #31748f;
+  margin-bottom: 15px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.players-list h3 {
+  margin: 0 0 10px 0;
+  padding: 10px 15px 0;
+  color: #e0def4;
+  font-size: 1.1em;
+}
+
+.player-card {
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(196, 167, 231, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-card:last-child {
+  border-bottom: none;
+}
+
+.player-avatar-small {
+  font-size: 1.5em;
+}
+
+.player-info h4 {
+  margin: 0 0 2px 0;
+  color: #e0def4;
+  font-size: 0.9em;
+}
+
+.player-stats {
+  font-size: 0.7em;
+  color: #908caa;
+}
+
+.chat-messages {
+  flex: 1;
+  background: rgba(31, 29, 46, 0.8);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #6e6a86;
+  overflow-y: auto;
+  min-height: 300px;
+}
+
+.chat-message {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  max-width: 80%;
+}
+
+.chat-message.bot {
+  background: rgba(49, 116, 143, 0.2);
+  margin-left: 0;
+  margin-right: auto;
+  border-left: 3px solid #31748f;
+}
+
+.chat-message.user {
+  background: rgba(235, 111, 146, 0.2);
+  margin-left: auto;
+  margin-right: 0;
+  border-right: 3px solid #eb6f92;
+}
+
+.message-sender {
+  font-weight: bold;
+  margin-bottom: 2px;
+  font-size: 0.8em;
+  color: #c4a7e7;
+}
+
+.message-text {
+  color: #e0def4;
+  font-size: 0.9em;
+}
+
+.message-time {
+  font-size: 0.7em;
+  color: #6e6a86;
+  margin-top: 2px;
+}
+
+.message-input-area {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #6e6a86;
+  border-radius: 8px;
+  background: rgba(38, 35, 58, 0.8);
+  color: #e0def4;
+  font-family: inherit;
+  font-size: 0.9em;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: #c4a7e7;
+  box-shadow: 0 0 0 2px rgba(196, 167, 231, 0.2);
+}
+
+.send-button {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #31748f, #9ccfd8);
+  border: none;
+  border-radius: 8px;
+  color: #191724;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.send-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(49, 116, 143, 0.3);
+}
+
+.send-button:disabled {
+  background: #6e6a86;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quick-commands {
+  background: rgba(235, 188, 186, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #ebbcba;
+}
+
+.quick-commands h3 {
+  margin: 0 0 15px 0;
+  color: #e0def4;
+  font-size: 1.1em;
+}
+
+.command-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.command-btn {
+  padding: 8px 12px;
+  background: rgba(235, 188, 186, 0.2);
+  border: 1px solid #ebbcba;
+  border-radius: 6px;
+  color: #e0def4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8em;
+  font-family: inherit;
+}
+
+.command-btn:hover {
+  background: rgba(235, 188, 186, 0.3);
+  transform: translateY(-1px);
+}
+
+.help-section {
+  background: rgba(246, 193, 119, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #f6c177;
+}
+
+.help-section h3 {
+  margin: 0 0 10px 0;
+  color: #e0def4;
+  font-size: 1.1em;
+}
+
+.help-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.help-list li {
+  margin-bottom: 5px;
+  color: #908caa;
+  font-size: 0.8em;
+}
+
+.help-list code {
+  background: rgba(246, 193, 119, 0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #f6c177;
+  font-family: inherit;
+}
+
+/* Developer Panel Styles */
+.dev-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dev-section {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(155, 89, 182, 0.5);
+}
+
+.dev-section h5 {
+  margin: 0 0 15px 0;
+  color: #ecf0f1;
+  font-size: 1em;
+  border-bottom: 2px solid #9b59b6;
+  padding-bottom: 5px;
+}
+
+.dev-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.control-group label {
+  color: #bdc3c7;
+  font-size: 0.8em;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.control-group input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(155, 89, 182, 0.2);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.control-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #9b59b6;
+  cursor: pointer;
+  border: 2px solid #ecf0f1;
+}
+
+.control-group input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #9b59b6;
+  cursor: pointer;
+  border: 2px solid #ecf0f1;
+}
+
+.control-group.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-group.checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #9b59b6;
+}
+
+.control-group.checkbox label {
+  flex-direction: row;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+/* Enhanced Player Status Styles */
+.enhanced-player-status {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: rgba(38, 35, 58, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid #c4a7e7;
+  box-shadow: 0 8px 16px rgba(25, 23, 36, 0.6);
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px;
+  background: rgba(196, 167, 231, 0.1);
+  border-radius: 10px;
+  border: 1px solid #c4a7e7;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(196, 167, 231, 0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.enhanced-avatar {
+  font-size: 4em;
+  background: linear-gradient(135deg, #c4a7e7, #9ccfd8);
+  padding: 15px;
+  border-radius: 50%;
+  border: 3px solid #e0def4;
+  box-shadow: 0 4px 12px rgba(196, 167, 231, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  min-height: 80px;
+}
+
+.player-identity {
+  flex: 1;
+}
+
+.player-name {
+  margin: 0 0 8px 0;
+  color: #e0def4;
+  font-size: 1.4em;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.player-class-level {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.class-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.class-badge.class-knight {
+  background: linear-gradient(135deg, #f6c177, #ebbcba);
+  color: #191724;
+}
+
+.class-badge.class-rogue {
+  background: linear-gradient(135deg, #eb6f92, #f6c177);
+  color: #191724;
+}
+
+.class-badge.class-mage {
+  background: linear-gradient(135deg, #c4a7e7, #9ccfd8);
+  color: #191724;
+}
+
+.level-indicator {
+  background: rgba(49, 116, 143, 0.3);
+  color: #9ccfd8;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  font-weight: bold;
+  border: 1px solid #31748f;
+}
+
+.position-indicator {
+  color: #908caa;
+  font-size: 0.8em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.stat-label span:first-child {
+  color: #e0def4;
+}
+
+.health-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+}
+
+.health-value.healthy { color: #a3e635; }
+.health-value.wounded { color: #fbbf24; }
+.health-value.critical { color: #f97316; }
+.health-value.dying { color: #dc2626; }
+
+.exp-value {
+  color: #f6c177;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.stat-bar-container {
+  position: relative;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.health-fill.healthy {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.health-fill.wounded {
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.health-fill.critical {
+  background: linear-gradient(90deg, #f97316, #ea580c);
+}
+
+.health-fill.dying {
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+  animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.exp-fill {
+  background: linear-gradient(90deg, #f6c177, #ebbcba);
+  box-shadow: 0 0 10px rgba(246, 193, 119, 0.5);
+}
+
+.stat-bar-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+  pointer-events: none;
+}
+
+.combat-stats {
+  background: rgba(49, 116, 143, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #31748f;
+}
+
+.combat-stats h4 {
+  margin: 0 0 15px 0;
+  color: #e0def4;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.combat-stats h4::before {
+  content: '⚔️';
+  font-size: 1.2em;
+}
+
+.stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat-item.enhanced {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.stat-item.enhanced:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.stat-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.stat-icon {
+  font-size: 1.2em;
+  margin-right: 8px;
+}
+
+.stat-name {
+  flex: 1;
+  color: #e0def4;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.stat-value {
+  color: #9ccfd8;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.stat-bar-mini {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.attack-fill {
+  background: linear-gradient(90deg, #eb6f92, #f6c177);
+}
+
+.defense-fill {
+  background: linear-gradient(90deg, #9ccfd8, #c4a7e7);
+}
+
+.speed-fill {
+  background: linear-gradient(90deg, #a3e635, #84cc16);
+}
+
+.status-effects {
+  background: rgba(235, 111, 146, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #eb6f92;
+}
+
+.status-effects h4 {
+  margin: 0 0 12px 0;
+  color: #e0def4;
+  font-size: 1em;
+}
+
+.effects-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-effect {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.status-effect.active {
+  background: rgba(163, 230, 53, 0.2);
+  color: #a3e635;
+  border: 1px solid #84cc16;
+}
+
+.status-effect.negative {
+  background: rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  border: 1px solid #b91c1c;
+  animation: pulse-negative 2s infinite;
+}
+
+@keyframes pulse-negative {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.effect-icon {
+  font-size: 1.1em;
+}
+
+.effect-name {
+  font-size: 0.8em;
+}
+
+.quick-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 2px solid;
+  background: rgba(255, 255, 255, 0.05);
+  color: #e0def4;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  font-size: 0.9em;
+  min-width: 80px;
+  justify-content: center;
+}
+
+.action-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-button.heal {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.action-button.heal:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.1);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.action-button.rest {
+  border-color: #c4a7e7;
+  color: #c4a7e7;
+}
+
+.action-button.rest:hover:not(:disabled) {
+  background: rgba(196, 167, 231, 0.1);
+  box-shadow: 0 4px 12px rgba(196, 167, 231, 0.3);
+}
+
+.action-icon {
+  font-size: 1.1em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .app-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .player-hub {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .chat-container {
+    height: 500px;
+  }
+
+  .enhanced-player-status {
+    padding: 15px;
+  }
+
+  .player-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .enhanced-avatar {
+    font-size: 3em;
+    min-width: 60px;
+    min-height: 60px;
+  }
+
+  .quick-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .enhanced-player-status {
+    padding: 12px;
+    gap: 15px;
+  }
+
+  .stats-grid {
+    gap: 8px;
+  }
+
+  .stat-item.enhanced {
+    padding: 8px;
+  }
+/* Responsive Layout Classes */
+.responsive-layout.mobile .app-container {
+  padding: 10px;
+  gap: 10px;
+}
+
+.responsive-layout.tablet .app-container {
+  padding: 15px;
+  gap: 15px;
+}
+
+/* Tablet Specific (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .app-container {
+    padding: 15px;
+  }
+
+  .player-hub {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .tabs {
+    justify-content: center;
+  }
+
+  .tabs button {
+    min-width: 120px;
+  }
+
+  .enhanced-player-status {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .user-input-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .user-input-grid input:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile Specific (up to 768px) */
+@media (max-width: 768px) {
+  html, body {
+    font-size: 14px;
+  }
+
+  .app-container {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .game-header {
+    padding: 10px;
+    text-align: center;
+  }
+
+  .game-header h1 {
+    font-size: 1.3em;
+    margin: 0 0 8px 0;
+  }
+
+  .world-info {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .world-info span {
+    padding: 2px 6px;
+    font-size: 0.7em;
+  }
+
+  .player-hub {
+    padding: 12px;
+    margin: 0;
+  }
+
+  .tabs {
+    gap: 2px;
+  }
+
+  .tabs button {
+    padding: 6px 4px;
+    font-size: 0.7em;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .tab-content {
+    padding: 10px;
+    min-height: 250px;
+  }
+
+  .enhanced-player-status {
+    padding: 12px;
+    gap: 15px;
+  }
+
+  .player-header {
+    padding: 10px;
+  }
+
+  .enhanced-avatar {
+    font-size: 2.5em;
+    min-width: 50px;
+    min-height: 50px;
+    padding: 10px;
+  }
+
+  .player-name {
+    font-size: 1.2em;
+  }
+
+  .player-class-level {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .class-badge {
+    padding: 3px 10px;
+    font-size: 0.7em;
+  }
+
+  .level-indicator {
+    padding: 3px 8px;
+    font-size: 0.8em;
+  }
+
+  .stats-grid {
+    gap: 8px;
+  }
+
+  .stat-item.enhanced {
+    padding: 8px;
+  }
+
+  .stat-info {
+    margin-bottom: 6px;
+  }
+
+  .stat-name {
+    font-size: 0.8em;
+  }
+
+  .stat-value {
+    font-size: 0.9em;
+  }
+
+  .quick-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-button {
+    padding: 8px 12px;
+    font-size: 0.8em;
+  }
+
+  .game-legend {
+    gap: 8px;
+    padding: 6px;
+  }
+
+  .legend-item {
+    font-size: 0.6em;
+  }
+
+  .legend-color {
+    width: 12px;
+    height: 12px;
+  }
+
+  .movement-controls {
+    gap: 8px;
+  }
+
+  .move-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1em;
+  }
+
+  .action-buttons .action-btn {
+    padding: 10px;
+    font-size: 0.8em;
+  }
+
+  .chat-container {
+    height: 350px;
+    padding: 10px;
+  }
+
+  .user-input-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .players-list {
+    max-height: 120px;
+  }
+
+  .player-card {
+    padding: 8px 10px;
+  }
+
+  .player-avatar-small {
+    font-size: 1.2em;
+  }
+
+  .player-stats {
+    font-size: 0.6em;
+  }
+
+  .chat-messages {
+    padding: 10px;
+    min-height: 200px;
+  }
+
+  .chat-message {
+    padding: 6px 10px;
+    max-width: 90%;
+  }
+
+  .message-text {
+    font-size: 0.8em;
+  }
+
+  .message-input {
+    padding: 10px;
+    font-size: 0.8em;
+  }
+
+  .send-button {
+    padding: 10px 16px;
+    font-size: 0.8em;
+  }
+
+  .command-buttons {
+    gap: 6px;
+  }
+
+  .command-btn {
+    padding: 6px 10px;
+    font-size: 0.7em;
+  }
+
+  .help-list li {
+    font-size: 0.7em;
+  }
+}
+
+/* Extra Small Mobile (up to 480px) */
+@media (max-width: 480px) {
+  html, body {
+    font-size: 13px;
+  }
+
+  .app-container {
+    padding: 5px;
+    gap: 5px;
+  }
+
+  .game-header h1 {
+    font-size: 1.1em;
+  }
+
+  .world-info span {
+    font-size: 0.6em;
+    padding: 1px 4px;
+  }
+
+  .player-hub {
+    padding: 8px;
+  }
+
+  .tabs button {
+    padding: 4px 2px;
+    font-size: 0.6em;
+  }
+
+  .tab-content {
+    padding: 8px;
+  }
+
+  .enhanced-player-status {
+    padding: 8px;
+    gap: 12px;
+  }
+
+  .enhanced-avatar {
+    font-size: 2em;
+    padding: 8px;
+  }
+
+  .player-name {
+    font-size: 1em;
+  }
+
+  .class-badge, .level-indicator {
+    font-size: 0.6em;
+    padding: 2px 6px;
+  }
+
+  .combat-stats, .status-effects {
+    padding: 10px;
+  }
+
+  .combat-stats h4, .status-effects h4 {
+    font-size: 0.9em;
+  }
+
+  .stat-item.enhanced {
+    padding: 6px;
+  }
+
+  .action-button {
+    padding: 6px 10px;
+    font-size: 0.7em;
+  }
+
+  .move-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9em;
+  }
+
+  .chat-container {
+    height: 300px;
+    padding: 8px;
+  }
+
+  .message-input, .send-button {
+    padding: 8px;
+    font-size: 0.7em;
+  }
+
+  .command-btn {
+    padding: 4px 8px;
+    font-size: 0.6em;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .app-container {
+    flex-direction: row;
+    height: 100vh;
+  }
+
+  .main-display {
+    flex: 2;
+    min-width: 0;
+  }
+
+  .player-hub {
+/* Notification System Styles */
+.notification-system {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  pointer-events: none;
+  max-width: 400px;
+}
+
+@media (max-width: 768px) {
+  .notification-system {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+.notification-item {
+  pointer-events: auto;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  color: white;
+  font-weight: 500;
+}
+
+.notification-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.notification-content {
+  padding: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.notification-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.notification-icon {
+  font-size: 1.5em;
+  flex-shrink: 0;
+  margin-top: 2px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.notification-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-title {
+  margin: 0 0 4px 0;
+  font-size: 1em;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.notification-message {
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.notification-close:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.notification-action-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8em;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.notification-action-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.notification-action-btn.primary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a1a;
+  border-color: rgba(255, 255, 255, 1);
+  text-shadow: none;
+}
+
+.notification-action-btn.primary:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.notification-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 1;
+}
+
+.notification-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Type-specific notification enhancements */
+.notification-item[style*="rgba(34, 197, 94"] .notification-progress-bar {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.notification-item[style*="rgba(239, 68, 68"] .notification-progress-bar {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.notification-item[style*="rgba(245, 158, 11"] .notification-progress-bar {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.notification-item[style*="rgba(59, 130, 246"] .notification-progress-bar {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.notification-item[style*="rgba(168, 85, 247"] .notification-progress-bar {
+  background: linear-gradient(90deg, #a855f7, #9333ea);
+}
+
+/* Notification entrance animations */
+@keyframes notificationSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes notificationFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+/* Pulse animation for critical notifications */
+@keyframes notificationPulse {
+  0%, 100% {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 6px 16px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Apply pulse to persistent critical notifications */
+.notification-item[style*="rgba(239, 68, 68"]:not(:hover) {
+  animation: notificationPulse 2s infinite;
+}
+
+.notification-item[style*="rgba(245, 158, 11"] .notification-icon {
+  animation: notificationPulse 2s infinite;
+}
+
+/* Mobile-specific notification adjustments */
+@media (max-width: 480px) {
+  .notification-item {
+    margin-bottom: 8px;
+  }
+
+  .notification-content {
+    padding: 12px;
+  }
+
+  .notification-header {
+    gap: 8px;
+  }
+
+  .notification-icon {
+    font-size: 1.3em;
+  }
+
+  .notification-title {
+    font-size: 0.9em;
+  }
+
+  .notification-message {
+    font-size: 0.8em;
+  }
+
+  .notification-actions {
+    margin-top: 8px;
+    gap: 6px;
+  }
+
+  .notification-action-btn {
+    padding: 4px 8px;
+    font-size: 0.7em;
+  }
+
+  .notification-close {
+    font-size: 1.3em;
+    padding: 2px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .notification-item {
+    border: 2px solid white;
+  }
+
+  .notification-title,
+  .notification-message {
+    text-shadow: none;
+  }
+
+  .notification-action-btn {
+    border: 2px solid white;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .notification-item,
+  .notification-close,
+  .notification-action-btn {
+    transition: none;
+  }
+
+  .notification-item:hover {
+    transform: none;
+  }
+
+  .notification-close:hover,
+  .notification-action-btn:hover {
+    transform: none;
+  }
+
+  .notification-item[style*="rgba(239, 68, 68"],
+  .notification-item[style*="rgba(245, 158, 11"] .notification-icon {
+    animation: none;
+  }
+}
+
+/* Focus styles for accessibility */
+.notification-close:focus,
+.notification-action-btn:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Stack spacing for multiple notifications */
+.notification-item:nth-child(2) {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.notification-item:nth-child(3) {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+.notification-item:nth-child(4) {
+  transform: scale(0.94);
+  opacity: 0.7;
+}
+
+.notification-item:nth-child(n+5) {
+  transform: scale(0.92);
+  opacity: 0.6;
+}
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    height: 100vh;
+    overflow-y: auto;
+    order: 1;
+  }
+
+  .game-header {
+    padding: 8px;
+  }
+
+  .game-header h1 {
+    font-size: 1.1em;
+  }
+
+  .world-info {
+    gap: 6px;
+  }
+
+  .world-info span {
+    font-size: 0.6em;
+  }
+
+  .tab-content {
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+
+  .enhanced-player-status {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .chat-container {
+    height: calc(100vh - 80px);
+  }
+}
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+  .tabs button {
+    min-height: 44px;
+    padding: 12px;
+  }
+
+  .action-button, .move-btn, .command-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .send-button {
+    min-height: 44px;
+    min-width: 80px;
+  }
+
+  .message-input {
+    min-height: 44px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .game-header h1,
+  .player-name,
+  .tabs button,
+  .action-button {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+}
