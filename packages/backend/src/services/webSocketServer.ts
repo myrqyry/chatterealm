@@ -55,19 +55,26 @@ export class WebSocketServer {
 
     this.setupEventHandlers();
     this.startGameLoop();
+    this.startCleanupInterval(); // Start periodic stale client cleanup
   }
 
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket) => {
-      console.log(`Client connected: ${socket.id}`);
+      console.log(`[CONNECTION] Client connected: ${socket.id}`);
+      console.log(`[CONNECTION] Current connectedClients count: ${this.connectedClients.size}`);
+      console.log(`[CONNECTION] Current playerSockets count: ${this.playerSockets.size}`);
+      console.log(`[CONNECTION] ConnectedClients keys: [${Array.from(this.connectedClients.keys()).join(', ')}]`);
 
       // Handle player join
       socket.on('join_game', (playerData: Partial<Player>) => {
+        console.log(`[JOIN_GAME_RECEIVED] Socket ${socket.id} attempting to join with data:`, playerData);
         this.handlePlayerJoin(socket, playerData);
       });
 
       // Handle player commands
       socket.on('player_command', (command: PlayerCommand) => {
+        console.log(`[COMMAND_RECEIVED] Socket ${socket.id} sent command:`, command.type);
+        console.log(`[COMMAND_RECEIVED] Socket in connectedClients: ${this.connectedClients.has(socket.id)}`);
         this.handlePlayerCommand(socket, command);
       });
 
@@ -91,38 +98,9 @@ export class WebSocketServer {
 
   private handlePlayerJoin(socket: Socket, playerData: Partial<Player>): void {
     try {
-      console.log(`[JOIN_GAME] Player join attempt from socket ${socket.id}:`, playerData);
-
-      // Validate player data
-      if (!playerData.id || !playerData.displayName) {
-        console.error(`[JOIN_ERROR] Invalid player data: missing id or displayName`, playerData);
-        socket.emit('error', { message: 'Invalid player data: missing id or displayName' });
-        return;
-      }
-
-      // DIAGNOSTIC: Check for existing client data with same socket ID (potential memory leak)
-      const existingClientData = this.connectedClients.get(socket.id);
-      if (existingClientData) {
-        console.warn(`[AUTH_DIAGNOSTIC] Found existing client data for socket ${socket.id}:`, {
-          playerId: existingClientData.playerId,
-          connectedAt: new Date(existingClientData.connectedAt),
-          isJoinConfirmed: existingClientData.isJoinConfirmed,
-          queuedCommands: existingClientData.commandQueue.length
-        });
-        console.warn(`[AUTH_DIAGNOSTIC] This indicates a potential memory leak - cleaning up stale entry`);
-        this.connectedClients.delete(socket.id);
-        this.playerSockets.delete(existingClientData.playerId);
-      }
-
-      // DIAGNOSTIC: Check for existing player with same ID but different socket (reconnection scenario)
-      const existingSocketForPlayer = this.playerSockets.get(playerData.id);
-      if (existingSocketForPlayer && existingSocketForPlayer !== socket.id) {
-        console.warn(`[AUTH_DIAGNOSTIC] Player ${playerData.id} reconnecting - old socket: ${existingSocketForPlayer}, new socket: ${socket.id}`);
-        console.warn(`[AUTH_DIAGNOSTIC] Cleaning up old connection mapping`);
-        this.connectedClients.delete(existingSocketForPlayer);
-        this.playerSockets.delete(playerData.id);
-      }
-
+      console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
+      console.log(`[JOIN_START] ConnectedClients before join: ${this.connectedClients.size}`);
+      
       // Create player object with all required properties
       const player: Player = {
         id: playerData.id!,
@@ -131,6 +109,11 @@ export class WebSocketServer {
         avatar: playerData.avatar || '👤', // Default avatar emoji
         position: { x: 0, y: 0 }, // Will be set by GameStateManager
         class: playerData.class || PlayerClass.KNIGHT, // Default to knight
+        health: 100, // Full health at spawn
+        mana: 100, // Full mana at spawn
+        stamina: 100, // Full stamina at spawn
+        hunger: 100, // Not hungry at spawn
+        thirst: 100, // Not thirsty at spawn
         stats: {
           hp: 100,
           maxHp: 100,
@@ -155,14 +138,6 @@ export class WebSocketServer {
         lastActive: Date.now()
       };
 
-      // DIAGNOSTIC: Log spawn attempt with game world state
-      console.log(`[SPAWN_DIAGNOSTIC] Attempting to spawn player ${player.displayName}:`, {
-        totalPlayers: this.gameStateManager.getPlayers().length,
-        connectedPlayers: this.gameStateManager.getPlayers().filter(p => p.connected).length,
-        totalNPCs: this.gameStateManager.getNPCs().length,
-        totalItems: this.gameStateManager.getItems().length
-      });
-
       // Add player to game state
       const result = this.gameStateManager.addPlayer(player);
 
@@ -171,6 +146,8 @@ export class WebSocketServer {
         socket.emit('error', { message: result.message });
         return;
       }
+
+      console.log(`[JOIN_REGISTERING] About to register socket ${socket.id} in connectedClients`);
 
       // Track client connection
       const clientData: ClientData = {
@@ -184,23 +161,9 @@ export class WebSocketServer {
       this.connectedClients.set(socket.id, clientData);
       this.playerSockets.set(player.id, socket.id);
 
-      console.log(`[JOIN_SUCCESS] Player ${player.displayName} authenticated and added to game`);
-      console.log(`[JOIN_SUCCESS] Client data stored:`, clientData);
-      console.log(`[JOIN_SUCCESS] Total connected clients: ${this.connectedClients.size}`);
-
-      // DIAGNOSTIC: Validate map synchronization
-      const playerSocketEntry = this.playerSockets.get(player.id);
-      const clientDataEntry = this.connectedClients.get(socket.id);
-      if (playerSocketEntry !== socket.id || clientDataEntry?.playerId !== player.id) {
-        console.error(`[MAP_SYNC_ERROR] Map synchronization failed:`, {
-          expectedSocketId: socket.id,
-          playerSocketEntry,
-          expectedPlayerId: player.id,
-          clientDataPlayerId: clientDataEntry?.playerId
-        });
-      } else {
-        console.log(`[MAP_SYNC_SUCCESS] Client tracking maps synchronized correctly`);
-      }
+      console.log(`[JOIN_REGISTERED] Socket ${socket.id} registered in connectedClients`);
+      console.log(`[JOIN_REGISTERED] ConnectedClients after join: ${this.connectedClients.size}`);
+      console.log(`[JOIN_REGISTERED] ConnectedClients keys: [${Array.from(this.connectedClients.keys()).join(', ')}]`);
 
       // Join player to their personal room for targeted updates
       socket.join(`player_${player.id}`);
@@ -234,30 +197,29 @@ export class WebSocketServer {
         console.error(`[AUTH_ERROR] Not authenticated - socket ${socket.id} not found in connectedClients`);
         console.error(`[AUTH_ERROR] Connected clients: ${Array.from(this.connectedClients.keys()).join(', ')}`);
         console.error(`[AUTH_ERROR] Player sockets: ${Array.from(this.playerSockets.entries()).map(([pid, sid]) => `${pid}:${sid}`).join(', ')}`);
-        
-        // DIAGNOSTIC: Check if this socket ID exists in playerSockets but not connectedClients
-        const orphanedPlayerEntries = Array.from(this.playerSockets.entries()).filter(([playerId, socketId]) => socketId === socket.id);
-        if (orphanedPlayerEntries.length > 0) {
-          console.error(`[AUTH_ERROR] Found orphaned playerSockets entries for this socket:`, orphanedPlayerEntries);
-          console.error(`[AUTH_ERROR] This indicates a map synchronization issue`);
+        // If connectedClients is missing the current socket, it's a critical authentication failure.
+        // Aggressively clean up potential orphaned playerSockets mapping to prevent future errors for this state.
+        let cleanedOrphanedPlayerSockets = false;
+        for (const [playerId, storedSocketId] of this.playerSockets.entries()) {
+          if (storedSocketId === socket.id) {
+            console.warn(`[AUTH_CLEANUP] Found and removing orphaned playerSockets entry for playerId: ${playerId}, socketId: ${socket.id}.`);
+            this.playerSockets.delete(playerId);
+            cleanedOrphanedPlayerSockets = true;
+          }
         }
-        
+
+        if (cleanedOrphanedPlayerSockets) {
+            console.log(`[AUTH_CLEANUP_SUCCESS] Inconsistent playerSockets entry(ies) found and cleaned up for socket ${socket.id}.`);
+        } else {
+            console.warn(`[AUTH_CLEANUP_NONE] No orphaned playerSockets entries found for socket ${socket.id}, but clientData was missing.`);
+        }
+
         socket.emit('error', { message: 'Not authenticated' });
         return;
       }
 
-      // DIAGNOSTIC: Log command processing state
-      console.log(`[COMMAND_DIAGNOSTIC] Processing command from ${clientData.playerId}:`, {
-        command: command.type,
-        isJoinConfirmed: clientData.isJoinConfirmed,
-        queuedCommands: clientData.commandQueue.length,
-        connectedAt: new Date(clientData.connectedAt),
-        socketAge: Date.now() - clientData.connectedAt
-      });
-
       // If join is not confirmed, queue the command
       if (!clientData.isJoinConfirmed) {
-        console.log(`[COMMAND_QUEUED] Player ${clientData.playerId} command queued until join confirmed:`, command.type);
         this.queueCommand(clientData, command);
         return;
       }
@@ -372,11 +334,8 @@ export class WebSocketServer {
     try {
       const clientData = this.connectedClients.get(socket.id);
       if (!clientData) {
-        console.error(`[JOIN_CONFIRMATION_ERROR] No client data found for socket ${socket.id}`);
         return;
       }
-
-      console.log(`[JOIN_CONFIRMED] Player ${clientData.playerId} confirmed join`);
 
       // Mark join as confirmed
       clientData.isJoinConfirmed = true;
@@ -393,8 +352,6 @@ export class WebSocketServer {
     if (clientData.commandQueue.length === 0) {
       return;
     }
-
-    console.log(`[QUEUE_PROCESSING] Processing ${clientData.commandQueue.length} queued commands for player ${clientData.playerId}`);
 
     // Process all queued commands
     while (clientData.commandQueue.length > 0) {
@@ -440,52 +397,28 @@ export class WebSocketServer {
     try {
       const clientData = this.connectedClients.get(socket.id);
       if (clientData) {
-        // DIAGNOSTIC: Log disconnect details
-        console.log(`[DISCONNECT_DIAGNOSTIC] Socket ${socket.id} disconnecting:`, {
-          playerId: clientData.playerId,
-          connectedAt: new Date(clientData.connectedAt),
-          connectionDuration: Date.now() - clientData.connectedAt,
-          isJoinConfirmed: clientData.isJoinConfirmed,
-          queuedCommands: clientData.commandQueue.length
-        });
-
         // Mark player as disconnected instead of removing them completely
         const player = this.gameStateManager.getPlayer(clientData.playerId);
         if (player) {
           player.connected = false;
           player.lastActive = Date.now();
 
-          console.log(`[DISCONNECT] Player ${player.displayName} marked as disconnected`);
-
           // Broadcast player disconnected to all clients (but keep them in game world)
           this.io.to('game_room').emit('player_disconnected', {
             playerId: clientData.playerId,
             player: player
           });
-        } else {
-          console.warn(`[DISCONNECT_WARNING] Could not find player ${clientData.playerId} in game world`);
         }
 
-        // Clean up tracking
+        // Ensure explicit cleanup of mappings from connectedClients and playerSockets
         this.connectedClients.delete(socket.id);
-        this.playerSockets.delete(clientData.playerId);
-
-        // DIAGNOSTIC: Verify cleanup
-        const remainingSocketEntry = this.playerSockets.get(clientData.playerId);
-        const remainingClientEntry = this.connectedClients.get(socket.id);
-        if (remainingSocketEntry || remainingClientEntry) {
-          console.error(`[CLEANUP_ERROR] Failed to clean up connection tracking:`, {
-            remainingSocketEntry,
-            remainingClientEntry
-          });
-        } else {
-          console.log(`[CLEANUP_SUCCESS] Connection tracking cleaned up successfully`);
+        // Only delete from playerSockets if it still points to the disconnecting socket
+        if (this.playerSockets.get(clientData.playerId) === socket.id) {
+          this.playerSockets.delete(clientData.playerId);
         }
-      } else {
-        console.warn(`[DISCONNECT_WARNING] No client data found for disconnecting socket ${socket.id}`);
-      }
 
-      console.log(`Client disconnected: ${socket.id}`);
+        console.log(`Client disconnected: ${socket.id}`);
+      }
     } catch (error) {
       console.error('Error handling player disconnect:', error);
     }
@@ -577,9 +510,86 @@ export class WebSocketServer {
       clearInterval(this.gameLoopInterval);
       this.gameLoopInterval = null;
       this.isGameLoopRunning = false;
-      console.log('🛑 Game loop stopped');
     }
   }
+
+  // Periodic cleanup of stale ClientData entries to prevent memory leaks
+  private startCleanupInterval(): void {
+    if (this.cleanupInterval) return; // already started
+    console.log('🧹 Starting stale client cleanup interval...');
+
+    // Run cleanup every 30 seconds
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupStaleClientData();
+    }, 30000);
+
+    console.log('✅ Stale client cleanup started successfully');
+  }
+
+  private stopCleanupInterval(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+  }
+
+  private cleanupStaleClientData(): void {
+    try {
+      const now = Date.now();
+      const staleTimeout = 60000; // 60 seconds timeout for joins not confirmed
+      let cleanedCount = 0;
+
+      console.log(`[CLEANUP_CHECK] Starting stale client data cleanup - ${this.connectedClients.size} clients tracked`);
+
+      // Iterate over a copy of entries to avoid mutation issues while iterating
+      for (const [socketId, clientData] of Array.from(this.connectedClients.entries())) {
+        const age = now - clientData.connectedAt;
+
+        // Condition to treat entry as stale:
+        // - join never confirmed and exceeded staleTimeout
+        // - OR join confirmed but socket is no longer present in io.sockets
+        const socketExists = this.io.sockets.sockets.has(socketId);
+        const isStaleUnconfirmed = !clientData.isJoinConfirmed && age > staleTimeout;
+        const isStaleDisconnected = clientData.isJoinConfirmed && !socketExists;
+
+        if (isStaleUnconfirmed || isStaleDisconnected) {
+          console.log(`[CLEANUP] Removing stale client data for socket ${socketId}:`, {
+            playerId: clientData.playerId,
+            ageMs: age,
+            wasConfirmed: clientData.isJoinConfirmed,
+            socketExists,
+            queuedCommands: clientData.commandQueue.length
+          });
+
+          // Remove mappings
+          this.connectedClients.delete(socketId);
+          this.playerSockets.delete(clientData.playerId);
+
+          // If player was added to game world but never confirmed, remove them from game world
+          if (!clientData.isJoinConfirmed) {
+            const player = this.gameStateManager.getPlayer(clientData.playerId);
+            if (player) {
+              console.log(`[CLEANUP] Removing unconfirmed player ${player.displayName} from game world`);
+              this.gameStateManager.removePlayer(clientData.playerId);
+            }
+          }
+
+          cleanedCount++;
+        }
+      }
+
+      if (cleanedCount > 0) {
+        console.log(`[CLEANUP_COMPLETE] Cleaned up ${cleanedCount} stale client entries`);
+        console.log(`[CLEANUP_STATUS] Remaining clients: ${this.connectedClients.size}, Player sockets: ${this.playerSockets.size}`);
+      } else {
+        console.log(`[CLEANUP_CHECK] No stale entries found`);
+      }
+    } catch (err) {
+      console.error('[CLEANUP_ERROR] Error during stale client cleanup:', err);
+    }
+  }
+
+  // Periodic cleanup of stale ClientData entries to prevent memory leaks
 
   // Public methods for external access
   public getConnectedClients(): ClientData[] {
@@ -611,6 +621,9 @@ export class WebSocketServer {
 
     // Stop the game loop first
     this.stopGameLoop();
+
+    // Stop cleanup interval
+    this.stopCleanupInterval();
 
     // Disconnect all clients
     this.io.disconnectSockets();

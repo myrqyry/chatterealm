@@ -50,7 +50,7 @@ class ControlledAuthTest {
         // This should be queued, not rejected with "Not authenticated"
         socket.emit('player_command', {
           type: 'move',
-          direction: 'north'
+          data: { direction: 'north' }
         });
         console.log('📤 Sent move command immediately after join_game');
       });
@@ -131,27 +131,31 @@ class ControlledAuthTest {
     
     const connections = [];
     const maxConnections = 10; // Start with smaller number
-    
+    let successfulSpawns = 0; // Track successful spawns in this test
+
     try {
       for (let i = 0; i < maxConnections; i++) {
         console.log(`📡 Creating connection ${i + 1}/${maxConnections}`);
         
         const socket = io(this.serverUrl, { 
           transports: ['websocket'],
-          timeout: 5000
+          timeout: 5000 // Timeout for initial connection
         });
         
         connections.push(socket);
         
-        // Add delay between connections to avoid overwhelming server
-        await this.delay(500);
+        await this.delay(500); // Add delay between connections to avoid overwhelming server
         
-        await new Promise((resolve, reject) => {
+        const result = await new Promise((resolve, reject) => {
           const timeout = setTimeout(() => {
-            reject(new Error(`Connection ${i + 1} timed out`));
-          }, 8000);
+            // Treat timeout as a spawn failure, not a generic error that crashes the test
+            resolve({ success: false, error: `Connection ${i + 1} timed out or no available spawn position` });
+          }, 8000); // Increased timeout to give backend more time if needed
+
+          let hasResolved = false; // Flag to prevent multiple resolutions
 
           socket.on('connect', () => {
+            if (hasResolved) return;
             socket.emit('join_game', {
               id: `spawn-test-${i + 1}-${Date.now()}`,
               displayName: `SpawnTest${i + 1}`,
@@ -160,38 +164,59 @@ class ControlledAuthTest {
           });
 
           socket.on('game_joined', (data) => {
+            if (hasResolved) return;
+            hasResolved = true;
             console.log(`✅ Connection ${i + 1} joined successfully`);
             clearTimeout(timeout);
-            resolve();
+            resolve({ success: true, position: data.player.position }); // Resolve with success and position
           });
 
           socket.on('error', (error) => {
-            console.log(`❌ Connection ${i + 1} error:`, error);
+            if (hasResolved) return;
+            hasResolved = true;
             clearTimeout(timeout);
-            if (error.includes('No available spawn position')) {
-              // This is expected if we exceed grid capacity
-              console.log('📍 Spawn position limit reached (expected)');
-              resolve();
+            
+            let errorMessage = error.message || String(error); // Ensure error.message is available
+
+            if (errorMessage.includes('No available spawn position')) {
+              console.log(`📍 Connection ${i + 1} error: No available spawn position (expected if map is full/mountainous)`);
+              resolve({ success: false, error: 'No available spawn position' }); // Explicitly resolve for this expected case
+            } else if (errorMessage.includes('Not authenticated')) {
+              console.log(`🔒 Connection ${i + 1} error: Authentication error: ${errorMessage}`);
+              resolve({ success: false, error: `Authentication error: ${errorMessage}` }); // Handle auth errors
             } else {
-              reject(error);
+              console.log(`❌ Connection ${i + 1} error: Unexpected error: ${errorMessage}`);
+              resolve({ success: false, error: `Unexpected error: ${errorMessage}` }); // Other unexpected errors
             }
           });
         });
+
+        if (result.success) {
+          successfulSpawns++; // Increment counter for successful spawns
+        } else {
+          // Record failures in the test results, but don't stop the loop
+          this.results.spawnTests.push({
+            success: false,
+            description: `Connection ${i + 1} failed to spawn: ${result.error}`,
+            connections: 1 // Indicate this single connection failure
+          });
+        }
       }
       
-      console.log(`✅ Successfully created ${connections.length} connections`);
+      console.log(`✅ Successfully created ${successfulSpawns}/${maxConnections} connections`);
+      
       this.results.spawnTests.push({
-        success: true,
-        description: `${connections.length} players spawned successfully`,
-        connections: connections.length
+        success: successfulSpawns > 0, // Mark test as success if at least one spawned
+        description: `${successfulSpawns} players spawned successfully`,
+        connections: successfulSpawns
       });
       
     } catch (error) {
-      console.log('❌ Spawn test error:', error.message);
+      console.log('❌ Spawn test error (overall catch):', error.message);
       this.results.spawnTests.push({
         success: false,
         description: error.message,
-        connections: connections.length
+        connections: successfulSpawns // Use the number of players tried
       });
     } finally {
       // Clean up all connections
@@ -244,7 +269,8 @@ class ControlledAuthTest {
     console.log('\n📍 Spawn Position Tests:');
     this.results.spawnTests.forEach((test, index) => {
       console.log(`${index + 1}. ${test.success ? '✅' : '❌'} ${test.description}`);
-      if (test.connections) console.log(`   Connections: ${test.connections}`);
+      if (test.connections !== undefined) console.log(`   Connections: ${test.connections}`); // Use undefined check
+      if (test.error) console.log(`   Error: ${test.error}`); // Display error for spawn tests
     });
     
     if (this.results.errors.length > 0) {

@@ -49,6 +49,145 @@ export const GAME_CONFIG: GameSettings = {
       defenseBonus: 15,
       visibilityModifier: 3,
       spawnChance: 0.15
+    },
+    // New terrain types with placeholder values
+    [TerrainType.WATER]: {
+      movementCost: 1.5,
+      defenseBonus: 0,
+      visibilityModifier: 0,
+      spawnChance: 0.0
+    },
+    [TerrainType.OCEAN]: {
+      movementCost: 2.0,
+      defenseBonus: 0,
+      visibilityModifier: 0,
+      spawnChance: 0.0
+    },
+    [TerrainType.RIVER]: {
+      movementCost: 1.2,
+      defenseBonus: 0,
+      visibilityModifier: 0,
+      spawnChance: 0.0
+    },
+    [TerrainType.MOUNTAIN_PEAK]: {
+      movementCost: 4,
+      defenseBonus: 20,
+      visibilityModifier: 4,
+      spawnChance: 0.05
+    },
+    [TerrainType.HILLS]: {
+      movementCost: 1.2,
+      defenseBonus: 2,
+      visibilityModifier: 0,
+      spawnChance: 0.2
+    },
+    [TerrainType.SNOW]: {
+      movementCost: 1.8,
+      defenseBonus: 5,
+      visibilityModifier: -1,
+      spawnChance: 0.0
+    },
+    [TerrainType.ICE]: {
+      movementCost: 2.5,
+      defenseBonus: 0,
+      visibilityModifier: -1.5,
+      spawnChance: 0.0
+    },
+    [TerrainType.SNOWY_HILLS]: {
+      movementCost: 2.0,
+      defenseBonus: 7,
+      visibilityModifier: 0,
+      spawnChance: 0.1
+    },
+    [TerrainType.DUNES]: {
+      movementCost: 1.5,
+      defenseBonus: 0,
+      visibilityModifier: 0.5,
+      spawnChance: 0.05
+    },
+    [TerrainType.OASIS]: {
+      movementCost: 1.0,
+      defenseBonus: 1,
+      visibilityModifier: 0,
+      spawnChance: 0.01
+    },
+    [TerrainType.SAND]: {
+      movementCost: 1.3,
+      defenseBonus: 0,
+      visibilityModifier: 0.3,
+      spawnChance: 0.1
+    },
+    [TerrainType.DENSE_JUNGLE]: {
+      movementCost: 3.0,
+      defenseBonus: 10,
+      visibilityModifier: -3,
+      spawnChance: 0.05
+    },
+    [TerrainType.JUNGLE]: {
+      movementCost: 2.5,
+      defenseBonus: 8,
+      visibilityModifier: -2.5,
+      spawnChance: 0.1
+    },
+    [TerrainType.DEEP_WATER]: {
+      movementCost: 3.0,
+      defenseBonus: 0,
+      visibilityModifier: -1,
+      spawnChance: 0.0
+    },
+    [TerrainType.MARSH]: {
+      movementCost: 2.0,
+      defenseBonus: 3,
+      visibilityModifier: -1,
+      spawnChance: 0.05
+    },
+    [TerrainType.SWAMP]: {
+      movementCost: 2.2,
+      defenseBonus: 5,
+      visibilityModifier: -1.5,
+      spawnChance: 0.05
+    },
+    [TerrainType.DENSE_FOREST]: {
+      movementCost: 2.8,
+      defenseBonus: 12,
+      visibilityModifier: -2.5,
+      spawnChance: 0.1
+    },
+    [TerrainType.CLEARING]: {
+      movementCost: 1.0,
+      defenseBonus: 0,
+      visibilityModifier: 0,
+      spawnChance: 0.1
+    },
+    [TerrainType.ROLLING_HILLS]: {
+      movementCost: 1.3,
+      defenseBonus: 3,
+      visibilityModifier: 0,
+      spawnChance: 0.15
+    },
+    [TerrainType.FLOWER_FIELD]: {
+      movementCost: 1.0,
+      defenseBonus: 1,
+      visibilityModifier: 0,
+      spawnChance: 0.02
+    },
+    [TerrainType.GRASSLAND]: {
+      movementCost: 1.0,
+      defenseBonus: 0,
+      visibilityModifier: 0,
+      spawnChance: 0.3
+    },
+    [TerrainType.ROUGH_TERRAIN]: {
+      movementCost: 2.0,
+      defenseBonus: 5,
+      visibilityModifier: 0,
+      spawnChance: 0.08
+    },
+    [TerrainType.ANCIENT_RUINS]: {
+      movementCost: 1.5,
+      defenseBonus: 8,
+      visibilityModifier: 1,
+      spawnChance: 0.03
     }
   }
 };
@@ -67,7 +206,8 @@ export const COMBAT_CONSTANTS = {
 export const MOVEMENT_CONSTANTS = {
   BASE_MOVE_COOLDOWN: 1000, // 1 second
   AUTO_WANDER_INTERVAL: 5000, // 5 seconds
-  MAX_MOVE_DISTANCE: 1
+  MAX_MOVE_DISTANCE: 1,
+  MAX_ADJACENT_MOUNTAINS: 2 // Maximum number of adjacent mountain tiles for a valid spawn position
 };
 
 export const WORLD_CONSTANTS = {
@@ -75,7 +215,8 @@ export const WORLD_CONSTANTS = {
   ITEM_DROP_CHANCE: 0.15,
   WORLD_RESET_DURATION: 30000, // 30 seconds
   MAX_ITEMS_PER_TILE: 3,
-  CATACLYSM_SHRINK_RATE: 0.5 // tiles per minute
+  CATACLYSM_SHRINK_RATE: 0.5, // tiles per minute
+  EXTREMELY_MOUNTAIN_THRESHOLD: 70 // Threshold (percentage) above which map is considered extremely mountainous for spawn fallback
 };
 
 // Class-specific abilities and descriptions
@@ -124,7 +265,30 @@ export const CHAT_COMMANDS = {
 export const TERRAIN_EMOJIS = {
   [TerrainType.PLAIN]: '🌱',
   [TerrainType.FOREST]: '🌲',
-  [TerrainType.MOUNTAIN]: '⛰️'
+  [TerrainType.MOUNTAIN]: '⛰️',
+  [TerrainType.WATER]: '🌊',
+  [TerrainType.OCEAN]: ' OCEANA',
+  [TerrainType.RIVER]: 'RIVER',
+  [TerrainType.MOUNTAIN_PEAK]: 'MOUNTAIN_PEAK',
+  [TerrainType.HILLS]: 'HILLS',
+  [TerrainType.SNOW]: 'SNOW',
+  [TerrainType.ICE]: 'ICE',
+  [TerrainType.SNOWY_HILLS]: 'SNOWY_HILLS',
+  [TerrainType.DUNES]: 'DUNES',
+  [TerrainType.OASIS]: 'OASIS',
+  [TerrainType.SAND]: 'SAND',
+  [TerrainType.DENSE_JUNGLE]: 'DENSE_JUNGLE',
+  [TerrainType.JUNGLE]: 'JUNGLE',
+  [TerrainType.DEEP_WATER]: 'DEEP_WATER',
+  [TerrainType.MARSH]: 'MARSH',
+  [TerrainType.SWAMP]: 'SWAMP',
+  [TerrainType.DENSE_FOREST]: 'DENSE_FOREST',
+  [TerrainType.CLEARING]: 'CLEARING',
+  [TerrainType.ROLLING_HILLS]: 'ROLLING_HILLS',
+  [TerrainType.FLOWER_FIELD]: 'FLOWER_FIELD',
+  [TerrainType.GRASSLAND]: 'GRASSLAND',
+  [TerrainType.ROUGH_TERRAIN]: 'ROUGH_TERRAIN',
+  [TerrainType.ANCIENT_RUINS]: 'ANCIENT_RUINS',
 };
 
 // Achievement definitions

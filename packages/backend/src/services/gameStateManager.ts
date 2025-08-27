@@ -21,6 +21,7 @@ export interface ItemResult extends GameActionResult {
 
 export class GameStateManager {
   private gameWorld: GameWorld;
+  private reservedPositions: Set<string> = new Set(); // Prevents concurrent spawn races by reserving positions
 
   constructor(gameWorld: GameWorld) {
     this.gameWorld = gameWorld;
@@ -65,8 +66,12 @@ export class GameStateManager {
       return { success: false, message: 'No available spawn position' };
     }
 
+    // Assign and persist player
     player.position = spawnPosition;
     this.gameWorld.players.push(player);
+
+    // Release reservation after successfully placing the player (reservation only prevented races during selection)
+    this.releaseReservedPosition(spawnPosition);
 
     console.log(`[SPAWN_SUCCESS] Player ${player.displayName} spawned at (${spawnPosition.x}, ${spawnPosition.y})`);
 
@@ -676,8 +681,10 @@ export class GameStateManager {
     console.log(`[SPAWN_SEARCH] Checking corner positions...`);
     for (const position of cornerPositions) {
       if (this.isValidSpawnPosition(position.x, position.y)) {
-        console.log(`[SPAWN_SUCCESS] Found corner spawn position: (${position.x}, ${position.y})`);
-        return position;
+        if (this.reservePosition(position.x, position.y)) {
+          console.log(`[SPAWN_SUCCESS] Found & reserved corner spawn position: (${position.x}, ${position.y})`);
+          return position;
+        }
       }
     }
 
@@ -685,8 +692,10 @@ export class GameStateManager {
     console.log(`[SPAWN_SEARCH] Corner positions unavailable, checking edge positions...`);
     for (const position of edgePositions) {
       if (this.isValidSpawnPosition(position.x, position.y)) {
-        console.log(`[SPAWN_SUCCESS] Found edge spawn position: (${position.x}, ${position.y})`);
-        return position;
+        if (this.reservePosition(position.x, position.y)) {
+          console.log(`[SPAWN_SUCCESS] Found & reserved edge spawn position: (${position.x}, ${position.y})`);
+          return position;
+        }
       }
     }
 
@@ -696,8 +705,10 @@ export class GameStateManager {
     console.log(`[SPAWN_SEARCH] Generated ${centerPositions.length} center positions to check`);
     for (const position of centerPositions) {
       if (this.isValidSpawnPosition(position.x, position.y)) {
-        console.log(`[SPAWN_SUCCESS] Found center spawn position: (${position.x}, ${position.y})`);
-        return position;
+        if (this.reservePosition(position.x, position.y)) {
+          console.log(`[SPAWN_SUCCESS] Found & reserved center spawn position: (${position.x}, ${position.y})`);
+          return position;
+        }
       }
     }
 
@@ -762,10 +773,39 @@ export class GameStateManager {
     return positions.sort(() => Math.random() - 0.5);
   }
 
+  // Reservation helpers to avoid spawn race conditions
+  private positionKey(x: number, y: number): string {
+    return `${x},${y}`;
+  }
+
+  private reservePosition(x: number, y: number): boolean {
+    const key = this.positionKey(x, y);
+    if (this.reservedPositions.has(key)) return false;
+    this.reservedPositions.add(key);
+    return true;
+  }
+
+  private releaseReservedPosition(pos: Position): void {
+    const key = this.positionKey(pos.x, pos.y);
+    if (this.reservedPositions.has(key)) {
+      this.reservedPositions.delete(key);
+    }
+  }
+
+  private isPositionReserved(x: number, y: number): boolean {
+    return this.reservedPositions.has(this.positionKey(x, y));
+  }
+
   private isValidSpawnPosition(x: number, y: number): boolean {
     // Basic boundary check
     if (x < 0 || x >= GAME_CONFIG.gridWidth || y < 0 || y >= GAME_CONFIG.gridHeight) {
       console.log(`[SPAWN_CHECK] Position (${x},${y}) failed boundary check`);
+      return false;
+    }
+
+    // Check if reserved (prevent race with concurrent spawns)
+    if (this.isPositionReserved(x, y)) {
+      console.log(`[SPAWN_CHECK] Position (${x},${y}) is currently reserved`);
       return false;
     }
 
@@ -796,52 +836,97 @@ export class GameStateManager {
   private findEmptySpawnPositionFallback(): Position | null {
     console.log(`[SPAWN_FALLBACK] Starting random search with detailed diagnostics`);
     
-    const maxAttempts = 200; // Increased attempts for fallback
+    const maxAttempts = 500; // Increased attempts for fallback
     let validPositions = 0;
     let unoccupiedPositions = 0;
     let mountainBlocked = 0;
     let waterBlocked = 0;
     let outOfBounds = 0;
 
+    // Compute mountain percentage to decide fallback looseness
+    const gridWidth = GAME_CONFIG.gridWidth;
+    const gridHeight = GAME_CONFIG.gridHeight;
+    const totalCells = gridWidth * gridHeight;
+    let mountainCount = 0;
+    for (let yy = 0; yy < gridHeight; yy++) {
+      for (let xx = 0; xx < gridWidth; xx++) {
+        const t = this.gameWorld.grid[yy][xx];
+        if (t && t.type === TerrainType.MOUNTAIN) mountainCount++;
+      }
+    }
+    const mountainPercentage = (mountainCount / totalCells) * 100;
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const x = Math.floor(Math.random() * GAME_CONFIG.gridWidth);
       const y = Math.floor(Math.random() * GAME_CONFIG.gridHeight);
 
-      const position = { x, y };
-
-      // Check bounds
-      if (position.x < 0 || position.x >= GAME_CONFIG.gridWidth ||
-          position.y < 0 || position.y >= GAME_CONFIG.gridHeight) {
+      // Early exit for invalid bounds - this should be covered by isValidSpawnPosition,
+      // but double-check for robustness.
+      if (x < 0 || x >= GAME_CONFIG.gridWidth || y < 0 || y >= GAME_CONFIG.gridHeight) {
         outOfBounds++;
         continue;
       }
 
-      // Check terrain (can't spawn on mountains or water)
-      const terrain = this.gameWorld.grid[y][x];
-      if (terrain.type === TerrainType.MOUNTAIN) {
-        mountainBlocked++;
+      // Pre-check for reserved status to avoid unnecessary validation
+      if (this.isPositionReserved(x, y)) {
         continue;
       }
 
-      validPositions++;
+      // Use isValidSpawnPosition to check all conditions
+      if (this.isValidSpawnPosition(x, y)) {
+        validPositions++;
+        const position = { x, y };
+        
+        // Final check for occupancy, as isValidSpawnPosition does it too
+        if (!this.isPositionOccupied(position)) {
+          // Attempt to reserve the position to prevent race conditions.
+          // If another process has just reserved it, `reservePosition` will return false.
+          if (this.reservePosition(x, y)) {
+            unoccupiedPositions++;
+            console.log(`[SPAWN_SUCCESS] Found & reserved fallback spawn position after ${attempt + 1} attempts: (${x}, ${y})`);
+            console.log(`[SPAWN_FALLBACK_STATS] Attempts: ${attempt + 1}, Valid: ${validPositions}, Unoccupied: ${unoccupiedPositions}`);
+            return position;
+          }
+        }
+      } else {
+        // Log reasons for invalid positions in fallback, if not reserved/occupied (already logged)
+        const terrain = this.gameWorld.grid[y][x];
+        if (terrain) {
+          if (terrain.type === TerrainType.MOUNTAIN) mountainBlocked++;
+          // if (terrain.type === TerrainType.WATER) waterBlocked++; // No explicit water terrain type defined for spawning currently
+        }
+      }
+    }
 
-      // Check if position is not occupied
-      const isOccupied = this.isPositionOccupied(position);
-      if (!isOccupied) {
-        unoccupiedPositions++;
-        console.log(`[SPAWN_SUCCESS] Found fallback spawn position after ${attempt + 1} attempts: (${x}, ${y})`);
-        console.log(`[SPAWN_FALLBACK_STATS] Attempts: ${attempt + 1}, Valid: ${validPositions}, Unoccupied: ${unoccupiedPositions}`);
-        return position;
+    // If we exhausted all attempts for non-mountain, unoccupied spots and the map is very mountainous,
+    // we perform a desperate linear scan, allowing mountain tiles if necessary, but still
+    // ensuring no overlap with existing players/NPCs or reservations.
+    if (mountainPercentage > WORLD_CONSTANTS.EXTREMELY_MOUNTAIN_THRESHOLD) { // Define EXTREMELY_MOUNTAIN_THRESHOLD in gameConstants
+      console.warn(`[SPAWN_FALLBACK] High mountain coverage (${mountainPercentage.toFixed(1)}%) - initiating last-resort scan including mountain tiles`);
+      for (let yy = 0; yy < gridHeight; yy++) {
+        for (let xx = 0; xx < gridWidth; xx++) {
+          // Even in last resort, never spawn on currently reserved or occupied spots
+          if (this.isPositionReserved(xx, yy)) continue;
+          if (this.isPositionOccupied({ x: xx, y: yy })) continue;
+
+          // Now, allow mountains in the linear scan for desperate situations.
+          // Since it's a desperate fallback, prioritize *any* empty non-occupied, non-reserved spot.
+          // Attempt to reserve and if successful, return the position.
+          if (this.reservePosition(xx, yy)) {
+            console.log(`[SPAWN_SUCCESS] Last-resort mountain/any terrain spawn chosen: (${xx}, ${yy})`);
+            return { x: xx, y: yy };
+          }
+        }
       }
     }
 
     console.error(`[SPAWN_ERROR] Failed to find spawn position after ${maxAttempts} fallback attempts`);
     console.error(`[SPAWN_ERROR_STATS] Breakdown of ${maxAttempts} attempts:`);
     console.error(`[SPAWN_ERROR_STATS] - Out of bounds: ${outOfBounds}`);
-    console.error(`[SPAWN_ERROR_STATS] - Mountain blocked: ${mountainBlocked}`);
+    console.error(`[SPAWN_ERROR_STATS] - Mountain blocked: ${mountainBlocked} (during random search)`);
     console.error(`[SPAWN_ERROR_STATS] - Water blocked: ${waterBlocked}`);
-    console.error(`[SPAWN_ERROR_STATS] - Valid terrain: ${validPositions}`);
-    console.error(`[SPAWN_ERROR_STATS] - Unoccupied: ${unoccupiedPositions}`);
+    console.error(`[SPAWN_ERROR_STATS] - Valid terrain checked: ${validPositions}`);
+    console.error(`[SPAWN_ERROR_STATS] - Unoccupied & reserved: ${unoccupiedPositions}`);
     console.error(`[SPAWN_ERROR] Total players: ${this.gameWorld.players.length}`);
     console.error(`[SPAWN_ERROR] Total NPCs: ${this.gameWorld.npcs.length}`);
 
@@ -884,42 +969,43 @@ export class GameStateManager {
     const gridWidth = GAME_CONFIG.gridWidth;
     const gridHeight = GAME_CONFIG.gridHeight;
     const totalCells = gridWidth * gridHeight;
-    const terrainCounts = {
-      [TerrainType.PLAIN]: 0,
-      [TerrainType.FOREST]: 0,
-      [TerrainType.MOUNTAIN]: 0
-    };
+    const terrainCounts = new Map<TerrainType, number>();
 
     // Count terrain types
     for (let y = 0; y < gridHeight; y++) {
       for (let x = 0; x < gridWidth; x++) {
         const terrain = this.gameWorld.grid[y][x];
         if (terrain) {
-          terrainCounts[terrain.type]++;
+          const currentCount = terrainCounts.get(terrain.type) || 0;
+          terrainCounts.set(terrain.type, currentCount + 1);
         }
       }
     }
 
-    const plainPercentage = (terrainCounts[TerrainType.PLAIN] / totalCells) * 100;
-    const forestPercentage = (terrainCounts[TerrainType.FOREST] / totalCells) * 100;
-    const mountainPercentage = (terrainCounts[TerrainType.MOUNTAIN] / totalCells) * 100;
+    const plainPercentage = ((terrainCounts.get(TerrainType.PLAIN) || 0) / totalCells) * 100;
+    const forestPercentage = ((terrainCounts.get(TerrainType.FOREST) || 0) / totalCells) * 100;
+    const mountainPercentage = ((terrainCounts.get(TerrainType.MOUNTAIN) || 0) / totalCells) * 100;
+    const waterPercentage = ((terrainCounts.get(TerrainType.WATER) || 0) / totalCells) * 100;
 
     console.log(`[TERRAIN_ANALYSIS] Grid size: ${gridWidth}x${gridHeight} (${totalCells} total cells)`);
-    console.log(`[TERRAIN_ANALYSIS] Plains: ${terrainCounts[TerrainType.PLAIN]} (${plainPercentage.toFixed(1)}%)`);
-    console.log(`[TERRAIN_ANALYSIS] Forest: ${terrainCounts[TerrainType.FOREST]} (${forestPercentage.toFixed(1)}%)`);
-    console.log(`[TERRAIN_ANALYSIS] Mountains: ${terrainCounts[TerrainType.MOUNTAIN]} (${mountainPercentage.toFixed(1)}%)`);
+    console.log(`[TERRAIN_ANALYSIS] Plains: ${terrainCounts.get(TerrainType.PLAIN) || 0} (${plainPercentage.toFixed(1)}%)`);
+    console.log(`[TERRAIN_ANALYSIS] Forest: ${terrainCounts.get(TerrainType.FOREST) || 0} (${forestPercentage.toFixed(1)}%)`);
+    console.log(`[TERRAIN_ANALYSIS] Mountains: ${terrainCounts.get(TerrainType.MOUNTAIN) || 0} (${mountainPercentage.toFixed(1)}%)`);
+    console.log(`[TERRAIN_ANALYSIS] Water: ${terrainCounts.get(TerrainType.WATER) || 0} (${waterPercentage.toFixed(1)}%)`);
 
-    // Detect problematic terrain distributions
-    if (mountainPercentage > 80) {
-      console.error(`[TERRAIN_WARNING] Map has ${mountainPercentage.toFixed(1)}% mountains - very few spawnable positions!`);
-    }
+    // Log all terrain types found
+    console.log(`[TERRAIN_ANALYSIS] All terrain types found:`, Array.from(terrainCounts.entries()).map(([type, count]) => `${type}: ${count}`).join(', '));
 
     if (plainPercentage < 10 && forestPercentage < 10) {
       console.error(`[TERRAIN_WARNING] Map has very few spawnable terrains (${(plainPercentage + forestPercentage).toFixed(1)}% plains+forest)`);
     }
 
-    // Check for terrain generation issues
-    const definedTerrain = terrainCounts[TerrainType.PLAIN] + terrainCounts[TerrainType.FOREST] + terrainCounts[TerrainType.MOUNTAIN];
+    if (mountainPercentage > 80) {
+      console.error(`[TERRAIN_WARNING] Map has ${mountainPercentage.toFixed(1)}% mountains - very few spawnable positions!`);
+    }
+
+    // Check for terrain generation issues - sum all terrain types
+    const definedTerrain = Array.from(terrainCounts.values()).reduce((sum, count) => sum + count, 0);
     if (definedTerrain < totalCells) {
       console.error(`[TERRAIN_ERROR] Missing terrain data! Only ${definedTerrain}/${totalCells} cells have terrain defined`);
     }

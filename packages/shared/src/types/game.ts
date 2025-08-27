@@ -14,9 +14,39 @@ export interface Stats {
 }
 
 export enum TerrainType {
-  PLAIN = 'plain',
+  WATER = 'water',
+  OCEAN = 'ocean',
+  RIVER = 'river',
+  MOUNTAIN_PEAK = 'mountain_peak',
+  MOUNTAIN = 'mountain',
+  HILLS = 'hills',
+  SNOW = 'snow',
+  ICE = 'ice',
+  SNOWY_HILLS = 'snowy_hills',
+  DUNES = 'dunes',
+  OASIS = 'oasis',
+  SAND = 'sand',
+  DENSE_JUNGLE = 'dense_jungle',
+  JUNGLE = 'jungle',
+  DEEP_WATER = 'deep_water',
+  MARSH = 'marsh',
+  SWAMP = 'swamp',
+  DENSE_FOREST = 'dense_forest',
   FOREST = 'forest',
-  MOUNTAIN = 'mountain'
+  CLEARING = 'clearing',
+  ROLLING_HILLS = 'rolling_hills',
+  FLOWER_FIELD = 'flower_field',
+  GRASSLAND = 'grassland',
+  ROUGH_TERRAIN = 'rough_terrain',
+  ANCIENT_RUINS = 'ancient_ruins',
+  PLAIN = 'plain',
+}
+
+export enum Buff {
+  HealthRegen = 'HealthRegen',
+  ManaRegen = 'ManaRegen',
+  DamageBoost = 'DamageBoost',
+  SpeedBoost = 'SpeedBoost',
 }
 
 export enum PlayerClass {
@@ -55,6 +85,11 @@ export interface Player {
   avatar: string; // emoji
   position: Position;
   class: PlayerClass;
+  health: number; // Added to player
+  mana: number; // Added to player
+  stamina: number; // Added to player
+  hunger: number; // Added to player
+  thirst: number; // Added to player
   stats: Stats;
   level: number;
   experience: number;
@@ -71,6 +106,7 @@ export interface Player {
   spawnTime: number;
   connected: boolean; // Track if player is currently connected
   lastActive: number; // Timestamp of last activity for cleanup
+  buffs?: Buff[]; // Added to player
 }
 
 export interface Item {
@@ -179,4 +215,19 @@ export interface ClientToServerEvents {
   move_player: (direction: 'up' | 'down' | 'left' | 'right') => void;
   use_item: (itemId: string) => void;
   chat_command: (command: string) => void;
+}
+
+export interface AnimationSettings {
+  animationSpeed: number;
+  showGrid: boolean;
+  roughness: number;
+  bowing: number;
+  fillWeight: number;
+  hachureAngle: number;
+  hachureGap: number;
+  windSpeed: number;
+  grassWaveSpeed: number;
+  treeSwaySpeed: number;
+  flowerSpawnRate: number;
+  showParticles: boolean;
 }

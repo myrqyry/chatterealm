@@ -22,6 +22,7 @@ export class WebSocketClient {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000; // Start with 1 second
   private reconnectTimer: NodeJS.Timeout | null = null;
+  private hasJoinedGame = false; // Add flag to prevent duplicate joins
 
   constructor() {
     this.connect();
@@ -51,20 +52,34 @@ export class WebSocketClient {
 
     // Connection events
     this.socket.on('connect', () => {
-      console.log('Connected to game server');
+      console.log('[CLIENT_CONNECTED] Connected to game server');
+      console.log('[CLIENT_CONNECTED] Socket ID:', this.socket?.id);
+      console.log('[CLIENT_CONNECTED] Connection status:', this.isConnected);
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.reconnectDelay = 1000;
+
+      // Automatically join the game once connected (if not already joined)
+      if (!this.hasJoinedGame) {
+        console.log('[CLIENT_AUTO_JOIN] Automatically joining game after connection');
+        const playerData = {
+          id: 'player_' + Date.now(),
+          displayName: 'TestPlayer',
+          class: 'knight' as any,
+          avatar: '🤠'
+        };
+        this.joinGameInternal(playerData);
+      }
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('Disconnected from game server:', reason);
+      console.log('[CLIENT_DISCONNECTED] Disconnected from game server:', reason);
       this.isConnected = false;
       this.handleDisconnect(reason);
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
+      console.error('[CLIENT_CONNECT_ERROR] Connection error:', error);
       this.handleConnectionError();
     });
 
@@ -74,15 +89,7 @@ export class WebSocketClient {
       useGameStore.getState().setCurrentPlayer(data.player);
       useGameStore.getState().setGameWorld(data.gameWorld);
       useGameStore.getState().setGameMessage(`Welcome to the game, ${data.player.displayName}!`);
-
-      // Send join confirmation to server after processing the join event
-      // This prevents race conditions where commands are sent before the client is fully synchronized
-      setTimeout(() => {
-        if (this.socket && this.isConnected) {
-          console.log('[CLIENT_JOIN_CONFIRMED] Sending join confirmation to server');
-          this.socket.emit('join_confirmed');
-        }
-      }, 100); // Small delay to ensure state is fully updated
+      this.hasJoinedGame = true;
     });
 
     this.socket.on('game_state_update', (gameWorld: GameWorld) => {
@@ -170,9 +177,16 @@ export class WebSocketClient {
       return;
     }
 
+    this.joinGameInternal(playerData);
+  }
+
+  private joinGameInternal(playerData: Partial<Player>): void {
+    if (!this.socket) return;
+
     console.log('[CLIENT_JOIN] Joining game with player data:', playerData);
     console.log('[CLIENT_JOIN] Socket ID:', this.socket.id);
     this.socket.emit('join_game', playerData);
+    this.hasJoinedGame = true;
   }
 
   public sendPlayerCommand(command: Omit<PlayerCommand, 'playerId'>): void {
