@@ -6,6 +6,7 @@ import {
   AnimationSettings, // Now imported from shared
   TerrainType // Now imported from shared
 } from 'shared/src/types/game';
+import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
 import { useGameStore } from '../stores/gameStore';
 import { setupCanvas } from './renderers/canvas/CanvasUtils';
 import { updateParticles, Particle, addParticles } from './renderers/effects/ParticleSystem';
@@ -13,7 +14,23 @@ import { renderGame } from './renderers/canvas/RenderCoordinator';
 
 const GameCanvas: React.FC = () => {
   const gameWorld = useGameStore(state => state.gameWorld);
-  const animationSettings = useGameStore(state => state.animationSettings);
+  const unifiedSettings = useGameStore(state => state.unifiedSettings);
+
+
+
+  // Use unified settings with fallbacks and explicit typing
+  const animationSettings: AnimationSettings = {
+    animationSpeed: unifiedSettings?.animations?.animationSpeed ?? 1.0,
+    showParticles: unifiedSettings?.visual?.showParticles ?? false,
+    showGrid: unifiedSettings?.visual?.showGrid ?? true,
+    roughness: unifiedSettings?.animations?.roughness ?? 1.5,
+    bowing: unifiedSettings?.animations?.bowing ?? 1.2,
+    fillWeight: unifiedSettings?.animations?.fillWeight ?? 1.5,
+    hachureAngle: unifiedSettings?.animations?.hachureAngle ?? 45,
+    hachureGap: unifiedSettings?.animations?.hachureGap ?? 4,
+    breathingRate: unifiedSettings?.animations?.breathingRate ?? 0.05,
+    particleCount: unifiedSettings?.animations?.particleCount ?? 5,
+  };
 
   const grid = gameWorld?.grid || [];
   const players = gameWorld?.players || [];
@@ -23,12 +40,12 @@ const GameCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const [particles, setParticles] = useState<Particle[]>([]);
-  const [time, setTime] = useState(0);
+  const timeRef = useRef(0);
 
   useEffect(() => {
     const animate = () => {
       const speedMultiplier = animationSettings?.animationSpeed || 1.0;
-      setTime(prev => prev + speedMultiplier);
+      timeRef.current = timeRef.current + speedMultiplier;
 
       if (animationSettings?.showParticles !== false) {
         setParticles(prev => updateParticles(prev));
@@ -50,6 +67,9 @@ const GameCanvas: React.FC = () => {
     setParticles(prev => [...prev, ...addParticles(x, y, color, count)]);
   }, []);
 
+  // Use shared game configuration constant for consistent tile size
+  const gridSize = GAME_CONFIG.tileSize; // Central source of truth for tile size
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -58,11 +78,11 @@ const GameCanvas: React.FC = () => {
     if (!ctx) return;
 
     const rc = rough.canvas(canvas);
-    const gridSize = 20;
     const numTilesX = grid[0]?.length || 20;
     const numTilesY = grid.length || 15;
 
     setupCanvas(canvas, ctx, numTilesX, numTilesY, gridSize);
+    ctx.imageSmoothingEnabled = false; // Keep pixel art crisp
 
     renderGame(
       rc,
@@ -72,12 +92,13 @@ const GameCanvas: React.FC = () => {
       npcs,
       items,
       showGrid,
-      time,
+      timeRef.current,
       animationSettings as AnimationSettings,
       particles,
-      addParticlesToState
+      addParticlesToState,
+      gridSize // Pass the gridSize as tileSize parameter
     );
-  }, [grid, players, npcs, items, showGrid, time, particles, animationSettings, addParticlesToState]);
+  }, [grid, players, npcs, items, showGrid, particles, animationSettings, addParticlesToState, gridSize]);
 
   return <canvas ref={canvasRef} style={{ border: '1px solid #ccc' }} />;
 };

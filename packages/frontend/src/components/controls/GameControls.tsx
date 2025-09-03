@@ -6,6 +6,7 @@ interface GameControlsProps {
   gameMessage: string | null;
   handleStartCataclysm: () => void;
   handlePickUpItem: () => void;
+  handleRegenerateWorld: () => void;
 }
 
 const GameControls: React.FC<GameControlsProps> = ({
@@ -14,6 +15,7 @@ const GameControls: React.FC<GameControlsProps> = ({
   gameMessage,
   handleStartCataclysm,
   handlePickUpItem,
+  handleRegenerateWorld,
 }) => {
   return (
     <div className="actions-tab">
@@ -42,11 +44,14 @@ const GameControls: React.FC<GameControlsProps> = ({
         <button className="action-btn" onClick={handleJoinGame}>
           🔌 Join Game
         </button>
+        <button className="action-btn world-regenerate" onClick={handleRegenerateWorld}>
+          🌍 Regenerate World
+        </button>
         <button className="action-btn" onClick={handleStartCataclysm}>
-          Start Cataclysm
+          ⚡ Start Cataclysm
         </button>
         <button className="action-btn" onClick={handlePickUpItem}>
-          Pick Up Item
+          🎒 Pick Up Item
         </button>
       </div>
     </div>

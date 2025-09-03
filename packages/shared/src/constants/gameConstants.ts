@@ -4,6 +4,7 @@ import { PlayerClass, TerrainType, GameSettings } from '../types/game';
 export const GAME_CONFIG: GameSettings = {
   gridWidth: 20,
   gridHeight: 15,
+  tileSize: 32, // Standard tile size in pixels for UI rendering (increased from 20px for larger canvas)
   maxPlayers: 50,
   cataclysmDuration: 300000, // 5 minutes in milliseconds
   spawnCost: 100, // channel points to spawn

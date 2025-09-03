@@ -6,6 +6,8 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
   const fillWeight = settings?.fillWeight || 1.5;
   const hachureAngle = settings?.hachureAngle || 45;
   const hachureGap = settings?.hachureGap || 4;
+  const fillStyle = settings?.fillStyle || 'hachure'; // New: Default fill style
+  const seed = settings?.seed || 1; // New: Default seed for rough.js randomness
   const windSpeed = settings?.windSpeed || 0.02;
   const grassWaveSpeed = settings?.grassWaveSpeed || 0.1;
   const treeSwaySpeed = settings?.treeSwaySpeed || 0.03;
@@ -17,16 +19,18 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Snow-covered terrain
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#f8fafc',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#e2e8f0',
         strokeWidth: 1,
-        roughness: roughness * 0.5
+        roughness: roughness * 0.5,
+        seed: seed // Apply seed
       });
       // Snow sparkle effects
       if (Math.random() < 0.3) {
         rc.circle(startX + 5 + Math.random() * 10, startY + 5 + Math.random() * 10, 1, {
           fill: '#e0f2fe',
-          fillStyle: 'solid'
+          fillStyle: fillStyle, // Use dynamic fillStyle
+          seed: seed // Apply seed
         });
       }
       break;
@@ -43,8 +47,9 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Snow-covered hill
       rc.ellipse(startX + 8, startY + 12, 12, 6, {
         fill: '#f1f5f9',
-        fillStyle: 'solid',
-        roughness: roughness * 0.7
+        fillStyle: fillStyle, // Use dynamic fillStyle
+        roughness: roughness * 0.7,
+        seed: seed // Apply seed
       });
       break;
 
@@ -52,18 +57,20 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Desert dunes
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#f4a460',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#d2691e',
         strokeWidth: 1,
-        roughness: roughness * 1.3
+        roughness: roughness * 1.3,
+        seed: seed // Apply seed
       });
       // Dune ripples
       for (let d = 0; d < 2; d++) {
         const duneOffset = Math.sin(time * 0.03 + startX + d) * 1.5;
         rc.ellipse(startX + 8, startY + 8 + d * 6 + duneOffset, 15, 4, {
           fill: '#deb887',
-          fillStyle: 'solid',
-          roughness: roughness * 0.8
+          fillStyle: fillStyle, // Use dynamic fillStyle
+          roughness: roughness * 0.8,
+          seed: seed // Apply seed
         });
       }
       break;
@@ -72,16 +79,18 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Desert oasis with water
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#f4a460',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#d2691e',
         strokeWidth: 1,
-        roughness: roughness * 1.2
+        roughness: roughness * 1.3,
+        seed: seed // Apply seed
       });
       // Oasis water
       rc.ellipse(startX + 8, startY + 12, 8, 4, {
         fill: '#22d3ee',
-        fillStyle: 'solid',
-        roughness: roughness * 0.5
+        fillStyle: fillStyle, // Use dynamic fillStyle
+        roughness: roughness * 0.5,
+        seed: seed // Apply seed
       });
       // Palm trees
       for (let p = 0; p < 2; p++) {
@@ -98,10 +107,11 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Regular desert sand
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#f4a460',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#d2691e',
         strokeWidth: 1,
-        roughness: roughness * 1.1
+        roughness: roughness * 1.2,
+        seed: seed // Apply seed
       });
       break;
 
@@ -109,10 +119,11 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Very thick jungle
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#166534',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#14532d',
         strokeWidth: 1,
-        roughness: roughness * 2.0
+        roughness: roughness * 2.0,
+        seed: seed // Apply seed
       });
       // Dense vegetation
       for (let v = 0; v < 8; v++) {
@@ -121,8 +132,9 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
         const vegOffset = Math.sin(time * treeSwaySpeed + startX + v) * 2;
         rc.circle(vegX + vegOffset, vegY, 2.5, {
           fill: '#15803d',
-          fillStyle: 'solid',
-          roughness: roughness * 1.5
+          fillStyle: fillStyle, // Use dynamic fillStyle
+          roughness: roughness * 1.5,
+          seed: seed // Apply seed
         });
       }
       break;
@@ -131,10 +143,11 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Regular jungle
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#16a34a',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#15803d',
         strokeWidth: 1,
-        roughness: roughness * 1.8
+        roughness: roughness * 1.8,
+        seed: seed // Apply seed
       });
       // Jungle vegetation
       for (let v = 0; v < 5; v++) {
@@ -143,8 +156,9 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
         const vegOffset = Math.sin(time * treeSwaySpeed + startX + v) * 1.5;
         rc.circle(vegX + vegOffset, vegY, 2, {
           fill: '#22c55e',
-          fillStyle: 'solid',
-          roughness: roughness * 1.2
+          fillStyle: fillStyle, // Use dynamic fillStyle
+          roughness: roughness * 1.2,
+          seed: seed // Apply seed
         });
       }
       break;
@@ -153,17 +167,19 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Deep swamp water
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#1e293b',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#334155',
         strokeWidth: 1,
-        roughness: roughness * 0.8
+        roughness: roughness * 0.8,
+        seed: seed // Apply seed
       });
       // Bubbles
       if (Math.random() < 0.4) {
         rc.circle(startX + 5 + Math.random() * 10, startY + 8 + Math.random() * 8, 1.5, {
           fill: '#64748b',
-          fillStyle: 'solid',
-          roughness: roughness * 0.3
+          fillStyle: fillStyle, // Use dynamic fillStyle
+          roughness: roughness * 0.3,
+          seed: seed // Apply seed
         });
       }
       break;
@@ -172,17 +188,19 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Swampy marsh
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#365314',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#4d7c0f',
         strokeWidth: 1,
-        roughness: roughness * 1.4
+        roughness: roughness * 1.4,
+        seed: seed // Apply seed
       });
       // Marsh vegetation
       for (let m = 0; m < 3; m++) {
         rc.circle(startX + 4 + m * 4, startY + 6 + (m % 2) * 4, 1.5, {
           fill: '#65a30d',
-          fillStyle: 'solid',
-          roughness: roughness * 1.0
+          fillStyle: fillStyle, // Use dynamic fillStyle
+          roughness: roughness * 1.0,
+          seed: seed // Apply seed
         });
       }
       break;

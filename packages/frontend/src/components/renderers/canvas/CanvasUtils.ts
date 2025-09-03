@@ -2,7 +2,8 @@ export const setupCanvas = (canvas: HTMLCanvasElement, ctx: CanvasRenderingConte
   canvas.width = gridSize * numTilesX;
   canvas.height = gridSize * numTilesY;
 
-  // Clear canvas with animated background
+  // Clear canvas with animated background (handles larger canvas efficiently)
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   const bgGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
   bgGradient.addColorStop(0, '#191724');
   bgGradient.addColorStop(1, '#1f1d2e');

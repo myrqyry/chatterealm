@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 // Import types from shared package
-import { GameWorld, Player } from '../../../shared/src/types/game';
+import { GameWorld, Player, UnifiedSettings, MovementStyle, Theme, NotificationType } from '../../../shared/src/types/game';
 
 // Import WebSocket client
 import { webSocketClient } from '../services/webSocketClient';
@@ -18,36 +18,12 @@ interface GameState {
   gameMessage: string;
   showDevPanel: boolean;
 
-  // Animation and visual settings
-  animationSettings: {
-    // Rough.js settings
-    roughness: number;
-    bowing: number;
-    fillWeight: number;
-    hachureAngle: number;
-    hachureGap: number;
+  // Unified settings state
+  unifiedSettings: UnifiedSettings;
 
-    // Animation settings
-    animationSpeed: number;
-    breathingRate: number;
-    particleCount: number;
-    windSpeed: number;
-
-    // Visual settings
-    showGrid: boolean;
-    showParticles: boolean;
-    showHealthBars: boolean;
-    backgroundColor: string;
-
-    // Terrain settings
-    grassWaveSpeed: number;
-    treeSwaySpeed: number;
-    flowerSpawnRate: number;
-
-    // Game settings
-    worldWidth: number;
-    worldHeight: number;
-  };
+  // Legacy properties for backward compatibility
+  settings: any; // Keep for migration
+  animationSettings: any; // Keep for migration
 
   // Actions
   setGameWorld: (world: GameWorld) => void;
@@ -56,7 +32,26 @@ interface GameState {
   setSelectedTab: (tab: string) => void;
   setGameMessage: (message: string) => void;
   setShowDevPanel: (show: boolean) => void;
-  updateAnimationSettings: (settings: Partial<GameState['animationSettings']>) => void;
+  updateGameSettings: (settings: any) => void;
+  updateAudioSettings: (settings: any) => void;
+  updateNotificationSettings: (settings: any) => void;
+  updateVisualSettings: (settings: any) => void;
+  updateWorldSettings: (settings: any) => void;
+  updateAnimationSettings: (settings: any) => void;
+  updateUnifiedSettings: (settings: Partial<UnifiedSettings>) => void;
+
+  // Legacy methods for backward compatibility
+  updateSettings: (settings: any) => void;
+  resetSettings: () => void;
+  resetGameSettings: () => void;
+  resetAudioSettings: () => void;
+  resetNotificationSettings: () => void;
+  resetVisualSettings: () => void;
+  resetWorldSettings: () => void;
+  resetAnimationSettings: () => void;
+  resetAllSettings: () => void;
+  exportSettings: () => string;
+  importSettings: (settingsJson: string) => boolean;
 
   // Game actions
   joinGame: (playerData: Partial<Player>) => void;
@@ -69,11 +64,98 @@ interface GameState {
   clearMessage: () => void;
 }
 
+// Default unified settings with all the default values
+const createDefaultUnifiedSettings = (): UnifiedSettings => ({
+  game: {
+    // General Game Settings
+    autoSaveEnabled: true,
+    tutorialEnabled: true,
+    minimapEnabled: true,
+    showNPCNames: true,
+    showItemNames: true,
+    movementStyle: MovementStyle.GRID,
+
+    // Combat Settings
+    showDamageNumbers: true,
+    autoCombatEnabled: false,
+  },
+
+  audio: {
+    // Volume Controls
+    audioMasterVolume: 80,
+    sfxVolume: 70,
+    musicVolume: 60,
+
+    // Toggle Controls
+    soundEnabled: true,
+    musicEnabled: true,
+  },
+
+  notifications: {
+    // General Notifications
+    desktopNotifications: true,
+    soundNotifications: true,
+    battleNotifications: true,
+    systemNotifications: true,
+
+    // Event-specific Notification Types
+    playerJoinNotifications: [NotificationType.DESKTOP, NotificationType.SOUND, NotificationType.INGAME],
+    itemDropNotifications: [NotificationType.SOUND, NotificationType.INGAME],
+    levelUpNotifications: [NotificationType.DESKTOP, NotificationType.SOUND, NotificationType.INGAME],
+    cataclysmNotifications: [NotificationType.DESKTOP, NotificationType.INGAME],
+  },
+
+  visual: {
+    // Theme & Appearance
+    theme: Theme.DARK,
+    language: 'en',
+    fontSize: 100,
+
+    // Accessibility
+    highContrast: false,
+    reduceMotion: false,
+
+    // Visual Display
+    showGrid: true,
+    showParticles: true,
+    showHealthBars: true,
+    backgroundColor: '#191724',
+  },
+
+  world: {
+    // World Dimensions
+    worldWidth: 40,
+    worldHeight: 30,
+
+    // Terrain Animation
+    grassWaveSpeed: 0.1,
+    treeSwaySpeed: 0.03,
+    flowerSpawnRate: 0.01,
+    windSpeed: 0.02,
+  },
+
+  animations: {
+    // Animation Controls
+    animationSpeed: 1.0,
+    breathingRate: 0.05,
+    particleCount: 5,
+
+    // Rough.js Settings
+    roughness: 1.5,
+    bowing: 1.2,
+    fillWeight: 1.5,
+    hachureAngle: 45,
+    hachureGap: 4,
+    fillStyle: 'hachure', // Default fill style
+    seed: 1, // Default seed for rough.js randomness
+  },
+});
+
 export const useGameStore = create<GameState>()(
   devtools(
     persist(
-      (set) => ({
-        // Initial state
+      (set, get) => ({
+        // Core game state
         gameWorld: null,
         currentPlayer: null,
         selectedPlayerId: null,
@@ -81,37 +163,65 @@ export const useGameStore = create<GameState>()(
         gameMessage: '',
         showDevPanel: false,
 
-        animationSettings: {
-          // Rough.js settings
-          roughness: 1.5,
-          bowing: 1.2,
-          fillWeight: 1.5,
-          hachureAngle: 45,
-          hachureGap: 4,
+        // Unified settings state with defaults
+        unifiedSettings: createDefaultUnifiedSettings(),
 
-          // Animation settings
-          animationSpeed: 1.0,
-          breathingRate: 0.05,
-          particleCount: 5,
-          windSpeed: 0.02,
+        // Legacy properties for backward compatibility
+        settings: createDefaultUnifiedSettings(),
+        animationSettings: createDefaultUnifiedSettings().animations,
 
-          // Visual settings
-          showGrid: true,
-          showParticles: true,
-          showHealthBars: true,
-          backgroundColor: '#191724',
-
-          // Terrain settings
-          grassWaveSpeed: 0.1,
-          treeSwaySpeed: 0.03,
-          flowerSpawnRate: 0.01,
-
-          // Game settings
-          worldWidth: 40,
-          worldHeight: 30
+        // Game actions
+        joinGame: (playerData) => {
+          webSocketClient.joinGame(playerData);
         },
 
-        // Actions
+        regenerateWorld: () => {
+          set({
+            gameMessage: '🌍 New world generated! Explore the fresh terrain!'
+          });
+          setTimeout(() => set({ gameMessage: '' }), 5000);
+        },
+
+        movePlayer: (direction) => {
+          webSocketClient.movePlayer(direction);
+        },
+
+        attackPlayer: (targetId) => {
+          webSocketClient.attackPlayer(targetId);
+        },
+
+        pickupItem: (itemId) => {
+          webSocketClient.pickupItem(itemId);
+        },
+
+        useItem: (itemId) => {
+          webSocketClient.useItem(itemId);
+        },
+
+        startCataclysm: () => {
+          webSocketClient.startCataclysm();
+        },
+
+        clearMessage: () => set({ gameMessage: '' }),
+
+        // Legacy methods for backward compatibility
+        updateSettings: (settings) => set((state) => ({
+          settings: { ...state.settings, ...settings },
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            game: { ...state.unifiedSettings.game, ...settings?.game },
+            audio: { ...state.unifiedSettings.audio, ...settings?.audio },
+            notifications: { ...state.unifiedSettings.notifications, ...settings?.notifications },
+            visual: { ...state.unifiedSettings.visual, ...settings?.visual },
+          }
+        })),
+
+        resetSettings: () => set({
+          settings: createDefaultUnifiedSettings(),
+          unifiedSettings: createDefaultUnifiedSettings()
+        }),
+
+        // State setters
         setGameWorld: (world) => set({ gameWorld: world }),
         setCurrentPlayer: (player) => set({ currentPlayer: player }),
         setSelectedPlayerId: (playerId) => set({ selectedPlayerId: playerId }),
@@ -119,67 +229,213 @@ export const useGameStore = create<GameState>()(
         setGameMessage: (message) => set({ gameMessage: message }),
         setShowDevPanel: (show) => set({ showDevPanel: show }),
 
-        updateAnimationSettings: (settings) => set((state) => ({
-          animationSettings: { ...state.animationSettings, ...settings }
+        // Settings updates
+        updateGameSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            game: { ...state.unifiedSettings.game, ...settings }
+          }
         })),
 
-        // Game actions
-        joinGame: (playerData) => {
-          // Send join game command to server via WebSocket
-          webSocketClient.joinGame(playerData);
+        updateAudioSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            audio: { ...state.unifiedSettings.audio, ...settings }
+          }
+        })),
+
+        updateNotificationSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            notifications: { ...state.unifiedSettings.notifications, ...settings }
+          }
+        })),
+
+        updateVisualSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            visual: { ...state.unifiedSettings.visual, ...settings }
+          }
+        })),
+
+        updateWorldSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            world: { ...state.unifiedSettings.world, ...settings }
+          }
+        })),
+
+        updateAnimationSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            animations: { ...state.unifiedSettings.animations, ...settings }
+          }
+        })),
+
+        updateUnifiedSettings: (settings) => set((state) => ({
+          unifiedSettings: { ...state.unifiedSettings, ...settings }
+        })),
+
+        // Settings resets
+        resetGameSettings: () => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            game: createDefaultUnifiedSettings().game
+          }
+        })),
+
+        resetAudioSettings: () => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            audio: createDefaultUnifiedSettings().audio
+          }
+        })),
+
+        resetNotificationSettings: () => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            notifications: createDefaultUnifiedSettings().notifications
+          }
+        })),
+
+        resetVisualSettings: () => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            visual: createDefaultUnifiedSettings().visual
+          }
+        })),
+
+        resetWorldSettings: () => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            world: createDefaultUnifiedSettings().world
+          }
+        })),
+
+        resetAnimationSettings: () => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            animations: createDefaultUnifiedSettings().animations
+          },
+          animationSettings: createDefaultUnifiedSettings().animations
+        })),
+
+        resetAllSettings: () => set({
+          unifiedSettings: createDefaultUnifiedSettings()
+        }),
+
+        exportSettings: () => {
+          const state = get();
+          return JSON.stringify({
+            settings: state.unifiedSettings,
+            version: '2.0',
+            exportedAt: Date.now()
+          }, null, 2);
         },
 
-        regenerateWorld: () => {
-          // This will be implemented to generate a new world
-          // For now, we'll trigger a message
-          set({
-            gameMessage: '🌍 New world generated! Explore the fresh terrain!'
-          });
+        importSettings: (settingsJson: string) => {
+          try {
+            const importedData = JSON.parse(settingsJson);
+            if (importedData && typeof importedData === 'object') {
+              // Handle legacy format (version 1.0) for backward compatibility
+              if (!importedData.version || importedData.version === '1.0') {
+                const legacySettings = importedData.settings || importedData;
+                const legacyAnimationSettings = importedData.animationSettings || {};
 
-          // Clear message after 5 seconds
-          setTimeout(() => {
-            set({ gameMessage: '' });
-          }, 5000);
+                // Migrate legacy settings to unified format
+                const migratedSettings: UnifiedSettings = {
+                  game: {
+                    autoSaveEnabled: legacySettings.autoSaveEnabled ?? true,
+                    tutorialEnabled: legacySettings.tutorialEnabled ?? true,
+                    minimapEnabled: legacySettings.minimapEnabled ?? true,
+                    showNPCNames: legacySettings.showNPCNames ?? true,
+                    showItemNames: legacySettings.showItemNames ?? true,
+                    movementStyle: legacySettings.movementStyle ?? MovementStyle.GRID,
+                    showDamageNumbers: legacySettings.showDamageNumbers ?? true,
+                    autoCombatEnabled: legacySettings.autoCombatEnabled ?? false,
+                  },
+                  audio: {
+                    audioMasterVolume: legacySettings.audioMasterVolume ?? 80,
+                    sfxVolume: legacySettings.sfxVolume ?? 70,
+                    musicVolume: legacySettings.musicVolume ?? 60,
+                    soundEnabled: legacySettings.soundEnabled ?? true,
+                    musicEnabled: legacySettings.musicEnabled ?? true,
+                  },
+                  notifications: {
+                    desktopNotifications: legacySettings.desktopNotifications ?? true,
+                    soundNotifications: legacySettings.soundNotifications ?? true,
+                    battleNotifications: legacySettings.battleNotifications ?? true,
+                    systemNotifications: legacySettings.systemNotifications ?? true,
+                    playerJoinNotifications: legacySettings.playerJoinNotifications ?? [NotificationType.DESKTOP, NotificationType.SOUND, NotificationType.INGAME],
+                    itemDropNotifications: legacySettings.itemDropNotifications ?? [NotificationType.SOUND, NotificationType.INGAME],
+                    levelUpNotifications: legacySettings.levelUpNotifications ?? [NotificationType.DESKTOP, NotificationType.SOUND, NotificationType.INGAME],
+                    cataclysmNotifications: legacySettings.cataclysmNotifications ?? [NotificationType.DESKTOP, NotificationType.INGAME],
+                  },
+                  visual: {
+                    theme: (legacySettings.theme ?? 'dark') as Theme,
+                    language: legacySettings.language ?? 'en',
+                    fontSize: legacySettings.fontSize ?? 100,
+                    highContrast: legacySettings.highContrast ?? false,
+                    reduceMotion: legacySettings.reduceMotion ?? false,
+                    showGrid: legacyAnimationSettings.showGrid ?? true,
+                    showParticles: legacyAnimationSettings.showParticles ?? true,
+                    showHealthBars: legacyAnimationSettings.showHealthBars ?? true,
+                    backgroundColor: legacyAnimationSettings.backgroundColor ?? '#191724',
+                  },
+                  world: {
+                    worldWidth: legacyAnimationSettings.worldWidth ?? 40,
+                    worldHeight: legacyAnimationSettings.worldHeight ?? 30,
+                    grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? 0.1,
+                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.03,
+                    flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? 0.01,
+                    windSpeed: legacyAnimationSettings.windSpeed ?? 0.02,
+                  },
+  animations: {
+    animationSpeed: 1.0,
+    breathingRate: 0.05,
+    particleCount: 5,
+    roughness: 1.5,
+    bowing: 1.2,
+    fillWeight: 1.5,
+    hachureAngle: 45,
+    hachureGap: 4,
+    showParticles: true,
+    showGrid: true,
+  },
+                };
+                set({ unifiedSettings: migratedSettings });
+              } else {
+                // Handle new unified format
+                if (importedData.settings && typeof importedData.settings === 'object') {
+                  set({ unifiedSettings: { ...get().unifiedSettings, ...importedData.settings } });
+                }
+              }
+              return true;
+            }
+          } catch (error) {
+            console.error('Failed to import settings:', error);
+          }
+          return false;
         },
-
-        movePlayer: (direction) => {
-          // Send move command to server via WebSocket
-          webSocketClient.movePlayer(direction);
-        },
-
-        attackPlayer: (targetId) => {
-          // Send attack command to server via WebSocket
-          webSocketClient.attackPlayer(targetId);
-        },
-
-        pickupItem: (itemId) => {
-          // Send pickup command to server via WebSocket
-          webSocketClient.pickupItem(itemId);
-        },
-
-        useItem: (itemId) => {
-          // Send use item command to server via WebSocket
-          webSocketClient.useItem(itemId);
-        },
-
-        startCataclysm: () => {
-          // Send start cataclysm command to server via WebSocket
-          webSocketClient.startCataclysm();
-        },
-
-        clearMessage: () => set({ gameMessage: '' })
       }),
       {
-        name: 'game-store',
+        name: 'game-store-v2',
         partialize: (state) => ({
-          animationSettings: state.animationSettings,
+          unifiedSettings: state.unifiedSettings,
           selectedTab: state.selectedTab,
           showDevPanel: state.showDevPanel
-        })
+        }),
+        // Migration logic for upgrading from old format
+        onRehydrateStorage: () => (state) => {
+          if (state && !state.unifiedSettings) {
+            // If no unifiedSettings, create from defaults (old storage will be migrated via import logic)
+            state.unifiedSettings = createDefaultUnifiedSettings();
+          }
+        }
       }
     ),
     {
-      name: 'game-store'
+      name: 'game-store-v2'
     }
   )
 );

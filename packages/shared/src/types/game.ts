@@ -70,6 +70,24 @@ export enum ItemRarity {
   LEGENDARY = 'legendary'
 }
 
+export enum MovementStyle {
+  GRID = 'grid',
+  FREE = 'free',
+  HYBRID = 'hybrid'
+}
+
+export enum Theme {
+  DARK = 'dark',
+  LIGHT = 'light',
+  AUTO = 'auto'
+}
+
+export enum NotificationType {
+  DESKTOP = 'desktop',
+  SOUND = 'sound',
+  INGAME = 'ingame'
+}
+
 export interface Terrain {
   type: TerrainType;
   position: Position;
@@ -80,6 +98,7 @@ export interface Terrain {
 
 export interface Player {
   id: string;
+  name?: string; // Made optional for backward compatibility
   twitchUsername: string;
   displayName: string;
   avatar: string; // emoji
@@ -172,6 +191,7 @@ export interface ChatCommand {
 export interface GameSettings {
   gridWidth: number;
   gridHeight: number;
+  tileSize: number; // Standard tile size in pixels for UI rendering
   maxPlayers: number;
   cataclysmDuration: number;
   spawnCost: number; // channel points
@@ -217,7 +237,113 @@ export interface ClientToServerEvents {
   chat_command: (command: string) => void;
 }
 
+// Unified Settings Types
+export interface PlayerGameSettings {
+  // General Game Settings
+  autoSaveEnabled: boolean;
+  tutorialEnabled: boolean;
+  minimapEnabled: boolean;
+  showNPCNames: boolean;
+  showItemNames: boolean;
+  movementStyle: MovementStyle;
+
+  // Combat Settings
+  showDamageNumbers: boolean;
+  autoCombatEnabled: boolean;
+}
+
+export interface AudioSettings {
+  // Volume Controls
+  audioMasterVolume: number;
+  sfxVolume: number;
+  musicVolume: number;
+
+  // Toggle Controls
+  soundEnabled: boolean;
+  musicEnabled: boolean;
+}
+
+export interface NotificationSettings {
+  // General Notifications
+  desktopNotifications: boolean;
+  soundNotifications: boolean;
+  battleNotifications: boolean;
+  systemNotifications: boolean;
+
+  // Event-specific Notification Types
+  playerJoinNotifications: NotificationType[];
+  itemDropNotifications: NotificationType[];
+  levelUpNotifications: NotificationType[];
+  cataclysmNotifications: NotificationType[];
+}
+
+export interface VisualSettings {
+  // Theme & Appearance
+  theme: Theme;
+  language: string;
+  fontSize: number;
+
+  // Accessibility
+  highContrast: boolean;
+  reduceMotion: boolean;
+
+  // Visual Display
+  showGrid: boolean;
+  showParticles: boolean;
+  showHealthBars: boolean;
+  backgroundColor: string;
+}
+
+export interface WorldSettings {
+  // World Dimensions
+  worldWidth: number;
+  worldHeight: number;
+
+  // Terrain Animation
+  grassWaveSpeed: number;
+  treeSwaySpeed: number;
+  flowerSpawnRate: number;
+  windSpeed: number;
+}
+
 export interface AnimationSettings {
+  // Animation Controls
+  animationSpeed: number;
+  breathingRate: number;
+  particleCount: number;
+
+  // Visual Display Settings
+  showParticles: boolean;
+  showGrid: boolean;
+
+  // Terrain Animation
+  grassWaveSpeed: number;
+  treeSwaySpeed: number;
+  flowerSpawnRate: number;
+  windSpeed: number;
+
+  // Rough.js Settings
+  roughness: number;
+  bowing: number;
+  fillWeight: number;
+  hachureAngle: number;
+  hachureGap: number;
+  fillStyle?: string;
+  seed?: number;
+}
+
+// Combined Settings Type
+export interface UnifiedSettings {
+  game: PlayerGameSettings;
+  audio: AudioSettings;
+  notifications: NotificationSettings;
+  visual: VisualSettings;
+  world: WorldSettings;
+  animations: AnimationSettings;
+}
+
+// Legacy AnimationSettings interface (keeping for compatibility)
+export interface AnimationSettingsLegacy {
   animationSpeed: number;
   showGrid: boolean;
   roughness: number;
@@ -225,9 +351,11 @@ export interface AnimationSettings {
   fillWeight: number;
   hachureAngle: number;
   hachureGap: number;
-  windSpeed: number;
-  grassWaveSpeed: number;
-  treeSwaySpeed: number;
-  flowerSpawnRate: number;
-  showParticles: boolean;
+  windSpeed?: number;
+  grassWaveSpeed?: number;
+  treeSwaySpeed?: number;
+  flowerSpawnRate?: number;
+  showParticles?: boolean;
+  breathingRate?: number;
+  particleCount?: number;
 }

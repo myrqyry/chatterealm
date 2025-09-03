@@ -1,4 +1,5 @@
 import { Player, Item, TerrainType, AnimationSettings } from 'shared/src/types/game';
+import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
 import { drawAnimatedTerrainTile } from '../terrain/TerrainRenderer';
 import { drawAnimatedItem } from '../entities/ItemRenderer';
 import { drawAnimatedNPC } from '../entities/NPCRenderer';
@@ -22,9 +23,10 @@ export const renderGame = (
   time: number,
   animationSettings: AnimationSettings,
   currentParticles: Particle[],
-  addParticlesFn: ParticleEmitter
+  addParticlesFn: ParticleEmitter,
+  tileSize: number = GAME_CONFIG.tileSize // Use shared tile size constant as fallback
 ) => {
-  const gridSize = 20;
+  const gridSize = tileSize; // Use the passed tileSize parameter
   const numTilesX = grid[0]?.length || 20;
   const numTilesY = grid.length || 15;
 

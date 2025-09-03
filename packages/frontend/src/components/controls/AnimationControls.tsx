@@ -1,36 +1,22 @@
 import React from 'react';
+import { useGameStore } from '../../stores/gameStore';
 
-interface AnimationControlsProps {
-  animationSpeed: number;
-  showGrid: boolean;
-  roughness: number;
-  bowing: number;
-  fillWeight: number;
-  hachureAngle: number;
-  hachureGap: number;
-  windSpeed: number;
-  grassWaveSpeed: number;
-  treeSwaySpeed: number;
-  flowerSpawnRate: number;
-  showParticles: boolean;
-  updateAnimationSettings: (settings: Partial<AnimationControlsProps>) => void;
-}
+const AnimationControls: React.FC = () => {
+  const { unifiedSettings, updateAnimationSettings, updateVisualSettings, updateWorldSettings } = useGameStore();
 
-const AnimationControls: React.FC<AnimationControlsProps> = ({
-  animationSpeed,
-  showGrid,
-  roughness,
-  bowing,
-  fillWeight,
-  hachureAngle,
-  hachureGap,
-  windSpeed,
-  grassWaveSpeed,
-  treeSwaySpeed,
-  flowerSpawnRate,
-  showParticles,
-  updateAnimationSettings,
-}) => {
+  // Use unified settings with fallbacks
+  const animationSpeed = unifiedSettings?.animations?.animationSpeed ?? 1.0;
+  const showGrid = unifiedSettings?.visual?.showGrid ?? false;
+  const roughness = unifiedSettings?.animations?.roughness ?? 1.5;
+  const bowing = unifiedSettings?.animations?.bowing ?? 1.2;
+  const fillWeight = unifiedSettings?.animations?.fillWeight ?? 1.5;
+  const hachureAngle = unifiedSettings?.animations?.hachureAngle ?? 45;
+  const hachureGap = unifiedSettings?.animations?.hachureGap ?? 4;
+  const windSpeed = unifiedSettings?.world?.windSpeed ?? 0.02;
+  const grassWaveSpeed = unifiedSettings?.world?.grassWaveSpeed ?? 0.1;
+  const treeSwaySpeed = unifiedSettings?.world?.treeSwaySpeed ?? 0.03;
+  const flowerSpawnRate = unifiedSettings?.world?.flowerSpawnRate ?? 0.01;
+  const showParticles = unifiedSettings?.visual?.showParticles ?? false;
   return (
     <div className="animation-controls-tab">
       <h4>Animation & Visual Settings</h4>
@@ -51,7 +37,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({
           <input
             type="checkbox"
             checked={showGrid}
-            onChange={(e) => updateAnimationSettings({ showGrid: e.target.checked })}
+            onChange={(e) => updateVisualSettings({ showGrid: e.target.checked })}
           />
           Show Grid
         </label>
@@ -125,7 +111,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({
           max="5"
           step="0.1"
           value={windSpeed}
-          onChange={(e) => updateAnimationSettings({ windSpeed: parseFloat(e.target.value) })}
+          onChange={(e) => updateWorldSettings({ windSpeed: parseFloat(e.target.value) })}
         />
       </div>
       <div className="control-group">
@@ -136,7 +122,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({
           max="5"
           step="0.1"
           value={grassWaveSpeed}
-          onChange={(e) => updateAnimationSettings({ grassWaveSpeed: parseFloat(e.target.value) })}
+          onChange={(e) => updateWorldSettings({ grassWaveSpeed: parseFloat(e.target.value) })}
         />
       </div>
       <div className="control-group">
@@ -147,7 +133,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({
           max="5"
           step="0.1"
           value={treeSwaySpeed}
-          onChange={(e) => updateAnimationSettings({ treeSwaySpeed: parseFloat(e.target.value) })}
+          onChange={(e) => updateWorldSettings({ treeSwaySpeed: parseFloat(e.target.value) })}
         />
       </div>
       <div className="control-group">
@@ -158,7 +144,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({
           max="1"
           step="0.01"
           value={flowerSpawnRate}
-          onChange={(e) => updateAnimationSettings({ flowerSpawnRate: parseFloat(e.target.value) })}
+          onChange={(e) => updateWorldSettings({ flowerSpawnRate: parseFloat(e.target.value) })}
         />
       </div>
       <div className="control-group checkbox">
@@ -166,7 +152,7 @@ const AnimationControls: React.FC<AnimationControlsProps> = ({
           <input
             type="checkbox"
             checked={showParticles}
-            onChange={(e) => updateAnimationSettings({ showParticles: e.target.checked })}
+            onChange={(e) => updateVisualSettings({ showParticles: e.target.checked })}
           />
           Show Particles
         </label>

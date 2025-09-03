@@ -2,6 +2,7 @@ import React from 'react';
 import GameCanvas from './GameCanvas';
 import NotificationSystem from './NotificationSystem';
 import EnhancedPlayerStatus from './EnhancedPlayerStatus';
+import SettingsPanel from './SettingsPanel';
 import { useGameStore } from '../stores/gameStore';
 import GameControls from './controls/GameControls';
 import WorldControls from './controls/WorldControls';
@@ -22,7 +23,13 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   handleStartCataclysm,
   handlePickUpItem,
 }) => {
-  const { gameWorld, currentPlayer, selectedTab, setSelectedTab, gameMessage, animationSettings, updateAnimationSettings } = useGameStore();
+  const {
+    gameWorld,
+    currentPlayer,
+    selectedTab,
+    setSelectedTab,
+    gameMessage
+  } = useGameStore();
 
   return (
     <div className="app-container">
@@ -85,11 +92,18 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             World Info
           </button>
           <button
+            className={selectedTab === 'settings' ? 'active' : ''}
+            onClick={() => setSelectedTab('settings')}
+            style={{background: '#17a2b8', color: 'white'}}
+          >
+            ⚙️ Settings
+          </button>
+          <button
             className={selectedTab === 'dev' ? 'active' : ''}
             onClick={() => setSelectedTab('dev')}
             style={{background: '#9b59b6', color: 'white'}}
           >
-            ⚙️ Dev Panel
+            🔧 Dev Panel
           </button>
         </div>
 
@@ -105,6 +119,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
               gameMessage={gameMessage}
               handleStartCataclysm={handleStartCataclysm}
               handlePickUpItem={handlePickUpItem}
+              handleRegenerateWorld={handleRegenerateWorld}
             />
           )}
 
@@ -117,11 +132,12 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             />
           )}
 
-          {selectedTab === 'dev' && animationSettings && (
-            <AnimationControls
-              {...animationSettings}
-              updateAnimationSettings={updateAnimationSettings}
-            />
+          {selectedTab === 'settings' && (
+            <SettingsPanel />
+          )}
+
+          {selectedTab === 'dev' && (
+            <AnimationControls />
           )}
         </div>
       </div>
