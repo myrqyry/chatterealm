@@ -7,6 +7,7 @@ import { useGameStore } from '../stores/gameStore';
 import GameControls from './controls/GameControls';
 import WorldControls from './controls/WorldControls';
 import AnimationControls from './controls/AnimationControls';
+import { COLORS } from '../constants/colors';
 
 interface GameLayoutProps {
   handleRegenerateWorld: () => void;
@@ -49,23 +50,23 @@ const GameLayout: React.FC<GameLayoutProps> = ({
 
         <div className="game-legend">
           <div className="legend-item">
-            <div className="legend-color" style={{background: '#FFD700', borderRadius: '50%'}}></div>
+            <div className="legend-color" style={{background: 'var(--color-legend-knight)', borderRadius: '50%'}}></div>
             <span>Knight</span>
           </div>
           <div className="legend-item">
-            <div className="legend-color" style={{background: '#8B0000', borderRadius: '50%'}}></div>
+            <div className="legend-color" style={{background: 'var(--color-legend-rogue)', borderRadius: '50%'}}></div>
             <span>Rogue</span>
           </div>
           <div className="legend-item">
-            <div className="legend-color" style={{background: '#4B0082', borderRadius: '50%'}}></div>
+            <div className="legend-color" style={{background: 'var(--color-legend-mage)', borderRadius: '50%'}}></div>
             <span>Mage</span>
           </div>
           <div className="legend-item">
-            <div className="legend-color" style={{background: '#DC143C', borderRadius: '50%'}}></div>
+            <div className="legend-color" style={{background: 'var(--color-legend-npc)', borderRadius: '50%'}}></div>
             <span>NPC</span>
           </div>
           <div className="legend-item">
-            <div className="legend-color" style={{background: '#F59E0B', borderRadius: '0'}}></div>
+            <div className="legend-color" style={{background: 'var(--color-legend-item)', borderRadius: '0'}}></div>
             <span>Item</span>
           </div>
         </div>
@@ -94,17 +95,19 @@ const GameLayout: React.FC<GameLayoutProps> = ({
           <button
             className={selectedTab === 'settings' ? 'active' : ''}
             onClick={() => setSelectedTab('settings')}
-            style={{background: '#17a2b8', color: 'white'}}
+            style={{background: 'var(--color-tab-settings)', color: 'white'}}
           >
             ⚙️ Settings
           </button>
-          <button
-            className={selectedTab === 'dev' ? 'active' : ''}
-            onClick={() => setSelectedTab('dev')}
-            style={{background: '#9b59b6', color: 'white'}}
-          >
-            🔧 Dev Panel
-          </button>
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              className={selectedTab === 'dev' ? 'active' : ''}
+              onClick={() => setSelectedTab('dev')}
+              style={{background: 'var(--color-accent-dark-purple)', color: 'white'}}
+            >
+              🔧 Dev Panel
+            </button>
+          )}
         </div>
 
         <div className="tab-content">
@@ -136,7 +139,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             <SettingsPanel />
           )}
 
-          {selectedTab === 'dev' && (
+          {selectedTab === 'dev' && process.env.NODE_ENV === 'development' && (
             <AnimationControls />
           )}
         </div>

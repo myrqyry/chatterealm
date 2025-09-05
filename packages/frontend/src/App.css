@@ -13,19 +13,6 @@ html, body {
   box-sizing: border-box;
 }
 
-.app-container {
-  display: flex;
-  gap: 20px;
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(135deg, #191724 0%, #1f1d2e 100%);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  color: #e0def4;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: none;
-}
-
 .main-display {
   flex-grow: 1;
   display: flex;
@@ -43,7 +30,7 @@ html, body {
 }
 
 .game-header h1 {
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   margin: 0 0 10px 0;
   font-size: 2em;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -52,7 +39,7 @@ html, body {
 .world-info {
   display: flex;
   gap: 20px;
-  color: #bdc3c7;
+  color: var(--color-text-medium);
   font-size: 0.9em;
 }
 
@@ -78,7 +65,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 5px;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 0.8em;
 }
 
@@ -164,12 +151,12 @@ html, body {
 
 .player-details h3 {
   margin: 0 0 5px 0;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 1.2em;
 }
 
 .player-class {
-  color: #bdc3c7;
+  color: var(--color-text-medium);
   margin: 0 0 10px 0;
   font-size: 0.9em;
 }
@@ -198,7 +185,7 @@ html, body {
 
 .stats-section h4 {
   margin: 0 0 15px 0;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 1.1em;
 }
 
@@ -212,13 +199,13 @@ html, body {
 .stat-item {
   display: flex;
   justify-content: space-between;
-  color: #bdc3c7;
+  color: var(--color-text-medium);
   font-size: 0.9em;
 }
 
 .stat-item span:first-child {
   font-weight: bold;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
 }
 
 .experience-bar {
@@ -266,7 +253,7 @@ html, body {
   background: rgba(46, 204, 113, 0.3);
   border: 2px solid #2ecc71;
   border-radius: 8px;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 1.2em;
   font-weight: bold;
   cursor: pointer;
@@ -294,7 +281,7 @@ html, body {
   background: rgba(231, 76, 60, 0.3);
   border: 2px solid #e74c3c;
   border-radius: 8px;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: bold;
@@ -324,13 +311,13 @@ html, body {
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #9b59b6;
-  color: #bdc3c7;
+  color: var(--color-text-medium);
   font-size: 0.9em;
 }
 
 .world-stats .stat-item span:first-child {
   font-weight: bold;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
 }
 
 .leaderboard {
@@ -342,7 +329,7 @@ html, body {
 
 .leaderboard h5 {
   margin: 0 0 15px 0;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 1em;
 }
 
@@ -352,7 +339,7 @@ html, body {
   align-items: center;
   padding: 8px 0;
   border-bottom: 1px solid rgba(230, 126, 34, 0.3);
-  color: #bdc3c7;
+  color: var(--color-text-medium);
   font-size: 0.9em;
 }
 
@@ -369,7 +356,7 @@ html, body {
 
 .player-selector h5 {
   margin: 0 0 10px 0;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 1em;
 }
 
@@ -381,7 +368,7 @@ html, body {
   background: rgba(149, 165, 166, 0.3);
   border: 1px solid #95a5a6;
   border-radius: 5px;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: left;
@@ -393,7 +380,7 @@ html, body {
 
 .player-select-btn.active {
   background: #95a5a6;
-  border-color: #ecf0f1;
+  border-color: var(--color-text-light-alt);
   font-weight: bold;
 }
 
@@ -459,7 +446,7 @@ html, body {
 
 .user-input-grid input {
   padding: 8px;
-  border: 2px solid #6e6a86;
+  border: 2px solid var(--color-border-gray);
   border-radius: 5px;
   background: rgba(38, 35, 58, 0.8);
   color: #e0def4;
@@ -521,7 +508,7 @@ html, body {
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
-  border: 1px solid #6e6a86;
+  border: 1px solid var(--color-border-gray);
   overflow-y: auto;
   min-height: 300px;
 }
@@ -561,7 +548,7 @@ html, body {
 
 .message-time {
   font-size: 0.7em;
-  color: #6e6a86;
+  color: var(--color-border-gray);
   margin-top: 2px;
 }
 
@@ -574,7 +561,7 @@ html, body {
 .message-input {
   flex: 1;
   padding: 12px;
-  border: 2px solid #6e6a86;
+  border: 2px solid var(--color-border-gray);
   border-radius: 8px;
   background: rgba(38, 35, 58, 0.8);
   color: #e0def4;
@@ -695,7 +682,7 @@ html, body {
 
 .dev-section h5 {
   margin: 0 0 15px 0;
-  color: #ecf0f1;
+  color: var(--color-text-light-alt);
   font-size: 1em;
   border-bottom: 2px solid #9b59b6;
   padding-bottom: 5px;
@@ -714,7 +701,7 @@ html, body {
 }
 
 .control-group label {
-  color: #bdc3c7;
+  color: var(--color-text-medium);
   font-size: 0.8em;
   font-weight: bold;
   display: flex;
@@ -906,13 +893,13 @@ html, body {
   font-size: 0.9em;
 }
 
-.health-value.healthy { color: #a3e635; }
-.health-value.wounded { color: #fbbf24; }
-.health-value.critical { color: #f97316; }
-.health-value.dying { color: #dc2626; }
+.health-value.healthy { color: var(--color-health-healthy); }
+.health-value.wounded { color: var(--color-health-wounded); }
+.health-value.critical { color: var(--color-health-critical); }
+.health-value.dying { color: var(--color-health-dying); }
 
 .exp-value {
-  color: #f6c177;
+  color: var(--color-exp-value);
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -934,19 +921,19 @@ html, body {
 }
 
 .health-fill.healthy {
-  background: linear-gradient(90deg, #22c55e, #16a34a);
+  background: linear-gradient(90deg, var(--color-health-fill-healthy-start), var(--color-health-fill-healthy-end));
 }
 
 .health-fill.wounded {
-  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  background: linear-gradient(90deg, var(--color-health-fill-wounded-start), var(--color-health-fill-wounded-end));
 }
 
 .health-fill.critical {
-  background: linear-gradient(90deg, #f97316, #ea580c);
+  background: linear-gradient(90deg, var(--color-health-fill-critical-start), var(--color-health-fill-critical-end));
 }
 
 .health-fill.dying {
-  background: linear-gradient(90deg, #dc2626, #b91c1c);
+  background: linear-gradient(90deg, var(--color-health-fill-dying-start), var(--color-health-fill-dying-end));
   animation: pulse-red 1s infinite;
 }
 
@@ -956,7 +943,7 @@ html, body {
 }
 
 .exp-fill {
-  background: linear-gradient(90deg, #f6c177, #ebbcba);
+  background: linear-gradient(90deg, var(--color-exp-fill-start), var(--color-exp-fill-end));
   box-shadow: 0 0 10px rgba(246, 193, 119, 0.5);
 }
 
@@ -1085,15 +1072,15 @@ html, body {
 }
 
 .status-effect.active {
-  background: rgba(163, 230, 53, 0.2);
-  color: #a3e635;
-  border: 1px solid #84cc16;
+  background: var(--color-status-active-bg);
+  color: var(--color-status-active-text);
+  border: 1px solid var(--color-status-active-border);
 }
 
 .status-effect.negative {
-  background: rgba(220, 38, 38, 0.2);
-  color: #dc2626;
-  border: 1px solid #b91c1c;
+  background: var(--color-status-negative-bg);
+  color: var(--color-status-negative-text);
+  border: 1px solid var(--color-status-negative-border);
   animation: pulse-negative 2s infinite;
 }
 
@@ -2009,7 +1996,7 @@ html, body {
   width: 100%;
   min-height: 120px;
   background: rgba(255, 255, 255, 0.1);
-  border: 2px solid #6e6a86;
+  border: 2px solid var(--color-border-gray);
   border-radius: 6px;
   color: #e0def4;
   font-family: inherit;
@@ -2220,7 +2207,7 @@ html, body {
   width: 100%;
   padding: 10px;
   background: rgba(0, 0, 0, 0.3);
-  border: 2px solid #6e6a86;
+  border: 2px solid var(--color-border-gray);
   border-radius: 6px;
   color: #e0def4;
   font-family: inherit;

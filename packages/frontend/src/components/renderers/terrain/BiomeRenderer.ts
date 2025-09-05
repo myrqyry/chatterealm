@@ -209,10 +209,11 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Regular swamp
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#4d7c0f',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#65a30d',
         strokeWidth: 1,
-        roughness: roughness * 1.6
+        roughness: roughness * 1.6,
+        seed: seed // Apply seed
       });
       // Swamp plants
       for (let s = 0; s < 4; s++) {
@@ -228,10 +229,11 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
       // Rolling hills
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#86efac',
-        fillStyle: 'solid',
+        fillStyle: fillStyle, // Use dynamic fillStyle
         stroke: '#4ade80',
         strokeWidth: 1,
-        roughness: roughness * 1.1
+        roughness: roughness * 1.1,
+        seed: seed // Apply seed
       });
       // Hill contours
       rc.ellipse(startX + 6, startY + 10, 8, 4, {

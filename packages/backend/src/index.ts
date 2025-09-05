@@ -3,57 +3,13 @@ import { createServer } from 'http';
 import cors from 'cors';
 import { WebSocketServer } from './services/webSocketServer';
 import { GameStateManager } from './services/gameStateManager';
-import { GameWorld, TerrainType } from 'shared/src/types/game';
 import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
 
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3001;
 
-// Initialize game world and state manager
-const gameWorld: GameWorld = {
-  id: 'main_world',
-  grid: [],
-  players: [],
-  npcs: [],
-  items: [],
-  cataclysmCircle: {
-    center: { x: Math.floor(GAME_CONFIG.gridWidth / 2), y: Math.floor(GAME_CONFIG.gridHeight / 2) },
-    radius: Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight),
-    isActive: false,
-    shrinkRate: 1,
-    nextShrinkTime: 0
-  },
-  worldAge: 0,
-  lastResetTime: Date.now(),
-  phase: 'exploration'
-};
-
-// Initialize terrain grid
-for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
-  gameWorld.grid[y] = [];
-  for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-    // Simple terrain generation - mostly grass with some forests and mountains
-    let terrainType = TerrainType.PLAIN;
-    const rand = Math.random();
-
-    if (rand < 0.1) {
-      terrainType = TerrainType.FOREST;
-    } else if (rand < 0.15) {
-      terrainType = TerrainType.MOUNTAIN;
-    }
-
-    gameWorld.grid[y][x] = {
-      type: terrainType,
-      position: { x, y },
-      movementCost: terrainType === TerrainType.MOUNTAIN ? 2 : 1,
-      defenseBonus: terrainType === TerrainType.FOREST ? 1 : 0,
-      visibilityModifier: terrainType === TerrainType.FOREST ? 0.8 : 1
-    };
-  }
-}
-
-const gameStateManager = new GameStateManager(gameWorld);
+const gameStateManager = new GameStateManager();
 const webSocketServer = new WebSocketServer(httpServer, gameStateManager);
 
 // Middleware
@@ -73,10 +29,10 @@ app.get('/', (req, res) => {
     message: 'Chat Grid Chronicles Backend API',
     version: '1.0.0',
     world: {
-      players: gameWorld.players.length,
-      npcs: gameWorld.npcs.length,
-      items: gameWorld.items.length,
-      phase: gameWorld.phase
+      players: gameStateManager.getGameWorld().players.length,
+      npcs: gameStateManager.getGameWorld().npcs.length,
+      items: gameStateManager.getGameWorld().items.length,
+      phase: gameStateManager.getGameWorld().phase
     }
   });
 });
@@ -84,7 +40,7 @@ app.get('/', (req, res) => {
 // API Routes
 app.get('/api/world', (req, res) => {
   try {
-    res.json(gameWorld);
+    res.json(gameStateManager.getGameWorld());
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch world data' });
   }
@@ -92,7 +48,7 @@ app.get('/api/world', (req, res) => {
 
 app.get('/api/players', (req, res) => {
   try {
-    res.json(gameWorld.players);
+    res.json(gameStateManager.getGameWorld().players);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch players' });
   }

@@ -24,9 +24,54 @@ export class GameStateManager {
   private reservedPositions: Set<string> = new Set(); // Prevents concurrent spawn races by reserving positions
   private occupiedPositions: Set<string> = new Set();
 
-  constructor(gameWorld: GameWorld) {
-    this.gameWorld = gameWorld;
+  constructor() {
+    this.gameWorld = this.initializeGameWorld();
     this.initializeOccupiedPositions();
+  }
+
+  private initializeGameWorld(): GameWorld {
+    const newGameWorld: GameWorld = {
+      id: 'main_world',
+      grid: [],
+      players: [],
+      npcs: [],
+      items: [],
+      cataclysmCircle: {
+        center: { x: Math.floor(GAME_CONFIG.gridWidth / 2), y: Math.floor(GAME_CONFIG.gridHeight / 2) },
+        radius: Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight),
+        isActive: false,
+        shrinkRate: 1,
+        nextShrinkTime: 0
+      },
+      worldAge: 0,
+      lastResetTime: Date.now(),
+      phase: 'exploration'
+    };
+
+    // Initialize terrain grid
+    for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
+      newGameWorld.grid[y] = [];
+      for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
+        // Simple terrain generation - mostly grass with some forests and mountains
+        let terrainType = TerrainType.PLAIN;
+        const rand = Math.random();
+
+        if (rand < 0.1) {
+          terrainType = TerrainType.FOREST;
+        } else if (rand < 0.15) {
+          terrainType = TerrainType.MOUNTAIN;
+        }
+
+        newGameWorld.grid[y][x] = {
+          type: terrainType,
+          position: { x, y },
+          movementCost: terrainType === TerrainType.MOUNTAIN ? 2 : 1,
+          defenseBonus: terrainType === TerrainType.FOREST ? 1 : 0,
+          visibilityModifier: terrainType === TerrainType.FOREST ? 0.8 : 1
+        };
+      }
+    }
+    return newGameWorld;
   }
 
   private initializeOccupiedPositions(): void {

@@ -128,6 +128,13 @@ export interface Player {
   buffs?: Buff[]; // Added to player
 }
 
+export interface JoinGameData {
+  id: string;
+  displayName: string;
+  class: PlayerClass;
+  avatar?: string;
+}
+
 export interface Item {
   id: string;
   name: string;

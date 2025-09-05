@@ -1,76 +1,14 @@
 import { GameStateManager } from './gameStateManager';
 import { GameWorld, Player, PlayerClass, TerrainType, Position } from 'shared/src/types/game';
 import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
-
-// Mock the GameWorld for testing
-const createMockGameWorld = (): GameWorld => {
-  const grid = Array(GAME_CONFIG.gridHeight).fill(null).map(() =>
-    Array(GAME_CONFIG.gridWidth).fill(null).map(() => ({
-      type: TerrainType.PLAIN,
-      position: { x: 0, y: 0 },
-      movementCost: 1,
-      defenseBonus: 0,
-      visibilityModifier: 1,
-    }))
-  );
-
-  for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
-    for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-      grid[y][x].position = { x, y };
-    }
-  }
-
-  return {
-    id: 'test-world',
-    worldAge: 0,
-    lastResetTime: 0,
-    phase: 'exploration',
-    players: [],
-    npcs: [],
-    items: [],
-    grid,
-    cataclysmCircle: {
-      isActive: false,
-      center: { x: 50, y: 50 },
-      radius: 50,
-      shrinkRate: 1,
-      nextShrinkTime: 0,
-    },
-  };
-};
-
-const createMockPlayer = (id: string, displayName: string, position: Position): Player => ({
-  id,
-  displayName,
-  twitchUsername: displayName,
-  avatar: '👤',
-  position,
-  class: PlayerClass.KNIGHT,
-  health: 100,
-  mana: 100,
-  stamina: 100,
-  hunger: 100,
-  thirst: 100,
-  stats: { hp: 100, maxHp: 100, attack: 10, defense: 5, speed: 5 },
-  level: 1,
-  experience: 0,
-  inventory: [],
-  equipment: {},
-  achievements: [],
-  titles: [],
-  isAlive: true,
-  lastMoveTime: 0,
-  spawnTime: Date.now(),
-  connected: true,
-  lastActive: Date.now(),
-});
+import { createMockGameWorld, createMockPlayer } from '../testUtils/mockGameWorld';
 
 describe('GameStateManager', () => {
   let gameStateManager: GameStateManager;
   let gameWorld: GameWorld;
 
   beforeEach(() => {
-    gameWorld = createMockGameWorld();
+    gameWorld = createMockGameWorld(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight);
     gameStateManager = new GameStateManager(gameWorld);
   });
 

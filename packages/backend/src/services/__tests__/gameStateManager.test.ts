@@ -1,69 +1,7 @@
 import { GameStateManager } from '../gameStateManager';
 import { GameWorld, Player, TerrainType, PlayerClass, Position } from 'shared/src/types/game';
 import { GAME_CONFIG } from 'shared/src/constants';
-
-// Mock the GameWorld for testing
-const createMockGameWorld = (gridWidth: number, gridHeight: number): GameWorld => {
-  const grid = Array.from({ length: gridHeight }, (_, y) =>
-    Array.from({ length: gridWidth }, (_, x) => ({
-      type: TerrainType.PLAIN,
-      position: { x, y },
-      movementCost: 1,
-      defenseBonus: 0,
-      visibilityModifier: 1,
-    }))
-  );
-
-  return {
-    id: 'test-world',
-    grid,
-    players: [],
-    npcs: [],
-    items: [],
-    cataclysmCircle: {
-      center: { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2) },
-      radius: 100,
-      isActive: false,
-      shrinkRate: 1,
-      nextShrinkTime: 0,
-    },
-    worldAge: 0,
-    lastResetTime: Date.now(),
-    phase: 'exploration',
-  };
-};
-
-const createMockPlayer = (id: string, displayName: string, position: Position = { x: -1, y: -1 }): Player => ({
-  id,
-  twitchUsername: id,
-  displayName,
-  avatar: '🤖',
-  position,
-  class: PlayerClass.KNIGHT,
-  health: 100,
-  mana: 50,
-  stamina: 100,
-  hunger: 100,
-  thirst: 100,
-  stats: {
-    hp: 100,
-    maxHp: 100,
-    attack: 10,
-    defense: 5,
-    speed: 2,
-  },
-  level: 1,
-  experience: 0,
-  inventory: [],
-  equipment: {},
-  achievements: [],
-  titles: [],
-  isAlive: true,
-  lastMoveTime: 0,
-  spawnTime: Date.now(),
-  connected: true,
-  lastActive: Date.now(),
-});
+import { createMockGameWorld, createMockPlayer } from '../../testUtils/mockGameWorld';
 
 describe('GameStateManager', () => {
   let gameStateManager: GameStateManager;

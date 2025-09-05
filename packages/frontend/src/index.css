@@ -1,3 +1,52 @@
+:root {
+  --color-background-dark: #191724;
+  --color-background-medium: #1f1d2e;
+  --color-text-light: #e0def4;
+  --color-accent-purple: #c4a7e7;
+  --color-primary-blue: #31748f;
+  --color-secondary-blue: #9ccfd8;
+  --color-accent-dark-purple: #9b59b6;
+  --color-legend-knight: #FFD700;
+  --color-legend-rogue: #8B0000;
+  --color-legend-mage: #4B0082;
+  --color-legend-npc: #DC143C;
+  --color-legend-item: #F59E0B;
+  --color-tab-settings: #17a2b8;
+
+  /* New colors for health bar */
+  --color-health-healthy: #a3e635;
+  --color-health-wounded: #fbbf24;
+  --color-health-critical: #f97316;
+  --color-health-dying: #dc2626;
+  --color-health-fill-healthy-start: #22c55e;
+  --color-health-fill-healthy-end: #16a34a;
+  --color-health-fill-wounded-start: #fbbf24;
+  --color-health-fill-wounded-end: #f59e0b;
+  --color-health-fill-critical-start: #f97316;
+  --color-health-fill-critical-end: #ea580c;
+  --color-health-fill-dying-start: #dc2626;
+  --color-health-fill-dying-end: #b91c1c;
+
+  /* New colors for experience bar */
+  --color-exp-fill-start: #f6c177;
+  --color-exp-fill-end: #ebbcba;
+  --color-exp-value: #f6c177;
+
+  /* New colors for status effects */
+  --color-status-active-bg: rgba(163, 230, 53, 0.2);
+  --color-status-active-text: #a3e635;
+  --color-status-active-border: #84cc16;
+  --color-status-negative-bg: rgba(220, 38, 38, 0.2);
+  --color-status-negative-text: #dc2626;
+  --color-status-negative-border: #b91c1c;
+
+  /* Other general colors */
+  --color-text-light-alt: #ecf0f1;
+  --color-text-medium: #bdc3c7;
+  --color-border-gray: #6e6a86;
+  --color-text-dark: #908caa;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

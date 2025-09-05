@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { GameStateManager, GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
-import { Player, GameWorld, PlayerClass } from 'shared/src/types/game';
+import { Player, GameWorld, PlayerClass, JoinGameData } from 'shared/src/types/game';
 
 export interface ClientData {
   playerId: string;
@@ -59,7 +59,7 @@ export class WebSocketServer {
       console.log(`[CONNECTION] ConnectedClients keys: [${Array.from(this.connectedClients.keys()).join(', ')}]`);
 
       // Handle player join
-      socket.on('join_game', (playerData: Partial<Player>) => {
+      socket.on('join_game', (playerData: JoinGameData) => {
         console.log(`[JOIN_GAME_RECEIVED] Socket ${socket.id} attempting to join with data:`, playerData);
         this.handlePlayerJoin(socket, playerData);
       });
@@ -84,16 +84,16 @@ export class WebSocketServer {
     });
   }
 
-  private handlePlayerJoin(socket: Socket, playerData: Partial<Player>): void {
+  private handlePlayerJoin(socket: Socket, playerData: JoinGameData): void {
     try {
       console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
       console.log(`[JOIN_START] ConnectedClients before join: ${this.connectedClients.size}`);
       
       // Create player object with all required properties
       const player: Player = {
-        id: playerData.id!,
-        displayName: playerData.displayName!,
-        twitchUsername: playerData.twitchUsername || '',
+        id: playerData.id,
+        displayName: playerData.displayName,
+        twitchUsername: '', // Initialized to empty string as it's not part of JoinGameData
         avatar: playerData.avatar || '👤', // Default avatar emoji
         position: { x: 0, y: 0 }, // Will be set by GameStateManager
         class: playerData.class || PlayerClass.KNIGHT, // Default to knight
