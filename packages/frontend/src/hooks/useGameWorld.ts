@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import { webSocketClient } from '../services/webSocketClient';
 import { createMockGameWorld } from '../services/worldGeneration/WorldGenerator';
-import { GameWorld, Player } from '../../../shared/src/types/game';
+import type { GameWorld, Player } from '../../../shared/src/types/game';
 
 interface GameWorldHook {
   gameWorld: GameWorld | null;

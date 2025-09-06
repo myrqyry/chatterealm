@@ -4,7 +4,7 @@ import GameControls from './controls/GameControls';
 import WorldControls from './controls/WorldControls';
 import AnimationControls from './controls/AnimationControls';
 import { useGameStore } from '../stores/gameStore';
-import { GameWorld, Player, AnimationSettings } from '../../../shared/src/types/game'; // Adjust path as necessary
+import type { GameWorld, Player, AnimationSettings } from '../../../shared/src/types/game'; // Adjust path as necessary
 
 interface ControlPanelProps {
   handleRegenerateWorld: () => void;

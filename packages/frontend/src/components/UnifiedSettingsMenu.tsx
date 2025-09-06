@@ -7,7 +7,7 @@ import {
   SettingGroup,
 } from './shared/settings';
 import { DropdownOption } from './shared/settings/SettingDropdown';
-import { MovementStyle, Theme } from '../../../shared/src/types/game';
+import { MovementStyle, Theme } from '../../../shared/src/types/game.ts';
 
 /**
  * UnifiedSettingsMenu

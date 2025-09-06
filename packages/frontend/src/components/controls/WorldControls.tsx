@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameWorld, Player } from '../../../../shared/src/types/game';
+import type { GameWorld, Player } from '../../../../shared/src/types/game';
 import { useGameStore } from '../../stores/gameStore';
 
 interface WorldControlsProps {

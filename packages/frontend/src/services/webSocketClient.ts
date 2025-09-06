@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { Player, GameWorld } from '../../../shared/src/types/game';
+import type { Player, GameWorld } from '../../../shared/src/types/game';
 import { useGameStore } from '../stores/gameStore';
 import { throttledLog, throttledError, throttledWarn } from '../utils/loggingUtils';
 

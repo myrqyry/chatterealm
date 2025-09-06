@@ -1,4 +1,5 @@
-import { TerrainType, AnimationSettings } from 'shared/src/types/game';
+import type { AnimationSettings } from 'shared/src/types/game';
+import { TerrainType } from 'shared/src/types/game';
 import { drawOcean } from './OceanRenderer';
 import { drawMountain } from './MountainRenderer';
 import { drawForest } from './ForestRenderer';

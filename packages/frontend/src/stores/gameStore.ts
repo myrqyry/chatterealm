@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 // Import types from shared package
-import { GameWorld, Player, UnifiedSettings, MovementStyle, Theme, NotificationType } from '../../../shared/src/types/game';
+import type { GameWorld, Player, UnifiedSettings } from '../../../shared/src/types/game';
+import { MovementStyle, Theme, NotificationType } from '../../../shared/src/types/game.ts';
 
 // Import WebSocket client
 import { webSocketClient } from '../services/webSocketClient';

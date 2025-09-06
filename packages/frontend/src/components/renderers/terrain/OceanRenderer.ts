@@ -1,4 +1,5 @@
-import { TerrainType, AnimationSettings } from 'shared/src/types/game'; // Import from shared
+import type { AnimationSettings } from 'shared/src/types/game';
+import { TerrainType } from 'shared/src/types/game'; // Import from shared
 
 export const drawOcean = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;

@@ -1,4 +1,5 @@
-import { GameWorld, Player, NPC, Item, Terrain, TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared/src/types/game';
+import type { GameWorld, Player, NPC, Item, Terrain } from 'shared/src/types/game';
+import { TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared/src/types/game';
 import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
 
 // Mock terrain grid with varied terrain types

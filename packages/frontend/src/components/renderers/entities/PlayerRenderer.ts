@@ -1,4 +1,4 @@
-import { Player } from 'shared/src/types/game';
+import type { Player } from 'shared/src/types/game';
 
 interface ParticleEmitter {
   (x: number, y: number, color: string, count?: number): void;

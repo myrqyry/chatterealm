@@ -4,11 +4,8 @@ import { SettingSlider, SettingCheckbox, SettingDropdown, SettingGroup } from '.
 import { DropdownOption } from './shared/settings/SettingDropdown';
 
 // Import shared types
-import {
-  MovementStyle,
-  Theme,
-  NotificationType
-} from '../../../shared/src/types/game';
+import type { NotificationType } from '../../../shared/src/types/game';
+import { MovementStyle, Theme } from '../../../shared/src/types/game.ts';
 
 const SettingsPanel: React.FC = () => {
   const { unifiedSettings, exportSettings, importSettings, resetAllSettings } = useGameStore();
