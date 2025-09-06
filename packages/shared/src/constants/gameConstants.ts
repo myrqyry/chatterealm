@@ -2,8 +2,8 @@ import { PlayerClass, TerrainType, GameSettings } from '../types/game';
 
 // Game Configuration Constants
 export const GAME_CONFIG: GameSettings = {
-  gridWidth: 20,
-  gridHeight: 15,
+  gridWidth: 40,
+  gridHeight: 30,
   tileSize: 32, // Standard tile size in pixels for UI rendering (increased from 20px for larger canvas)
   maxPlayers: 50,
   cataclysmDuration: 300000, // 5 minutes in milliseconds
@@ -323,8 +323,8 @@ export const ACHIEVEMENTS = {
 // Default world configuration
 export const DEFAULT_WORLD_CONFIG = {
   cataclysmCircle: {
-    center: { x: 10, y: 7 }, // center of 20x15 grid
-    radius: 20,
+    center: { x: 20, y: 15 }, // center of 40x30 grid
+    radius: 40,
     isActive: false,
     shrinkRate: 1,
     nextShrinkTime: 0

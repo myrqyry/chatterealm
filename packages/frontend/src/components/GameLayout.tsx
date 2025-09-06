@@ -2,11 +2,13 @@ import React from 'react';
 import GameCanvas from './GameCanvas';
 import NotificationSystem from './NotificationSystem';
 import EnhancedPlayerStatus from './EnhancedPlayerStatus';
-import SettingsPanel from './SettingsPanel';
+// Deprecated panels replaced by UnifiedSettingsMenu
+// import SettingsPanel from './SettingsPanel';
+// import GameControls from './controls/GameControls';
+// import WorldControls from './controls/WorldControls';
+// import AnimationControls from './controls/AnimationControls';
+import UnifiedSettingsMenu from './UnifiedSettingsMenu';
 import { useGameStore } from '../stores/gameStore';
-import GameControls from './controls/GameControls';
-import WorldControls from './controls/WorldControls';
-import AnimationControls from './controls/AnimationControls';
 import { COLORS } from '../constants/colors';
 
 interface GameLayoutProps {
@@ -24,13 +26,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   handleStartCataclysm,
   handlePickUpItem,
 }) => {
-  const {
-    gameWorld,
-    currentPlayer,
-    selectedTab,
-    setSelectedTab,
-    gameMessage
-  } = useGameStore();
+  const { gameWorld, currentPlayer, gameMessage } = useGameStore();
 
   return (
     <div className="app-container">
@@ -72,77 +68,13 @@ const GameLayout: React.FC<GameLayoutProps> = ({
         </div>
       </div>
 
-      <div className="player-hub">
-        <div className="tabs">
-          <button
-            className={selectedTab === 'status' ? 'active' : ''}
-            onClick={() => setSelectedTab('status')}
-          >
-            Status
-          </button>
-          <button
-            className={selectedTab === 'actions' ? 'active' : ''}
-            onClick={() => setSelectedTab('actions')}
-          >
-            Actions
-          </button>
-          <button
-            className={selectedTab === 'world' ? 'active' : ''}
-            onClick={() => setSelectedTab('world')}
-          >
-            World Info
-          </button>
-          <button
-            className={selectedTab === 'settings' ? 'active' : ''}
-            onClick={() => setSelectedTab('settings')}
-            style={{background: 'var(--color-tab-settings)', color: 'white'}}
-          >
-            ⚙️ Settings
-          </button>
-          {process.env.NODE_ENV === 'development' && (
-            <button
-              className={selectedTab === 'dev' ? 'active' : ''}
-              onClick={() => setSelectedTab('dev')}
-              style={{background: 'var(--color-accent-dark-purple)', color: 'white'}}
-            >
-              🔧 Dev Panel
-            </button>
-          )}
-        </div>
-
-        <div className="tab-content">
-          {selectedTab === 'status' && currentPlayer && (
+      <div className="player-hub unified-hub">
+        {currentPlayer && (
+          <div className="status-inline-panel">
             <EnhancedPlayerStatus player={currentPlayer} />
-          )}
-
-          {selectedTab === 'actions' && (
-            <GameControls
-              handleMove={handleMove}
-              handleJoinGame={handleJoinGame}
-              gameMessage={gameMessage}
-              handleStartCataclysm={handleStartCataclysm}
-              handlePickUpItem={handlePickUpItem}
-              handleRegenerateWorld={handleRegenerateWorld}
-            />
-          )}
-
-          {selectedTab === 'world' && (
-            <WorldControls
-              gameWorld={gameWorld}
-              currentPlayer={currentPlayer}
-              handleRegenerateWorld={handleRegenerateWorld}
-              gameMessage={gameMessage}
-            />
-          )}
-
-          {selectedTab === 'settings' && (
-            <SettingsPanel />
-          )}
-
-          {selectedTab === 'dev' && process.env.NODE_ENV === 'development' && (
-            <AnimationControls />
-          )}
-        </div>
+          </div>
+        )}
+        <UnifiedSettingsMenu />
       </div>
     </div>
   );

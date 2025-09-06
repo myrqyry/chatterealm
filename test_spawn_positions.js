@@ -10,8 +10,8 @@ let spawnErrors = 0;
 let authErrors = 0;
 let completedConnections = 0;
 
-// Grid is 20x15 = 300 total positions
-// With 15% mountains (45 positions) and some NPCs, we should hit spawn limits
+// Grid is now 40x30 = 1200 total positions
+// With terrain variation, this test now stresses spawning without immediately exhausting space
 console.log(`🎯 Attempting to spawn ${MAX_PLAYERS} players simultaneously...`);
 
 function createPlayer(index) {

@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { GameStateManager, GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
-import { Player, GameWorld, PlayerClass, JoinGameData } from 'shared/src/types/game';
+import { Player, GameWorld, PlayerClass, JoinGameData } from 'shared';
 
 export interface ClientData {
   playerId: string;

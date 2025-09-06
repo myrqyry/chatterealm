@@ -1,5 +1,4 @@
-import { GameWorld, TerrainType, PlayerClass, Player } from '../../../shared/src/types/game';
-import { GAME_CONFIG } from '../../../shared/src/constants/gameConstants';
+import { GameWorld, TerrainType, PlayerClass, Player, GAME_CONFIG } from 'shared';
 
 export const createMockGameWorld = (gridWidth: number, gridHeight: number): GameWorld => {
   const grid: TerrainType[][] = [];
@@ -35,7 +34,7 @@ export const createMockGameWorld = (gridWidth: number, gridHeight: number): Game
   };
 };
 
-export const createMockPlayer = (id: string, displayName: string, position: { x: number, y: number }): Player => ({
+export const createMockPlayer = (id: string, displayName: string, position: { x: number, y: number } = { x: 0, y: 0 }): Player => ({
   id,
   displayName,
   twitchUsername: `twitch_${id}`,

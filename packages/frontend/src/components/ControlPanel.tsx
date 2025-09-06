@@ -65,6 +65,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             gameMessage={gameMessage}
             handleStartCataclysm={handleStartCataclysm}
             handlePickUpItem={handlePickUpItem}
+            handleRegenerateWorld={handleRegenerateWorld}
           />
         )}
 

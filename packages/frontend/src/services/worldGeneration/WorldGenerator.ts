@@ -22,6 +22,11 @@ export const createMockGameWorld = (): GameWorld => {
       avatar: '🤠',
       position: { x: 5, y: 5 },
       class: 'knight' as any,
+      health: 100,
+      mana: 50,
+      stamina: 100,
+      hunger: 100,
+      thirst: 100,
       stats: { hp: 100, maxHp: 120, attack: 15, defense: 20, speed: 8 },
       level: 1,
       experience: 0,
@@ -56,8 +61,8 @@ export const createMockGameWorld = (): GameWorld => {
       position: { x: 8, y: 6 }
     }],
     cataclysmCircle: {
-      center: { x: 10, y: 7 },
-      radius: 20,
+  center: { x: 20, y: 15 },
+  radius: 40,
       isActive: false,
       shrinkRate: 1,
       nextShrinkTime: Date.now() + 300000

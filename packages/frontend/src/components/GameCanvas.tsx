@@ -21,8 +21,9 @@ const GameCanvas: React.FC = () => {
   // Use unified settings with fallbacks and explicit typing
   const animationSettings: AnimationSettings = {
     animationSpeed: unifiedSettings?.animations?.animationSpeed ?? 1.0,
-    showParticles: unifiedSettings?.visual?.showParticles ?? false,
-    showGrid: unifiedSettings?.visual?.showGrid ?? true,
+    // Prefer animations category but fall back to visual booleans for backward compatibility
+    showParticles: unifiedSettings?.animations?.showParticles ?? unifiedSettings?.visual?.showParticles ?? false,
+    showGrid: unifiedSettings?.animations?.showGrid ?? unifiedSettings?.visual?.showGrid ?? true,
     roughness: unifiedSettings?.animations?.roughness ?? 1.5,
     bowing: unifiedSettings?.animations?.bowing ?? 1.2,
     fillWeight: unifiedSettings?.animations?.fillWeight ?? 1.5,
@@ -30,6 +31,14 @@ const GameCanvas: React.FC = () => {
     hachureGap: unifiedSettings?.animations?.hachureGap ?? 4,
     breathingRate: unifiedSettings?.animations?.breathingRate ?? 0.05,
     particleCount: unifiedSettings?.animations?.particleCount ?? 5,
+    // Terrain / world animation speeds (fallback to world settings or sensible defaults)
+    grassWaveSpeed: unifiedSettings?.animations?.grassWaveSpeed ?? unifiedSettings?.world?.grassWaveSpeed ?? 0.5,
+    treeSwaySpeed: unifiedSettings?.animations?.treeSwaySpeed ?? unifiedSettings?.world?.treeSwaySpeed ?? 0.5,
+    flowerSpawnRate: unifiedSettings?.animations?.flowerSpawnRate ?? unifiedSettings?.world?.flowerSpawnRate ?? 0.2,
+    windSpeed: unifiedSettings?.animations?.windSpeed ?? unifiedSettings?.world?.windSpeed ?? 0.3,
+    // Optional rough.js extras
+    fillStyle: unifiedSettings?.animations?.fillStyle ?? 'hachure',
+    seed: unifiedSettings?.animations?.seed ?? 0,
   };
 
   const grid = gameWorld?.grid || [];
@@ -78,8 +87,8 @@ const GameCanvas: React.FC = () => {
     if (!ctx) return;
 
     const rc = rough.canvas(canvas);
-    const numTilesX = grid[0]?.length || 20;
-    const numTilesY = grid.length || 15;
+  const numTilesX = grid[0]?.length || 40; // Updated default to enlarged world width
+  const numTilesY = grid.length || 30;     // Updated default to enlarged world height
 
     setupCanvas(canvas, ctx, numTilesX, numTilesY, gridSize);
     ctx.imageSmoothingEnabled = false; // Keep pixel art crisp

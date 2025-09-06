@@ -140,6 +140,16 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     breathingRate: 0.05,
     particleCount: 5,
 
+    // Visual Display (duplicated in visual for backward compatibility)
+    showParticles: true,
+    showGrid: true,
+
+    // Terrain Animation (duplicated with world for backward compatibility)
+    grassWaveSpeed: 0.1,
+    treeSwaySpeed: 0.03,
+    flowerSpawnRate: 0.01,
+    windSpeed: 0.02,
+
     // Rough.js Settings
     roughness: 1.5,
     bowing: 1.2,
@@ -377,10 +387,11 @@ export const useGameStore = create<GameState>()(
                     fontSize: legacySettings.fontSize ?? 100,
                     highContrast: legacySettings.highContrast ?? false,
                     reduceMotion: legacySettings.reduceMotion ?? false,
-                    showGrid: legacyAnimationSettings.showGrid ?? true,
-                    showParticles: legacyAnimationSettings.showParticles ?? true,
-                    showHealthBars: legacyAnimationSettings.showHealthBars ?? true,
-                    backgroundColor: legacyAnimationSettings.backgroundColor ?? '#191724',
+                    // Visual overlay/display flags were previously mixed into animationSettings
+                    showGrid: legacySettings.showGrid ?? legacyAnimationSettings.showGrid ?? true,
+                    showParticles: legacySettings.showParticles ?? legacyAnimationSettings.showParticles ?? true,
+                    showHealthBars: legacySettings.showHealthBars ?? legacyAnimationSettings.showHealthBars ?? true,
+                    backgroundColor: legacySettings.backgroundColor ?? legacyAnimationSettings.backgroundColor ?? '#191724',
                   },
                   world: {
                     worldWidth: legacyAnimationSettings.worldWidth ?? 40,
@@ -390,18 +401,24 @@ export const useGameStore = create<GameState>()(
                     flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? 0.01,
                     windSpeed: legacyAnimationSettings.windSpeed ?? 0.02,
                   },
-  animations: {
-    animationSpeed: 1.0,
-    breathingRate: 0.05,
-    particleCount: 5,
-    roughness: 1.5,
-    bowing: 1.2,
-    fillWeight: 1.5,
-    hachureAngle: 45,
-    hachureGap: 4,
-    showParticles: true,
-    showGrid: true,
-  },
+                  animations: {
+                    animationSpeed: legacyAnimationSettings.animationSpeed ?? 1.0,
+                    breathingRate: legacyAnimationSettings.breathingRate ?? 0.05,
+                    particleCount: legacyAnimationSettings.particleCount ?? legacyAnimationSettings.particles ?? 5,
+                    showParticles: legacyAnimationSettings.showParticles ?? legacySettings.showParticles ?? true,
+                    showGrid: legacyAnimationSettings.showGrid ?? legacySettings.showGrid ?? true,
+                    grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? legacySettings.grassWaveSpeed ?? 0.1,
+                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? legacySettings.treeSwaySpeed ?? 0.03,
+                    flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? legacySettings.flowerSpawnRate ?? 0.01,
+                    windSpeed: legacyAnimationSettings.windSpeed ?? legacySettings.windSpeed ?? 0.02,
+                    roughness: legacyAnimationSettings.roughness ?? 1.5,
+                    bowing: legacyAnimationSettings.bowing ?? 1.2,
+                    fillWeight: legacyAnimationSettings.fillWeight ?? 1.5,
+                    hachureAngle: legacyAnimationSettings.hachureAngle ?? 45,
+                    hachureGap: legacyAnimationSettings.hachureGap ?? 4,
+                    fillStyle: legacyAnimationSettings.fillStyle ?? 'hachure',
+                    seed: legacyAnimationSettings.seed ?? 1,
+                  },
                 };
                 set({ unifiedSettings: migratedSettings });
               } else {

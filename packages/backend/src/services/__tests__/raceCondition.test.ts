@@ -3,7 +3,7 @@ import { AddressInfo } from 'net';
 import { io as ioc, Socket as ClientSocket } from 'socket.io-client';
 import { WebSocketServer } from '../webSocketServer';
 import { GameStateManager } from '../gameStateManager';
-import { Player, PlayerClass } from 'shared/src/types/game';
+import { Player, PlayerClass } from 'shared';
 
 // Mock GameStateManager
 jest.mock('../gameStateManager');

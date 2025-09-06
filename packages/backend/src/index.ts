@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import cors from 'cors';
 import { WebSocketServer } from './services/webSocketServer';
 import { GameStateManager } from './services/gameStateManager';
-import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
+import { GAME_CONFIG } from 'shared';
 
 const app = express();
 const httpServer = createServer(app);

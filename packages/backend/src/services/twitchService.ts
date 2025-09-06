@@ -755,6 +755,12 @@ export class TwitchService {
         avatar: this.getRandomAvatar(),
         position: { x: 0, y: 0 }, // Will be set by GameStateManager
         class: playerClass as any, // Cast to PlayerClass enum
+        // Core resource pools (mirroring new Player interface fields)
+        health: playerStats.hp, // Initialize health to stats.hp
+        mana: 50, // Basic starting mana pool (could vary by class later)
+        stamina: 100,
+        hunger: 100,
+        thirst: 100,
         stats: playerStats,
         level: 1,
         experience: 0,

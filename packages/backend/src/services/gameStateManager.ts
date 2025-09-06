@@ -1,5 +1,5 @@
-import { Player, NPC, Item, TerrainType, Position, GameWorld, ItemType, ItemRarity } from 'shared/src/types/game';
-import { GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared/src/constants';
+// Updated imports to consume the built shared package entrypoints instead of deep src paths
+import { Player, NPC, Item, TerrainType, Position, GameWorld, ItemType, ItemRarity, GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared';
 
 export interface GameActionResult {
   success: boolean;
@@ -24,8 +24,9 @@ export class GameStateManager {
   private reservedPositions: Set<string> = new Set(); // Prevents concurrent spawn races by reserving positions
   private occupiedPositions: Set<string> = new Set();
 
-  constructor() {
-    this.gameWorld = this.initializeGameWorld();
+  // Allow injecting a pre-built GameWorld (useful for tests) while defaulting to internally generated world
+  constructor(gameWorld?: GameWorld) {
+    this.gameWorld = gameWorld ?? this.initializeGameWorld();
     this.initializeOccupiedPositions();
   }
 
@@ -112,35 +113,40 @@ export class GameStateManager {
       totalGridPositions: GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight
     });
 
-    // Find spawn position
-    const spawnPosition = this.findEmptySpawnPosition();
-    if (!spawnPosition) {
+    // Determine final position: if caller already provided a valid, unoccupied position we use it (test harness support)
+    let finalPosition: Position | null = null;
+    if (player.position && this.isValidSpawnPosition(player.position.x, player.position.y)) {
+      finalPosition = player.position; // Accept caller-specified spawn (used by tests or controlled spawns)
+    } else {
+      finalPosition = this.findEmptySpawnPosition();
+    }
+
+    if (!finalPosition) {
       console.error(`[SPAWN_ERROR] No available spawn position for player ${player.displayName}`);
       console.error(`[SPAWN_ERROR] Current players: ${this.gameWorld.players.length}`);
       console.error(`[SPAWN_ERROR] Current NPCs: ${this.gameWorld.npcs.length}`);
       console.error(`[SPAWN_ERROR] Grid size: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight}`);
-      
+
       // DIAGNOSTIC: Additional spawn failure analysis
       this.analyzeTerrainDistribution();
       this.analyzePositionOccupancy();
-      
       return { success: false, message: 'No available spawn position' };
     }
 
-    // Assign and persist player
-    player.position = spawnPosition;
+    // Assign and persist player (ensure player.position reflects final position used)
+    player.position = finalPosition;
     this.gameWorld.players.push(player);
-    this.occupiedPositions.add(`${spawnPosition.x},${spawnPosition.y}`);
+    this.occupiedPositions.add(`${finalPosition.x},${finalPosition.y}`);
 
-    // Release reservation after successfully placing the player (reservation only prevented races during selection)
-    this.releaseReservedPosition(spawnPosition);
+    // Release reservation if it was obtained via spawning logic (safe to call regardless)
+    this.releaseReservedPosition(finalPosition);
 
-    console.log(`[SPAWN_SUCCESS] Player ${player.displayName} spawned at (${spawnPosition.x}, ${spawnPosition.y})`);
+    console.log(`[SPAWN_SUCCESS] Player ${player.displayName} spawned at (${finalPosition.x}, ${finalPosition.y})`);
 
     return {
       success: true,
       message: `Player ${player.displayName} joined the game`,
-      data: { player, position: spawnPosition }
+      data: { player, position: finalPosition }
     };
   }
 
@@ -186,23 +192,29 @@ export class GameStateManager {
       return { success: false, message: 'Invalid move' };
     }
 
-    // Check collisions
+    // Check collisions BEFORE mutating occupiedPositions to avoid transiently freeing the origin
     const oldPositionKey = `${player.position.x},${player.position.y}`;
-    this.occupiedPositions.delete(oldPositionKey);
+    const newPositionKey = `${newPosition.x},${newPosition.y}`;
+
+    // Temporary diagnostic (gated) to help validate collision logic during tests
+    if (process.env.GAME_DEBUG_MOVE === '1') {
+      console.log('[MOVE_DEBUG] Attempting move', { playerId, from: oldPositionKey, to: newPositionKey });
+      console.log('[MOVE_DEBUG] Occupied (sample <=10):', Array.from(this.occupiedPositions).slice(0, 10));
+      console.log('[MOVE_DEBUG] Target occupied?', this.occupiedPositions.has(newPositionKey));
+    }
 
     if (this.isPositionOccupied(newPosition)) {
-      this.occupiedPositions.add(oldPositionKey); // Re-add original position
-      // Check if there's an enemy to attack
-      const enemy = this.getEnemyAtPosition(newPosition);
-      if (enemy) {
-        return this.attackEnemy(player, enemy);
+      // Previous behavior triggered combat automatically. Tests expect pure collision failure.
+      if (process.env.GAME_DEBUG_MOVE === '1') {
+        console.log('[MOVE_DEBUG] Collision detected with occupied tile; movement blocked.');
       }
       return { success: false, message: 'Position occupied' };
     }
 
-    // Execute move
+    // Safe to move – update occupied positions
+    this.occupiedPositions.delete(oldPositionKey);
     player.position = newPosition;
-    this.occupiedPositions.add(`${newPosition.x},${newPosition.y}`);
+    this.occupiedPositions.add(newPositionKey);
     player.lastMoveTime = now;
 
     return {
@@ -705,7 +717,10 @@ export class GameStateManager {
   }
 
   private findEmptySpawnPosition(): Position | null {
-    console.log(`[SPAWN_SEARCH] Starting spawn position search`);
+    // Wrap verbose spawn logging with an environment variable check
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Starting spawn position search`);
+    }
     
     // First, clean up positions from disconnected players
     this.cleanupDisconnectedPlayerPositions();
@@ -714,7 +729,9 @@ export class GameStateManager {
     const gridHeight = GAME_CONFIG.gridHeight;
 
     // DIAGNOSTIC: Log search strategy
-    console.log(`[SPAWN_SEARCH] Search strategy - Grid: ${gridWidth}x${gridHeight}, Priority: corners → edges → center → random`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Search strategy - Grid: ${gridWidth}x${gridHeight}, Priority: corners → edges → center → random`);
+    }
 
     // Define spawn priority zones
     const cornerPositions = [
@@ -736,10 +753,14 @@ export class GameStateManager {
       edgePositions.push({ x: gridWidth - 1, y });
     }
 
-    console.log(`[SPAWN_SEARCH] Priority zones - Corners: ${cornerPositions.length}, Edges: ${edgePositions.length}`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Priority zones - Corners: ${cornerPositions.length}, Edges: ${edgePositions.length}`);
+    }
 
     // 1. Try corner positions first (highest priority)
-    console.log(`[SPAWN_SEARCH] Checking corner positions...`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Checking corner positions...`);
+    }
     for (const position of cornerPositions) {
       if (this.isValidSpawnPosition(position.x, position.y)) {
         if (this.reservePosition(position.x, position.y)) {
@@ -750,7 +771,9 @@ export class GameStateManager {
     }
 
     // 2. Try edge positions (medium priority)
-    console.log(`[SPAWN_SEARCH] Corner positions unavailable, checking edge positions...`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Corner positions unavailable, checking edge positions...`);
+    }
     for (const position of edgePositions) {
       if (this.isValidSpawnPosition(position.x, position.y)) {
         if (this.reservePosition(position.x, position.y)) {
@@ -761,9 +784,13 @@ export class GameStateManager {
     }
 
     // 3. Try center area with intelligent fallback (lower priority)
-    console.log(`[SPAWN_SEARCH] Edge positions unavailable, checking center area...`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Edge positions unavailable, checking center area...`);
+    }
     const centerPositions = this.generateCenterPositions();
-    console.log(`[SPAWN_SEARCH] Generated ${centerPositions.length} center positions to check`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_SEARCH] Generated ${centerPositions.length} center positions to check`);
+    }
     for (const position of centerPositions) {
       if (this.isValidSpawnPosition(position.x, position.y)) {
         if (this.reservePosition(position.x, position.y)) {
@@ -774,7 +801,9 @@ export class GameStateManager {
     }
 
     // 4. Final fallback: random search with increased attempts
-    console.log(`[SPAWN_FALLBACK] All priority zones exhausted, using random search fallback`);
+    if (process.env.GAME_DEBUG_SPAWN === '1') {
+      console.log(`[SPAWN_FALLBACK] All priority zones exhausted, using random search fallback`);
+    }
     return this.findEmptySpawnPositionFallback();
   }
 

@@ -233,8 +233,8 @@ export const createMockGameWorld = (): GameWorld => {
     npcs: createMockNPCs(),
     items: createMockItems(),
     cataclysmCircle: {
-      center: { x: 10, y: 7 },
-      radius: 20,
+      center: { x: 20, y: 15 },
+      radius: 40,
       isActive: false,
       shrinkRate: 1,
       nextShrinkTime: Date.now() + 300000 // 5 minutes from now
