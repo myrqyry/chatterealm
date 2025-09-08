@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Player } from '@shared/types/game';
+import { Player } from 'shared';
 import { calculatePlayerStats, applyEffectsToStats } from '../services/player/StatusCalculator';
 import { getActiveEffects } from '../services/player/EffectManager';
 import { PlayerStats, PlayerEffect } from '../types/playerStatus';

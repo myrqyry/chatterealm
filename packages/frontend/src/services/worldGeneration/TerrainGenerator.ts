@@ -1,7 +1,7 @@
 import { perlinNoise } from './NoiseGenerator';
 import { getBiome } from './BiomeGenerator';
 import { WORLD_WIDTH, WORLD_HEIGHT } from './WorldTypes';
-import type { GameWorld, Terrain } from '../../../../shared/src/types/game';
+import type { GameWorld, Terrain } from 'shared';
 
 export const generateTerrain = (x: number, y: number): Terrain => {
   const biome = getBiome(x, y);

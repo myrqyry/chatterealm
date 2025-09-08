@@ -1,4 +1,4 @@
-import { Player, Buff } from '@shared/types/game';
+import { Player, Buff } from 'shared';
 
 export interface PlayerStats {
   health: number;

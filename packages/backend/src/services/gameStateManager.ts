@@ -23,6 +23,7 @@ export class GameStateManager {
   private gameWorld: GameWorld;
   private reservedPositions: Set<string> = new Set(); // Prevents concurrent spawn races by reserving positions
   private occupiedPositions: Set<string> = new Set();
+  private availableSpawnPoints: Set<string> = new Set();
 
   // Allow injecting a pre-built GameWorld (useful for tests) while defaulting to internally generated world
   constructor(gameWorld?: GameWorld) {
@@ -72,6 +73,17 @@ export class GameStateManager {
         };
       }
     }
+
+    // Populate available spawn points
+    for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
+      for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
+        const terrain = newGameWorld.grid[y][x];
+        if (terrain.type !== TerrainType.MOUNTAIN) {
+          this.availableSpawnPoints.add(`${x},${y}`);
+        }
+      }
+    }
+
     return newGameWorld;
   }
 
@@ -85,6 +97,18 @@ export class GameStateManager {
     this.gameWorld.npcs.forEach(n => {
         if (n.isAlive) {
             this.occupiedPositions.add(`${n.position.x},${n.position.y}`);
+        }
+    });
+
+    // Remove occupied positions from available spawn points
+    this.gameWorld.players.forEach(p => {
+        if (p.isAlive) {
+            this.availableSpawnPoints.delete(`${p.position.x},${p.position.y}`);
+        }
+    });
+    this.gameWorld.npcs.forEach(n => {
+        if (n.isAlive) {
+            this.availableSpawnPoints.delete(`${n.position.x},${n.position.y}`);
         }
     });
   }
@@ -137,6 +161,7 @@ export class GameStateManager {
     player.position = finalPosition;
     this.gameWorld.players.push(player);
     this.occupiedPositions.add(`${finalPosition.x},${finalPosition.y}`);
+    this.availableSpawnPoints.delete(`${finalPosition.x},${finalPosition.y}`);
 
     // Release reservation if it was obtained via spawning logic (safe to call regardless)
     this.releaseReservedPosition(finalPosition);
@@ -158,6 +183,7 @@ export class GameStateManager {
 
     const player = this.gameWorld.players[playerIndex];
     this.occupiedPositions.delete(`${player.position.x},${player.position.y}`);
+    this.availableSpawnPoints.add(`${player.position.x},${player.position.y}`);
     this.gameWorld.players.splice(playerIndex, 1);
 
     return {
@@ -309,6 +335,7 @@ export class GameStateManager {
       defender.stats.hp = 0;
       defender.isAlive = false;
       this.occupiedPositions.delete(`${defender.position.x},${defender.position.y}`);
+      this.availableSpawnPoints.add(`${defender.position.x},${defender.position.y}`);
 
       // Award experience and potentially loot
       const isPlayerDefender = 'twitchUsername' in defender;
@@ -703,6 +730,7 @@ export class GameStateManager {
 
       this.gameWorld.npcs.push(npc);
       this.occupiedPositions.add(`${position.x},${position.y}`);
+      this.availableSpawnPoints.delete(`${position.x},${position.y}`);
     }
   }
 
@@ -717,94 +745,16 @@ export class GameStateManager {
   }
 
   private findEmptySpawnPosition(): Position | null {
-    // Wrap verbose spawn logging with an environment variable check
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Starting spawn position search`);
-    }
-    
-    // First, clean up positions from disconnected players
-    this.cleanupDisconnectedPlayerPositions();
-
-    const gridWidth = GAME_CONFIG.gridWidth;
-    const gridHeight = GAME_CONFIG.gridHeight;
-
-    // DIAGNOSTIC: Log search strategy
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Search strategy - Grid: ${gridWidth}x${gridHeight}, Priority: corners → edges → center → random`);
+    if (this.availableSpawnPoints.size === 0) {
+      return null;
     }
 
-    // Define spawn priority zones
-    const cornerPositions = [
-      { x: 0, y: 0 },
-      { x: gridWidth - 1, y: 0 },
-      { x: 0, y: gridHeight - 1 },
-      { x: gridWidth - 1, y: gridHeight - 1 }
-    ];
-
-    const edgePositions = [];
-    // Add top and bottom edges (excluding corners)
-    for (let x = 1; x < gridWidth - 1; x++) {
-      edgePositions.push({ x, y: 0 });
-      edgePositions.push({ x, y: gridHeight - 1 });
-    }
-    // Add left and right edges (excluding corners)
-    for (let y = 1; y < gridHeight - 1; y++) {
-      edgePositions.push({ x: 0, y });
-      edgePositions.push({ x: gridWidth - 1, y });
-    }
-
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Priority zones - Corners: ${cornerPositions.length}, Edges: ${edgePositions.length}`);
-    }
-
-    // 1. Try corner positions first (highest priority)
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Checking corner positions...`);
-    }
-    for (const position of cornerPositions) {
-      if (this.isValidSpawnPosition(position.x, position.y)) {
-        if (this.reservePosition(position.x, position.y)) {
-          console.log(`[SPAWN_SUCCESS] Found & reserved corner spawn position: (${position.x}, ${position.y})`);
-          return position;
-        }
-      }
-    }
-
-    // 2. Try edge positions (medium priority)
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Corner positions unavailable, checking edge positions...`);
-    }
-    for (const position of edgePositions) {
-      if (this.isValidSpawnPosition(position.x, position.y)) {
-        if (this.reservePosition(position.x, position.y)) {
-          console.log(`[SPAWN_SUCCESS] Found & reserved edge spawn position: (${position.x}, ${position.y})`);
-          return position;
-        }
-      }
-    }
-
-    // 3. Try center area with intelligent fallback (lower priority)
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Edge positions unavailable, checking center area...`);
-    }
-    const centerPositions = this.generateCenterPositions();
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_SEARCH] Generated ${centerPositions.length} center positions to check`);
-    }
-    for (const position of centerPositions) {
-      if (this.isValidSpawnPosition(position.x, position.y)) {
-        if (this.reservePosition(position.x, position.y)) {
-          console.log(`[SPAWN_SUCCESS] Found & reserved center spawn position: (${position.x}, ${position.y})`);
-          return position;
-        }
-      }
-    }
-
-    // 4. Final fallback: random search with increased attempts
-    if (process.env.GAME_DEBUG_SPAWN === '1') {
-      console.log(`[SPAWN_FALLBACK] All priority zones exhausted, using random search fallback`);
-    }
-    return this.findEmptySpawnPositionFallback();
+    const entries = Array.from(this.availableSpawnPoints);
+    const randomIndex = Math.floor(Math.random() * entries.length);
+    const key = entries[randomIndex];
+    this.availableSpawnPoints.delete(key);
+    const [x, y] = key.split(',').map(Number);
+    return { x, y };
   }
 
   private cleanupDisconnectedPlayerPositions(): void {

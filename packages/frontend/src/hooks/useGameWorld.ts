@@ -2,38 +2,19 @@ import { useEffect } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import { webSocketClient } from '../services/webSocketClient';
 import { createMockGameWorld } from '../services/worldGeneration/WorldGenerator';
-import type { GameWorld, Player } from '../../../shared/src/types/game';
+import type { GameWorld, Player, UnifiedSettings } from 'shared';
 
 interface GameWorldHook {
   gameWorld: GameWorld | null;
   currentPlayer: Player | null;
   selectedTab: string;
   gameMessage: string;
-  animationSettings: {
-    roughness: number;
-    bowing: number;
-    fillWeight: number;
-    hachureAngle: number;
-    hachureGap: number;
-    animationSpeed: number;
-    breathingRate: number;
-    particleCount: number;
-    windSpeed: number;
-    showGrid: boolean;
-    showParticles: boolean;
-    showHealthBars: boolean;
-    backgroundColor: string;
-    grassWaveSpeed: number;
-    treeSwaySpeed: number;
-    flowerSpawnRate: number;
-    worldWidth: number;
-    worldHeight: number;
-  };
+  unifiedSettings: UnifiedSettings;
   setGameWorld: (world: GameWorld) => void;
   setCurrentPlayer: (player: Player | null) => void;
   setSelectedTab: (tab: string) => void;
   setGameMessage: (message: string) => void;
-  updateAnimationSettings: (settings: Partial<GameWorldHook['animationSettings']>) => void;
+  updateUnifiedSettings: (settings: Partial<UnifiedSettings>) => void;
   movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
   handleRegenerateWorld: () => void;
   handleMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
@@ -48,12 +29,12 @@ export const useGameWorld = (): GameWorldHook => {
     currentPlayer,
     selectedTab,
     gameMessage,
-    animationSettings,
+    unifiedSettings,
     setGameWorld,
     setCurrentPlayer,
     setSelectedTab,
     setGameMessage: setGameMessageInStore, // Renamed to avoid conflict
-    updateAnimationSettings,
+    updateUnifiedSettings,
     movePlayer
   } = useGameStore();
 
@@ -98,12 +79,12 @@ export const useGameWorld = (): GameWorldHook => {
     currentPlayer,
     selectedTab,
     gameMessage,
-    animationSettings,
+    unifiedSettings,
     setGameWorld,
     setCurrentPlayer,
     setSelectedTab,
     setGameMessage: setGameMessageInStore,
-    updateAnimationSettings,
+    updateUnifiedSettings,
     movePlayer,
     handleRegenerateWorld,
     handleMove,

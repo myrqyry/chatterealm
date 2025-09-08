@@ -1,6 +1,6 @@
-import type { GameWorld, Player, NPC, Item, Terrain } from 'shared/src/types/game';
-import { TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared/src/types/game';
-import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
+import type { GameWorld, Player, NPC, Item, Terrain } from 'shared';
+import { TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared';
+import { GAME_CONFIG } from 'shared';
 
 // Mock terrain grid with varied terrain types
 const createMockGrid = (): Terrain[][] => {

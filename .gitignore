@@ -104,3 +104,8 @@ temp-frontend/
 packages/backend/dist/
 packages/frontend/dist/
 packages/shared/dist/
+
+# Compiled JavaScript and declaration files in src directories
+**/src/**/*.js
+**/src/**/*.js.map
+**/src/**/*.d.ts

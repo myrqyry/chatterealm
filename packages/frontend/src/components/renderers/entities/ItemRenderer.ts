@@ -1,4 +1,4 @@
-import type { Item } from 'shared/src/types/game';
+import type { Item } from 'shared';
 
 export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number, item: Item, time: number) => {
   const centerX = x * gridSize + gridSize / 2;

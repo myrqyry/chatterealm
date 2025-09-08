@@ -1,5 +1,5 @@
-import type { GameWorld } from '../../../../shared/src/types/game';
-import { ItemType, ItemRarity } from '../../../../shared/src/types/game.ts';
+import type { GameWorld } from 'shared';
+import { ItemType, ItemRarity } from 'shared';
 import { WORLD_WIDTH, WORLD_HEIGHT } from './WorldTypes';
 import { generateTerrain } from './TerrainGenerator';
 

@@ -1,6 +1,6 @@
-import type { Player, Item } from 'shared/src/types/game';
-import { TerrainType, AnimationSettings } from 'shared/src/types/game';
-import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
+import type { Player, Item } from 'shared';
+import { TerrainType, AnimationSettings } from 'shared';
+import { GAME_CONFIG } from 'shared';
 import { drawAnimatedTerrainTile } from '../terrain/TerrainRenderer';
 import { drawAnimatedItem } from '../entities/ItemRenderer';
 import { drawAnimatedNPC } from '../entities/NPCRenderer';

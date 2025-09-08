@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 // Import types from shared package
-import type { GameWorld, Player, UnifiedSettings } from '../../../shared/src/types/game';
-import { MovementStyle, Theme, NotificationType } from '../../../shared/src/types/game.ts';
+import type { GameWorld, Player, UnifiedSettings } from 'shared';
+import { MovementStyle, Theme, NotificationType } from 'shared';
 
 // Import WebSocket client
 import { webSocketClient } from '../services/webSocketClient';
@@ -22,10 +22,6 @@ interface GameState {
   // Unified settings state
   unifiedSettings: UnifiedSettings;
 
-  // Legacy properties for backward compatibility
-  settings: any; // Keep for migration
-  animationSettings: any; // Keep for migration
-
   // Actions
   setGameWorld: (world: GameWorld) => void;
   setCurrentPlayer: (player: Player | null) => void;
@@ -41,9 +37,7 @@ interface GameState {
   updateAnimationSettings: (settings: any) => void;
   updateUnifiedSettings: (settings: Partial<UnifiedSettings>) => void;
 
-  // Legacy methods for backward compatibility
-  updateSettings: (settings: any) => void;
-  resetSettings: () => void;
+  // Settings resets
   resetGameSettings: () => void;
   resetAudioSettings: () => void;
   resetNotificationSettings: () => void;
@@ -177,10 +171,6 @@ export const useGameStore = create<GameState>()(
         // Unified settings state with defaults
         unifiedSettings: createDefaultUnifiedSettings(),
 
-        // Legacy properties for backward compatibility
-        settings: createDefaultUnifiedSettings(),
-        animationSettings: createDefaultUnifiedSettings().animations,
-
         // Game actions
         joinGame: (playerData) => {
           webSocketClient.joinGame(playerData);
@@ -214,23 +204,6 @@ export const useGameStore = create<GameState>()(
         },
 
         clearMessage: () => set({ gameMessage: '' }),
-
-        // Legacy methods for backward compatibility
-        updateSettings: (settings) => set((state) => ({
-          settings: { ...state.settings, ...settings },
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            game: { ...state.unifiedSettings.game, ...settings?.game },
-            audio: { ...state.unifiedSettings.audio, ...settings?.audio },
-            notifications: { ...state.unifiedSettings.notifications, ...settings?.notifications },
-            visual: { ...state.unifiedSettings.visual, ...settings?.visual },
-          }
-        })),
-
-        resetSettings: () => set({
-          settings: createDefaultUnifiedSettings(),
-          unifiedSettings: createDefaultUnifiedSettings()
-        }),
 
         // State setters
         setGameWorld: (world) => set({ gameWorld: world }),
@@ -327,8 +300,7 @@ export const useGameStore = create<GameState>()(
           unifiedSettings: {
             ...state.unifiedSettings,
             animations: createDefaultUnifiedSettings().animations
-          },
-          animationSettings: createDefaultUnifiedSettings().animations
+          }
         })),
 
         resetAllSettings: () => set({

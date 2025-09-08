@@ -1,7 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { GameStateManager, GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
-import { Player, GameWorld, PlayerClass, JoinGameData } from 'shared';
+import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from 'shared';
 
 export interface ClientData {
   playerId: string;
@@ -89,6 +89,8 @@ export class WebSocketServer {
       console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
       console.log(`[JOIN_START] ConnectedClients before join: ${this.connectedClients.size}`);
       
+      socket.data.isAuthenticating = true;
+      
       // Create player object with all required properties
       const player: Player = {
         id: playerData.id,
@@ -151,6 +153,17 @@ export class WebSocketServer {
       console.log(`[JOIN_REGISTERED] ConnectedClients after join: ${this.connectedClients.size}`);
       console.log(`[JOIN_REGISTERED] ConnectedClients keys: [${Array.from(this.connectedClients.keys()).join(', ')}]`);
 
+      socket.data.isAuthenticated = true;
+      delete socket.data.isAuthenticating;
+
+      // Process any queued commands
+      if (socket.data.commandQueue && socket.data.commandQueue.length > 0) {
+        socket.data.commandQueue.forEach((queuedCommand: PlayerCommand) => {
+          this.handlePlayerCommand(socket, queuedCommand);
+        });
+        socket.data.commandQueue = [];
+      }
+
       // Join player to their personal room for targeted updates
       socket.join(`player_${player.id}`);
 
@@ -177,6 +190,17 @@ export class WebSocketServer {
   }
 
   private handlePlayerCommand(socket: Socket, command: PlayerCommand): void {
+    if (socket.data.isAuthenticated) {
+      // Proceed to process the command
+    } else if (socket.data.isAuthenticating) {
+      if (!socket.data.commandQueue) socket.data.commandQueue = [];
+      socket.data.commandQueue.push(command);
+      return;
+    } else {
+      socket.emit('error', { message: 'Not authenticated' });
+      return;
+    }
+
     try {
       const clientData = this.connectedClients.get(socket.id);
       if (!clientData) {
@@ -202,6 +226,12 @@ export class WebSocketServer {
 
         socket.emit('error', { message: 'Not authenticated' });
         return;
+      }
+
+      // Update player's lastActive timestamp
+      const player = this.gameStateManager.getPlayer(clientData.playerId);
+      if (player) {
+        player.lastActive = Date.now();
       }
 
       // With the simplified authentication flow, the presence of clientData means the user is authenticated.

@@ -1,5 +1,18 @@
 // Core Game Types for Chat Grid Chronicles
 
+export enum SocketEvents {
+  CONNECT = 'connect',
+  DISCONNECT = 'disconnect',
+  JOIN_GAME = 'join_game',
+  GAME_JOINED = 'game_joined',
+  PLAYER_COMMAND = 'player_command',
+  COMMAND_RESULT = 'command_result',
+  GAME_STATE_UPDATE = 'game_state_update',
+  PLAYER_JOINED = 'player_joined',
+  PLAYER_DISCONNECTED = 'player_disconnected',
+  ERROR = 'error',
+}
+
 export interface Position {
   x: number;
   y: number;

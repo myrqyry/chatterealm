@@ -1,5 +1,5 @@
-import type { AnimationSettings } from 'shared/src/types/game';
-import { TerrainType } from 'shared/src/types/game';
+import type { AnimationSettings } from 'shared';
+import { TerrainType } from 'shared';
 
 export const drawBiome = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;

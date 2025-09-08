@@ -5,8 +5,8 @@ import {
   Item,
   AnimationSettings, // Now imported from shared
   TerrainType // Now imported from shared
-} from 'shared/src/types/game';
-import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
+} from 'shared';
+import { GAME_CONFIG } from 'shared';
 import { useGameStore } from '../stores/gameStore';
 import { setupCanvas } from './renderers/canvas/CanvasUtils';
 import { updateParticles, Particle, addParticles } from './renderers/effects/ParticleSystem';
