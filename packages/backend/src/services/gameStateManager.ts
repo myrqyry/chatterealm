@@ -186,6 +186,8 @@ export class GameStateManager {
     this.availableSpawnPoints.add(`${player.position.x},${player.position.y}`);
     this.gameWorld.players.splice(playerIndex, 1);
 
+    console.log(`[PLAYER_REMOVAL] Player ${player.displayName} removed, freed spawn position (${player.position.x}, ${player.position.y})`);
+
     return {
       success: true,
       message: `Player ${player.displayName} left the game`,
@@ -746,15 +748,23 @@ export class GameStateManager {
 
   private findEmptySpawnPosition(): Position | null {
     if (this.availableSpawnPoints.size === 0) {
+      console.log(`[SPAWN_ERROR] No available spawn positions in the Set`);
       return null;
     }
 
+    // Get a random entry from the Set (O(1) operation)
     const entries = Array.from(this.availableSpawnPoints);
     const randomIndex = Math.floor(Math.random() * entries.length);
     const key = entries[randomIndex];
+
+    // Remove from available set to prevent concurrent spawns at same location
     this.availableSpawnPoints.delete(key);
+
     const [x, y] = key.split(',').map(Number);
-    return { x, y };
+    const position = { x, y };
+
+    console.log(`[SPAWN_SUCCESS] Found spawn position at (${x}, ${y}) using optimized Set lookup`);
+    return position;
   }
 
   private cleanupDisconnectedPlayerPositions(): void {

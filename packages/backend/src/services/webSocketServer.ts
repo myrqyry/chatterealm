@@ -59,13 +59,13 @@ export class WebSocketServer {
       console.log(`[CONNECTION] ConnectedClients keys: [${Array.from(this.connectedClients.keys()).join(', ')}]`);
 
       // Handle player join
-      socket.on('join_game', (playerData: JoinGameData) => {
+      socket.on(SocketEvents.JOIN_GAME, (playerData: JoinGameData) => {
         console.log(`[JOIN_GAME_RECEIVED] Socket ${socket.id} attempting to join with data:`, playerData);
         this.handlePlayerJoin(socket, playerData);
       });
 
       // Handle player commands
-      socket.on('player_command', (command: PlayerCommand) => {
+      socket.on(SocketEvents.PLAYER_COMMAND, (command: PlayerCommand) => {
         console.log(`[COMMAND_RECEIVED] Socket ${socket.id} sent command:`, command.type);
         console.log(`[COMMAND_RECEIVED] Socket in connectedClients: ${this.connectedClients.has(socket.id)}`);
         this.handlePlayerCommand(socket, command);
@@ -88,8 +88,10 @@ export class WebSocketServer {
     try {
       console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
       console.log(`[JOIN_START] ConnectedClients before join: ${this.connectedClients.size}`);
-      
+
+      // Set authentication state to prevent race conditions
       socket.data.isAuthenticating = true;
+      socket.data.commandQueue = [];
       
       // Create player object with all required properties
       const player: Player = {
@@ -168,13 +170,13 @@ export class WebSocketServer {
       socket.join(`player_${player.id}`);
 
       // Send success response with initial game state
-      socket.emit('game_joined', {
+      socket.emit(SocketEvents.GAME_JOINED, {
         player: result.data.player,
         gameWorld: this.gameStateManager.getGameWorld()
       });
 
       // Broadcast player joined to all other clients
-      socket.to('game_room').emit('player_joined', {
+      socket.to('game_room').emit(SocketEvents.PLAYER_JOINED, {
         player: result.data.player
       });
 
@@ -324,7 +326,7 @@ export class WebSocketServer {
           player.lastActive = Date.now();
 
           // Broadcast player disconnected to all clients (but keep them in game world)
-          this.io.to('game_room').emit('player_disconnected', {
+          this.io.to('game_room').emit(SocketEvents.PLAYER_DISCONNECTED, {
             playerId: clientData.playerId,
             player: player
           });
@@ -347,7 +349,7 @@ export class WebSocketServer {
   public broadcastGameState(): void {
     try {
       const gameWorld = this.gameStateManager.getGameWorld();
-      this.io.to('game_room').emit('game_state_update', gameWorld);
+      this.io.to('game_room').emit(SocketEvents.GAME_STATE_UPDATE, gameWorld);
     } catch (error) {
       console.error('Error broadcasting game state:', error);
     }

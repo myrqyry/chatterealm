@@ -256,6 +256,14 @@ export const useGameStore = create<GameState>()(
           }
         })),
 
+        // Legacy update methods - kept for backward compatibility but deprecated
+        updateSettings: (settings) => set((state) => ({
+          unifiedSettings: {
+            ...state.unifiedSettings,
+            game: { ...state.unifiedSettings.game, ...settings }
+          }
+        })),
+
         updateUnifiedSettings: (settings) => set((state) => ({
           unifiedSettings: { ...state.unifiedSettings, ...settings }
         })),
