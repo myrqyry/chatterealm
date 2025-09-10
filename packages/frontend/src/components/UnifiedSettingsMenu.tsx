@@ -116,14 +116,65 @@ const UnifiedSettingsMenu: React.FC = () => {
   const handleRegenerate = () => regenerateWorld();
 
   return (
-    <div className="unified-settings-menu">
-      <div className="menu-header">
-        <h2>⚙️ Unified Game Menu</h2>
-        <div className="menu-actions">
-          <button className="btn-secondary" onClick={() => setShowImportExport(v => !v)}>
-            {showImportExport ? 'Hide Import/Export' : 'Import / Export'}
+    <div style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: 'Inter, Roboto, sans-serif'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '8px',
+        paddingBottom: '6px',
+        borderBottom: '1px solid var(--color-outline)'
+      }}>
+        <h3 style={{
+          color: 'var(--color-text-primary)',
+          fontSize: '1em',
+          fontWeight: '600',
+          margin: 0
+        }}>
+          ⚙️ Settings
+        </h3>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            style={{
+              padding: '3px 6px',
+              background: 'var(--color-secondary-container)',
+              color: 'var(--color-on-secondary-container)',
+              border: '1px solid var(--color-outline)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.7em',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onClick={() => setShowImportExport(v => !v)}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-secondary)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-secondary-container)'}
+          >
+            {showImportExport ? 'Hide' : 'I/E'}
           </button>
-          <button className="btn-danger" onClick={handleResetAll}>Reset All</button>
+          <button
+            style={{
+              padding: '3px 6px',
+              background: 'var(--color-error-container)',
+              color: 'var(--color-on-error-container)',
+              border: '1px solid var(--color-error)',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.7em',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onClick={handleResetAll}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-error)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-error-container)'}
+          >
+            Reset
+          </button>
         </div>
       </div>
 
@@ -146,49 +197,159 @@ const UnifiedSettingsMenu: React.FC = () => {
         </div>
       )}
 
-      <div className="primary-tabs">
+      <div style={{
+        display: 'flex',
+        gap: '6px',
+        marginBottom: '16px',
+        flexWrap: 'wrap',
+        justifyContent: 'center'
+      }}>
         {[
           { id: 'overview', label: '🧭 Overview' },
           { id: 'gameplay', label: '🎮 Gameplay' },
-            { id: 'audio', label: '🎵 Audio' },
+          { id: 'audio', label: '🎵 Audio' },
           { id: 'visual', label: '👁️ Visual' },
           { id: 'world', label: '🌍 World & Advanced' },
           { id: 'actions', label: '⚔️ Actions & Debug' },
         ].map(t => (
           <button
             key={t.id}
-            className={`tab-button ${activeTab === t.id ? 'active' : ''}`}
+            style={{
+              padding: '8px 16px',
+              background: activeTab === t.id ? 'var(--color-primary)' : 'var(--color-surface-variant)',
+              color: activeTab === t.id ? 'var(--color-on-primary)' : 'var(--color-text-secondary)',
+              border: activeTab === t.id ? '1px solid var(--color-primary)' : '1px solid var(--color-outline)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.8em',
+              fontWeight: '500',
+              transition: 'all 0.2s ease',
+              minWidth: '120px',
+              textAlign: 'center',
+              fontFamily: 'inherit'
+            }}
             onClick={() => setActiveTab(t.id)}
+            onMouseEnter={(e) => {
+              if (activeTab !== t.id) {
+                e.currentTarget.style.background = 'var(--color-primary-container)';
+                e.currentTarget.style.color = 'var(--color-on-primary-container)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== t.id) {
+                e.currentTarget.style.background = 'var(--color-surface-variant)';
+                e.currentTarget.style.color = 'var(--color-text-secondary)';
+              }
+            }}
           >
             {t.label}
           </button>
         ))}
       </div>
 
-      <div className="tab-panels">
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        padding: '8px 0'
+      }}>
         {activeTab === 'overview' && (
-          <div className="tab-panel">
-            <SettingGroup title="World Snapshot" icon="🗺️" description="Key dynamic world stats.">
-              <ul className="world-stats-list">
-                <li><strong>Phase:</strong> {gameWorld?.phase || 'N/A'}</li>
-                <li><strong>Players:</strong> {gameWorld?.players.length || 0}</li>
-                <li><strong>NPCs:</strong> {gameWorld?.npcs.length || 0}</li>
-                <li><strong>Items:</strong> {gameWorld?.items.length || 0}</li>
-                <li><strong>World Age:</strong> {gameWorld?.worldAge || 0} cycles</li>
-              </ul>
-            </SettingGroup>
+          <div style={{ padding: '0 8px' }}>
+            <div style={{
+              background: 'var(--color-surface-variant)',
+              borderRadius: '8px',
+              padding: '12px',
+              marginBottom: '12px',
+              border: '1px solid var(--color-outline-variant)'
+            }}>
+              <h4 style={{
+                color: 'var(--color-text-primary)',
+                fontSize: '0.9em',
+                fontWeight: '600',
+                margin: '0 0 8px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                🗺️ World Snapshot
+              </h4>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '8px',
+                fontSize: '0.8em'
+              }}>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  <strong>Phase:</strong> {gameWorld?.phase || 'N/A'}
+                </div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  <strong>Players:</strong> {gameWorld ? gameWorld.players.length : 0}
+                </div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  <strong>NPCs:</strong> {gameWorld ? gameWorld.npcs.length : 0}
+                </div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>
+                  <strong>Items:</strong> {gameWorld ? gameWorld.items.length : 0}
+                </div>
+                <div style={{
+                  color: 'var(--color-text-secondary)',
+                  gridColumn: '1 / -1'
+                }}>
+                  <strong>World Age:</strong> {gameWorld?.worldAge || 0} cycles
+                </div>
+              </div>
+            </div>
             {currentPlayer && (
-              <SettingGroup title="Current Player" icon="🧑" description="Basic player diagnostics.">
-                <ul className="player-quick-info">
-                  <li><strong>Name:</strong> {currentPlayer.name}</li>
-                  <li><strong>Health:</strong> {currentPlayer.health}</li>
-                  <li><strong>Level:</strong> {currentPlayer.level}</li>
-                  <li><strong>Pos:</strong> {currentPlayer.position.x},{currentPlayer.position.y}</li>
-                </ul>
-              </SettingGroup>
+              <div style={{
+                background: 'var(--color-surface-variant)',
+                borderRadius: '8px',
+                padding: '12px',
+                marginBottom: '12px',
+                border: '1px solid var(--color-outline-variant)'
+              }}>
+                <h4 style={{
+                  color: 'var(--color-text-primary)',
+                  fontSize: '0.9em',
+                  fontWeight: '600',
+                  margin: '0 0 8px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  🧑 Current Player
+                </h4>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '8px',
+                  fontSize: '0.8em'
+                }}>
+                  <div style={{ color: 'var(--color-text-secondary)' }}>
+                    <strong>Name:</strong> {currentPlayer.name}
+                  </div>
+                  <div style={{ color: 'var(--color-text-secondary)' }}>
+                    <strong>Health:</strong> {currentPlayer.health}
+                  </div>
+                  <div style={{ color: 'var(--color-text-secondary)' }}>
+                    <strong>Level:</strong> {currentPlayer.level}
+                  </div>
+                  <div style={{ color: 'var(--color-text-secondary)' }}>
+                    <strong>Pos:</strong> {currentPlayer.position.x},{currentPlayer.position.y}
+                  </div>
+                </div>
+              </div>
             )}
             {gameMessage && (
-              <div className="inline-game-message">{gameMessage}</div>
+              <div style={{
+                background: 'var(--color-warning-container)',
+                color: 'var(--color-on-warning-container)',
+                borderRadius: '8px',
+                padding: '12px',
+                border: '1px solid var(--color-warning)',
+                fontSize: '0.85em'
+              }}>
+                {gameMessage}
+              </div>
             )}
           </div>
         )}

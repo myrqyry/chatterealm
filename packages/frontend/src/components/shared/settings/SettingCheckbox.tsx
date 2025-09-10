@@ -1,4 +1,5 @@
 import React from 'react';
+import { FormControlLabel, Checkbox, Typography, Box } from '@mui/material';
 
 interface SettingCheckboxProps {
   label: string;
@@ -20,19 +21,45 @@ const SettingCheckbox: React.FC<SettingCheckboxProps> = ({
   };
 
   return (
-    <div className={`control-group checkbox ${className}`}>
-      <label>
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={handleChange}
-        />
-        {label}
-      </label>
-      {description && (
-        <span className="setting-description">{description}</span>
-      )}
-    </div>
+    <Box className={`control-group checkbox ${className} mb-2`}>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={handleChange}
+            sx={{
+              '&.Mui-checked': {
+                color: 'var(--color-primary)',
+              },
+              '& .MuiSvgIcon-root': {
+                fontSize: 20,
+              },
+            }}
+            className="text-text-secondary"
+          />
+        }
+        label={
+          <Box className="jetbrains text-sm font-medium text-text-primary mb-0.5">
+            <Typography className="jetbrains text-sm font-medium text-text-primary mb-0.5">
+              {label}
+            </Typography>
+            {description && (
+              <Typography className="jetbrains text-xs text-text-secondary italic">
+                {description}
+              </Typography>
+            )}
+          </Box>
+        }
+        sx={{
+          alignItems: 'flex-start',
+          margin: 0,
+          width: '100%',
+          '& .MuiFormControlLabel-label': {
+            marginLeft: 1,
+          },
+        }}
+      />
+    </Box>
   );
 };
 

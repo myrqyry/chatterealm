@@ -47,9 +47,11 @@ const GameCanvas: React.FC = () => {
   const items = gameWorld?.items || [];
   const showGrid = animationSettings?.showGrid ?? true;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const [particles, setParticles] = useState<Particle[]>([]);
   const timeRef = useRef(0);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const animate = () => {
@@ -79,6 +81,26 @@ const GameCanvas: React.FC = () => {
   // Use shared game configuration constant for consistent tile size
   const gridSize = GAME_CONFIG.tileSize; // Central source of truth for tile size
 
+  // Handle container resize to maintain aspect ratio
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setContainerSize({ width, height });
+      }
+    });
+
+    // Observe the wrapper div that receives full available space
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -87,10 +109,45 @@ const GameCanvas: React.FC = () => {
     if (!ctx) return;
 
     const rc = rough.canvas(canvas);
-  const numTilesX = grid[0]?.length || 40; // Updated default to enlarged world width
-  const numTilesY = grid.length || 30;     // Updated default to enlarged world height
+    const numTilesX = grid[0]?.length || 60; // Made wider for better screen utilization
+    const numTilesY = grid.length || 30;     // Keep reasonable height
 
-    setupCanvas(canvas, ctx, numTilesX, numTilesY, gridSize);
+    // Get CSS size from container (this is the available space)
+    const cssWidth = containerSize.width;
+    const cssHeight = containerSize.height;
+
+    // Get device pixel ratio for crisp rendering
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    // Calculate proper scaling to maintain aspect ratio but use maximum space
+    const scaleX = cssWidth / (numTilesX * gridSize);
+    const scaleY = cssHeight / (numTilesY * gridSize);
+    const worldScale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+    const clampedWorldScale = Math.max(0.5, Math.min(worldScale, 5.0));
+
+    // Calculate the actual rendered size
+    const tileSizePx = gridSize * clampedWorldScale;
+    const renderedWidth = numTilesX * tileSizePx;
+    const renderedHeight = numTilesY * tileSizePx;
+    
+    // Set CSS size to fill the entire container
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${cssHeight}px`;
+
+    // Set backing buffer size (device pixels for crisp rendering)
+    canvas.width = Math.floor(cssWidth * dpr);
+    canvas.height = Math.floor(cssHeight * dpr);
+
+    // Reset transform and apply device pixel ratio scaling
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    
+    // Center the properly scaled game world
+    const offsetX = (cssWidth - renderedWidth) / 2;
+    const offsetY = (cssHeight - renderedHeight) / 2;
+    ctx.translate(offsetX, offsetY);
+
+    setupCanvas(canvas, ctx, numTilesX, numTilesY, tileSizePx, cssWidth, cssHeight);
     ctx.imageSmoothingEnabled = false; // Keep pixel art crisp
 
     renderGame(
@@ -105,11 +162,41 @@ const GameCanvas: React.FC = () => {
       animationSettings as AnimationSettings,
       particles,
       addParticlesToState,
-      gridSize // Pass the gridSize as tileSize parameter
+      tileSizePx // Pass explicit pixel tile size
     );
-  }, [grid, players, npcs, items, showGrid, particles, animationSettings, addParticlesToState, gridSize]);
+  }, [grid, players, npcs, items, showGrid, particles, animationSettings, addParticlesToState, gridSize, containerSize]);
 
-  return <canvas ref={canvasRef} style={{ border: '1px solid #ccc' }} />;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flex: '1 1 auto', // allow the container to grow/shrink to fill available space
+        alignItems: 'stretch', // stretch to full height
+        justifyContent: 'stretch', // stretch to full width
+        overflow: 'hidden',
+        position: 'relative',
+        minWidth: 0, // important for flex children to prevent overflow in CSS layouts
+        minHeight: 0
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        style={{
+          border: '1px solid var(--color-outline)',
+          borderRadius: '8px',
+          display: 'block',
+          imageRendering: 'pixelated',
+          width: '100%', // fill the available width of the container
+          height: '100%', // fill the available height of the container
+          maxWidth: '100%',
+          maxHeight: '100%'
+        }}
+      />
+    </div>
+  );
 };
 
 export default GameCanvas;

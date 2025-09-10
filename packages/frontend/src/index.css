@@ -1,55 +1,113 @@
-:root {
-  --color-background-dark: #191724;
-  --color-background-medium: #1f1d2e;
-  --color-text-light: #e0def4;
-  --color-accent-purple: #c4a7e7;
-  --color-primary-blue: #31748f;
-  --color-secondary-blue: #9ccfd8;
-  --color-accent-dark-purple: #9b59b6;
-  --color-legend-knight: #FFD700;
-  --color-legend-rogue: #8B0000;
-  --color-legend-mage: #4B0082;
-  --color-legend-npc: #DC143C;
-  --color-legend-item: #F59E0B;
-  --color-tab-settings: #17a2b8;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  /* New colors for health bar */
-  --color-health-healthy: #a3e635;
-  --color-health-wounded: #fbbf24;
-  --color-health-critical: #f97316;
+:root {
+  /* Material 3 Expressive Color System - Dark Mode */
+  --color-background-primary: #0f0f23;
+  --color-background-secondary: #1a1a2e;
+  --color-background-tertiary: #16213e;
+  --color-surface: #1e1e2e;
+  --color-surface-variant: #2a2a3e;
+
+  /* Text colors - High contrast and readable */
+  --color-text-primary: #cdd6f4;
+  --color-text-secondary: #bac2de;
+  --color-text-tertiary: #a6adc8;
+  --color-text-on-surface: #cdd6f4;
+
+  /* Material 3 semantic colors - Dark theme */
+  --color-primary: #89b4fa;
+  --color-primary-container: #1e40af;
+  --color-on-primary: #1e1e2e;
+  --color-on-primary-container: #dbeafe;
+
+  --color-secondary: #94a3b8;
+  --color-secondary-container: #334155;
+  --color-on-secondary: #1e1e2e;
+  --color-on-secondary-container: #f1f5f9;
+
+  --color-tertiary: #c4a7e7;
+  --color-tertiary-container: #581c87;
+  --color-on-tertiary: #1e1e2e;
+  --color-on-tertiary-container: #f3e8ff;
+
+  --color-error: #f38ba8;
+  --color-error-container: #7f1d1d;
+  --color-on-error: #1e1e2e;
+  --color-on-error-container: #fef2f2;
+
+  --color-success: #a6e3a1;
+  --color-success-container: #166534;
+  --color-on-success: #1e1e2e;
+  --color-on-success-container: #f0fdf4;
+
+  --color-warning: #f9e2af;
+  --color-warning-container: #92400e;
+  --color-on-warning: #1e1e2e;
+  --color-on-warning-container: #fffbeb;
+
+  /* Border and outline colors */
+  --color-outline: #6c7086;
+  --color-outline-variant: #9399b2;
+
+  /* Game-specific colors - Clean and semantic */
+  --color-legend-knight: #2563eb;
+  --color-legend-rogue: #dc2626;
+  --color-legend-mage: #7c3aed;
+  --color-legend-npc: #ea580c;
+  --color-legend-item: #16a34a;
+
+  /* Health bar colors - Material 3 style */
+  --color-health-healthy: #16a34a;
+  --color-health-wounded: #ca8a04;
+  --color-health-critical: #ea580c;
   --color-health-dying: #dc2626;
-  --color-health-fill-healthy-start: #22c55e;
-  --color-health-fill-healthy-end: #16a34a;
-  --color-health-fill-wounded-start: #fbbf24;
-  --color-health-fill-wounded-end: #f59e0b;
-  --color-health-fill-critical-start: #f97316;
-  --color-health-fill-critical-end: #ea580c;
+  --color-health-fill-healthy-start: #16a34a;
+  --color-health-fill-healthy-end: #15803d;
+  --color-health-fill-wounded-start: #ca8a04;
+  --color-health-fill-wounded-end: #a16207;
+  --color-health-fill-critical-start: #ea580c;
+  --color-health-fill-critical-end: #c2410c;
   --color-health-fill-dying-start: #dc2626;
   --color-health-fill-dying-end: #b91c1c;
 
-  /* New colors for experience bar */
-  --color-exp-fill-start: #f6c177;
-  --color-exp-fill-end: #ebbcba;
-  --color-exp-value: #f6c177;
+  /* Experience bar colors */
+  --color-exp-fill-start: #7c3aed;
+  --color-exp-fill-end: #581c87;
+  --color-exp-value: #7c3aed;
 
-  /* New colors for status effects */
-  --color-status-active-bg: rgba(163, 230, 53, 0.2);
-  --color-status-active-text: #a3e635;
-  --color-status-active-border: #84cc16;
-  --color-status-negative-bg: rgba(220, 38, 38, 0.2);
-  --color-status-negative-text: #dc2626;
-  --color-status-negative-border: #b91c1c;
+  /* Status effects - Clean and minimal */
+  --color-status-active-bg: #f0fdf4;
+  --color-status-active-text: #166534;
+  --color-status-active-border: #bbf7d0;
+  --color-status-negative-bg: #fef2f2;
+  --color-status-negative-text: #991b1b;
+  --color-status-negative-border: #fecaca;
 
-  /* Other general colors */
-  --color-text-light-alt: #ecf0f1;
-  --color-text-medium: #bdc3c7;
-  --color-border-gray: #6e6a86;
-  --color-text-dark: #908caa;
+  /* Legacy support - map to new colors */
+  --color-background-dark: var(--color-background-primary);
+  --color-background-medium: var(--color-background-secondary);
+  --color-text-light: var(--color-text-primary);
+  --color-accent-purple: var(--color-tertiary);
+  --color-primary-blue: var(--color-primary);
+  --color-secondary-blue: var(--color-secondary);
+  --color-accent-dark-purple: var(--color-tertiary);
+  --color-text-light-alt: var(--color-text-primary);
+  --color-text-medium: var(--color-text-secondary);
+  --color-border-gray: var(--color-outline);
+  --color-text-dark: var(--color-text-tertiary);
+  --color-tab-settings: var(--color-primary);
 }
 
+/* Allow the root element to expand to the full viewport so the app
+   layout can use the entire window. Previously limited to 1280px which
+   caused the UI to appear confined to the left side with blank space on
+   the right. */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }

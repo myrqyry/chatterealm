@@ -6,15 +6,16 @@ import styled from '@emotion/styled';
 
 const StyledAppContainer = styled.div`
   display: flex;
-  gap: 20px;
+  gap: 0;
   min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(135deg, #191724 0%, #1f1d2e 100%);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  color: #e0def4;
+  padding: 0;
+  background: var(--color-background-primary);
+  font-family: 'Inter', 'Roboto', sans-serif;
+  color: var(--color-text-primary);
   box-sizing: border-box;
   width: 100%;
   max-width: none;
+  overflow: hidden;
 `;
 
 function App() {
@@ -27,7 +28,7 @@ function App() {
   } = useGameWorld();
 
   return (
-    <StyledAppContainer>
+    <StyledAppContainer className="app-container">
       <ResponsiveLayout>
         <GameLayout
           handleRegenerateWorld={handleRegenerateWorld}

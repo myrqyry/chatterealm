@@ -18,6 +18,17 @@ interface GameState {
   selectedTab: string;
   gameMessage: string;
   showDevPanel: boolean;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdate: number;
+
+  // Performance and caching
+  cache: Map<string, any>;
+  performanceMetrics: {
+    renderTime: number;
+    updateFrequency: number;
+    memoryUsage: number;
+  };
 
   // Unified settings state
   unifiedSettings: UnifiedSettings;
@@ -29,12 +40,14 @@ interface GameState {
   setSelectedTab: (tab: string) => void;
   setGameMessage: (message: string) => void;
   setShowDevPanel: (show: boolean) => void;
-  updateGameSettings: (settings: any) => void;
-  updateAudioSettings: (settings: any) => void;
-  updateNotificationSettings: (settings: any) => void;
-  updateVisualSettings: (settings: any) => void;
-  updateWorldSettings: (settings: any) => void;
-  updateAnimationSettings: (settings: any) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  updateGameSettings: (settings: Partial<UnifiedSettings['game']>) => void;
+  updateAudioSettings: (settings: Partial<UnifiedSettings['audio']>) => void;
+  updateNotificationSettings: (settings: Partial<UnifiedSettings['notifications']>) => void;
+  updateVisualSettings: (settings: Partial<UnifiedSettings['visual']>) => void;
+  updateWorldSettings: (settings: Partial<UnifiedSettings['world']>) => void;
+  updateAnimationSettings: (settings: Partial<UnifiedSettings['animations']>) => void;
   updateUnifiedSettings: (settings: Partial<UnifiedSettings>) => void;
 
   // Settings resets
@@ -57,6 +70,15 @@ interface GameState {
   useItem: (itemId: string) => void;
   startCataclysm: () => void;
   clearMessage: () => void;
+
+  // Utility functions
+  getPlayerById: (id: string) => Player | undefined;
+  getNearbyPlayers: (radius?: number) => Player[];
+  getGameStats: () => { totalPlayers: number; activePlayers: number; worldAge: number };
+  validateSettings: (settings: Partial<UnifiedSettings>) => boolean;
+  getSetting: <K extends keyof UnifiedSettings>(category: K) => UnifiedSettings[K];
+  updatePerformanceMetrics: (metrics: Partial<GameState['performanceMetrics']>) => void;
+  clearCache: () => void;
 }
 
 // Default unified settings with all the default values
@@ -167,6 +189,17 @@ export const useGameStore = create<GameState>()(
         selectedTab: 'status',
         gameMessage: '',
         showDevPanel: false,
+        isLoading: false,
+        error: null,
+        lastUpdate: Date.now(),
+
+        // Performance and caching
+        cache: new Map(),
+        performanceMetrics: {
+          renderTime: 0,
+          updateFrequency: 0,
+          memoryUsage: 0,
+        },
 
         // Unified settings state with defaults
         unifiedSettings: createDefaultUnifiedSettings(),
@@ -212,6 +245,68 @@ export const useGameStore = create<GameState>()(
         setSelectedTab: (tab) => set({ selectedTab: tab }),
         setGameMessage: (message) => set({ gameMessage: message }),
         setShowDevPanel: (show) => set({ showDevPanel: show }),
+        setLoading: (loading) => set({ isLoading: loading }),
+        setError: (error) => set({ error, lastUpdate: Date.now() }),
+
+        // Utility functions
+        getPlayerById: (id) => {
+          const state = get();
+          return state.gameWorld?.players.find(player => player.id === id);
+        },
+
+        getNearbyPlayers: (radius = 5) => {
+          const state = get();
+          if (!state.currentPlayer || !state.gameWorld) return [];
+
+          const { x, y } = state.currentPlayer.position;
+          return state.gameWorld.players.filter(player => {
+            if (player.id === state.currentPlayer?.id) return false;
+            const distance = Math.sqrt(
+              Math.pow(player.position.x - x, 2) + Math.pow(player.position.y - y, 2)
+            );
+            return distance <= radius;
+          });
+        },
+
+        getGameStats: () => {
+          const state = get();
+          const totalPlayers = state.gameWorld?.players.length || 0;
+          const activePlayers = state.gameWorld?.players.filter(p => p.connected).length || 0;
+          const worldAge = state.gameWorld?.worldAge || 0;
+          return { totalPlayers, activePlayers, worldAge };
+        },
+
+        validateSettings: (settings) => {
+          // Basic validation for settings
+          if (!settings || typeof settings !== 'object') return false;
+
+          // Validate volume ranges
+          if (settings.audio) {
+            const { audioMasterVolume, sfxVolume, musicVolume } = settings.audio;
+            if (audioMasterVolume < 0 || audioMasterVolume > 100) return false;
+            if (sfxVolume < 0 || sfxVolume > 100) return false;
+            if (musicVolume < 0 || musicVolume > 100) return false;
+          }
+
+          // Validate font size
+          if (settings.visual && (settings.visual.fontSize < 50 || settings.visual.fontSize > 200)) {
+            return false;
+          }
+
+          return true;
+        },
+
+        getSetting: (category) => {
+          const state = get();
+          return state.unifiedSettings[category];
+        },
+
+        updatePerformanceMetrics: (metrics) => set((state) => ({
+          performanceMetrics: { ...state.performanceMetrics, ...metrics },
+          lastUpdate: Date.now()
+        })),
+
+        clearCache: () => set({ cache: new Map() }),
 
         // Settings updates
         updateGameSettings: (settings) => set((state) => ({
