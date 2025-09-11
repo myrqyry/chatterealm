@@ -467,7 +467,7 @@ const UnifiedSettingsMenu: React.FC = () => {
                 label="Language"
                 value={unifiedSettings.visual.language}
                 options={languageOptions}
-                onChange={(v) => updateVisualSettings({ language: v })}
+                onChange={(v) => updateVisualSettings({ language: String(v) })}
                 description="Interface language"
               />
             </SettingGroup>
@@ -564,7 +564,7 @@ const UnifiedSettingsMenu: React.FC = () => {
                 label="Fill Style"
                 value={unifiedSettings.animations.fillStyle || 'hachure'}
                 options={fillStyleOptions}
-                onChange={(v) => updateAnimationSettings({ fillStyle: v })}
+                onChange={(v) => updateAnimationSettings({ fillStyle: String(v) })}
                 description="Rough.js fill style"
               />
               <SettingSlider
@@ -682,7 +682,7 @@ const UnifiedSettingsMenu: React.FC = () => {
                 label="Fill Style"
                 value={unifiedSettings.animations.fillStyle || 'hachure'}
                 options={fillStyleOptions}
-                onChange={(v) => updateAnimationSettings({ fillStyle: v })}
+                onChange={(v) => updateAnimationSettings({ fillStyle: String(v) })}
               />
             </SettingGroup>
           </div>

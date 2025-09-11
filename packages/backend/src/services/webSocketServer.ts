@@ -231,7 +231,7 @@ export class WebSocketServer {
       }
 
       // Update player's lastActive timestamp
-      const player = this.gameStateManager.getPlayer(clientData.playerId);
+  const player = this.gameStateManager.getPlayers().find(p => p.id === clientData.playerId);
       if (player) {
         player.lastActive = Date.now();
       }
@@ -250,7 +250,7 @@ export class WebSocketServer {
 
       // If command was successful and affects game state, broadcast update
       if (result.success) {
-        this.broadcastGameState();
+  this.broadcastGameDeltas();
       }
 
     } catch (error) {
@@ -320,7 +320,7 @@ export class WebSocketServer {
       const clientData = this.connectedClients.get(socket.id);
       if (clientData) {
         // Mark player as disconnected instead of removing them completely
-        const player = this.gameStateManager.getPlayer(clientData.playerId);
+    const player = this.gameStateManager.getPlayers().find(p => p.id === clientData.playerId);
         if (player) {
           player.connected = false;
           player.lastActive = Date.now();
@@ -346,12 +346,15 @@ export class WebSocketServer {
     }
   }
 
-  public broadcastGameState(): void {
+  // Broadcast only deltas (state changes)
+  public broadcastGameDeltas(): void {
     try {
-      const gameWorld = this.gameStateManager.getGameWorld();
-      this.io.to('game_room').emit(SocketEvents.GAME_STATE_UPDATE, gameWorld);
+      const deltas = this.gameStateManager.getAndClearChangeEvents();
+      if (deltas.length > 0) {
+        this.io.to('game_room').emit('game_state_delta', deltas);
+      }
     } catch (error) {
-      console.error('Error broadcasting game state:', error);
+      console.error('Error broadcasting game deltas:', error);
     }
   }
 
@@ -380,8 +383,8 @@ export class WebSocketServer {
       // Execute game state updates
       this.gameStateManager.update();
 
-      // Broadcast updated game state to all connected clients
-      this.broadcastGameState();
+      // Broadcast only deltas (state changes)
+      this.broadcastGameDeltas();
 
       // Update performance statistics
       const updateTime = Date.now() - startTime;
