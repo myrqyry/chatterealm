@@ -9,7 +9,8 @@
     "build": "npm run build --workspace=packages/frontend && npm run build --workspace=packages/backend"
   },
   "dependencies": {
-    "@types/cors": "^2.8.19"
+    "@types/cors": "^2.8.19",
+    "react-router-dom": "^6.30.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

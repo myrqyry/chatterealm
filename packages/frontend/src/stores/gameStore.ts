@@ -65,6 +65,7 @@ interface GameState {
   joinGame: (playerData: Partial<Player>) => void;
   regenerateWorld: () => void;
   movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
+  moveTo: (target: { x: number; y: number }) => void;
   attackPlayer: (targetId: string) => void;
   pickupItem: (itemId: string) => void;
   useItem: (itemId: string) => void;
@@ -149,6 +150,9 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     treeSwaySpeed: 0.03,
     flowerSpawnRate: 0.01,
     windSpeed: 0.02,
+
+    // World Rendering
+    nightMode: false,
   },
 
   animations: {
@@ -175,6 +179,18 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     hachureGap: 4,
     fillStyle: 'hachure', // Default fill style
     seed: 1, // Default seed for rough.js randomness
+    strokeWidth: 1.5,
+    simplification: 0.8,
+    dashOffset: 0,
+    dashGap: 0,
+    zigzagOffset: 0,
+    curveFitting: 0.95,
+    curveTightness: 0,
+    curveStepCount: 9,
+    fillShapeRoughnessGain: 0.8,
+    disableMultiStroke: false,
+    disableMultiStrokeFill: false,
+    preserveVertices: false,
   },
 });
 
@@ -218,6 +234,10 @@ export const useGameStore = create<GameState>()(
 
         movePlayer: (direction) => {
           webSocketClient.movePlayer(direction);
+        },
+
+        moveTo: (target) => {
+          webSocketClient.moveTo(target);
         },
 
         attackPlayer: (targetId) => {
@@ -476,6 +496,7 @@ export const useGameStore = create<GameState>()(
                     treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.03,
                     flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? 0.01,
                     windSpeed: legacyAnimationSettings.windSpeed ?? 0.02,
+                    nightMode: false, // Default to day mode for legacy settings
                   },
                   animations: {
                     animationSpeed: legacyAnimationSettings.animationSpeed ?? 1.0,

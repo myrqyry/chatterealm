@@ -14,79 +14,106 @@ html, body {
   font-size: 14px;
 }
 
-/* Title styling - All caps JetBrains Mono */
+/* Game canvas container and canvas styles */
+.game-canvas-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+  padding: 8px; /* inner padding */
+  box-sizing: border-box;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.game-canvas {
+  border: 1px solid var(--color-outline);
+  border-radius: 8px;
+  display: block;
+  image-rendering: pixelated;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Title styling - Use Times New Roman for titles (consistent with MUI theme) */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .game-header h1 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 700;
 }
 
 .player-details h3 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .stats-section h4 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .combat-stats h4 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .status-effects h4 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .leaderboard h5 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .player-selector h5 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .dev-section h5 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .settings-category h5 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;
 }
 
 .notification-event h5 {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Times New Roman', Times, serif;
   text-transform: uppercase;
   letter-spacing: 0.02em;
   font-weight: 600;

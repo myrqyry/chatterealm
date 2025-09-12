@@ -30,6 +30,9 @@ export class GameStateManager {
   // Event queue for state changes (deltas)
   private changeEvents: GameEvent[] = [];
 
+  // Movement queues for players performing path-following (click-to-move)
+  private playerMovementQueues: Map<string, Position[]> = new Map();
+
   private recordEvent(event: GameEvent) {
     this.changeEvents.push(event);
   }
@@ -64,22 +67,101 @@ export class GameStateManager {
       phase: 'exploration'
     } as GameWorld;
 
+    // Create clustered biomes so mountains and forests span multiple tiles
+    for (let y = 0; y < GAME_CONFIG.gridHeight; y++) newGameWorld.grid[y] = [];
+
+    // Start with plains everywhere
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
-      newGameWorld.grid[y] = [];
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-        let terrainType = TerrainType.PLAIN;
-        const rand = Math.random();
-        if (rand < 0.1) terrainType = TerrainType.FOREST;
-        else if (rand < 0.15) terrainType = TerrainType.MOUNTAIN;
-
         newGameWorld.grid[y][x] = {
-          type: terrainType,
+          type: TerrainType.PLAIN,
           position: { x, y },
-          movementCost: terrainType === TerrainType.MOUNTAIN ? 2 : 1,
-          defenseBonus: terrainType === TerrainType.FOREST ? 1 : 0,
-          visibilityModifier: terrainType === TerrainType.FOREST ? 0.8 : 1
+          movementCost: GAME_CONFIG.terrainConfig[TerrainType.PLAIN].movementCost,
+          defenseBonus: GAME_CONFIG.terrainConfig[TerrainType.PLAIN].defenseBonus,
+          visibilityModifier: GAME_CONFIG.terrainConfig[TerrainType.PLAIN].visibilityModifier
         } as any;
+      }
+    }
 
+    // Helper to place a cluster of a given terrain type with a radius/probability falloff
+    // This creates more uniformly-shaped blobs compared to a pure random walk.
+    const placeCluster = (centerX: number, centerY: number, size: number, terrain: TerrainType) => {
+      // Approximate radius from size (area ~ pi * r^2) => r ~ sqrt(size/pi)
+      const radius = Math.max(1, Math.round(Math.sqrt(size / Math.PI)));
+      const placed = new Set<string>();
+
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          const x = centerX + dx;
+          const y = centerY + dy;
+          if (x < 0 || y < 0 || x >= GAME_CONFIG.gridWidth || y >= GAME_CONFIG.gridHeight) continue;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > radius) continue;
+
+          // Probability falls off smoothly with distance; add a small randomness factor
+          const normalized = 1 - dist / (radius + 0.0001);
+          const acceptance = normalized * 0.9 + (Math.random() * 0.2 - 0.1);
+          if (acceptance > 0.35 && placed.size < size) {
+            placed.add(`${x},${y}`);
+            newGameWorld.grid[y][x] = {
+              type: terrain,
+              position: { x, y },
+              movementCost: GAME_CONFIG.terrainConfig[terrain].movementCost,
+              defenseBonus: GAME_CONFIG.terrainConfig[terrain].defenseBonus,
+              visibilityModifier: GAME_CONFIG.terrainConfig[terrain].visibilityModifier
+            } as any;
+          }
+        }
+      }
+
+      // If cluster ended up too small, seed a few random neighbors to grow organically
+      const seeds = Array.from(placed).map(k => k.split(',').map(Number));
+      let attempts = 0;
+      while (placed.size < size && attempts < size * 4) {
+        attempts++;
+        if (seeds.length === 0) break;
+        const idx = Math.floor(Math.random() * seeds.length);
+        const [sx, sy] = seeds[idx];
+        const nbors = [ [sx+1, sy], [sx-1, sy], [sx, sy+1], [sx, sy-1] ];
+        const pick = nbors[Math.floor(Math.random() * nbors.length)];
+        const [nx, ny] = pick;
+        if (nx < 0 || ny < 0 || nx >= GAME_CONFIG.gridWidth || ny >= GAME_CONFIG.gridHeight) continue;
+        const key = `${nx},${ny}`;
+        if (placed.has(key)) continue;
+        placed.add(key);
+        newGameWorld.grid[ny][nx] = {
+          type: terrain,
+          position: { x: nx, y: ny },
+          movementCost: GAME_CONFIG.terrainConfig[terrain].movementCost,
+          defenseBonus: GAME_CONFIG.terrainConfig[terrain].defenseBonus,
+          visibilityModifier: GAME_CONFIG.terrainConfig[terrain].visibilityModifier
+        } as any;
+        seeds.push([nx, ny]);
+      }
+    };
+
+    // Place several forest and mountain clusters across the map
+    const forestClusters = Math.max(3, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 300));
+    const mountainClusters = Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 600));
+
+    for (let i = 0; i < forestClusters; i++) {
+      const cx = Math.floor(Math.random() * GAME_CONFIG.gridWidth);
+      const cy = Math.floor(Math.random() * GAME_CONFIG.gridHeight);
+      const size = 6 + Math.floor(Math.random() * 12);
+      placeCluster(cx, cy, size, TerrainType.FOREST);
+    }
+
+    for (let i = 0; i < mountainClusters; i++) {
+      const cx = Math.floor(Math.random() * GAME_CONFIG.gridWidth);
+      const cy = Math.floor(Math.random() * GAME_CONFIG.gridHeight);
+      const size = 4 + Math.floor(Math.random() * 10);
+      placeCluster(cx, cy, size, TerrainType.MOUNTAIN);
+    }
+
+    // Mark available spawn points (non-mountain tiles) and initialize movement/defense modifiers
+    for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
+      for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
+        const terrainType = newGameWorld.grid[y][x].type;
         if (terrainType !== TerrainType.MOUNTAIN) {
           this.availableSpawnPoints.add(`${x},${y}`);
         }
@@ -87,6 +169,155 @@ export class GameStateManager {
     }
 
     return newGameWorld;
+  }
+
+  // Pathfinding (A*) - returns an array of Positions from start to target inclusive, or null if no path
+  public findPath(start: Position, target: Position, maxNodes = 20000): Position[] | null {
+    const startKey = `${start.x},${start.y}`;
+    const targetKey = `${target.x},${target.y}`;
+    if (startKey === targetKey) return [start];
+
+    const inBounds = (p: Position) => p.x >= 0 && p.y >= 0 && p.x < GAME_CONFIG.gridWidth && p.y < GAME_CONFIG.gridHeight;
+
+    const heuristic = (a: Position, b: Position) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+
+    const keyOf = (p: Position) => `${p.x},${p.y}`;
+
+    const openSet: Position[] = [start];
+    const cameFrom: Map<string, string> = new Map();
+
+    const gScore: Map<string, number> = new Map();
+    gScore.set(startKey, 0);
+
+    const fScore: Map<string, number> = new Map();
+    fScore.set(startKey, heuristic(start, target));
+
+    const closed = new Set<string>();
+    let nodesProcessed = 0;
+
+    while (openSet.length > 0 && nodesProcessed < maxNodes) {
+      // find node in openSet with lowest fScore
+      let currentIdx = 0;
+      let currentF = Infinity;
+      for (let i = 0; i < openSet.length; i++) {
+        const k = keyOf(openSet[i]);
+        const fs = fScore.get(k) ?? Infinity;
+        if (fs < currentF) {
+          currentF = fs;
+          currentIdx = i;
+        }
+      }
+
+      const current = openSet.splice(currentIdx, 1)[0];
+      const currentKey = keyOf(current);
+
+      if (currentKey === targetKey) {
+        // reconstruct path
+        const path: Position[] = [];
+        let k: string | undefined = currentKey;
+        while (k) {
+          const [xStr, yStr] = k.split(',');
+          path.push({ x: Number(xStr), y: Number(yStr) });
+          k = cameFrom.get(k);
+        }
+        path.reverse();
+        return path;
+      }
+
+      closed.add(currentKey);
+      nodesProcessed++;
+
+      const neighbors = [ { x: current.x+1, y: current.y }, { x: current.x-1, y: current.y }, { x: current.x, y: current.y+1 }, { x: current.x, y: current.y-1 } ];
+      for (const n of neighbors) {
+        if (!inBounds(n)) continue;
+        const nKey = keyOf(n);
+        if (closed.has(nKey)) continue;
+
+        // Skip mountains as impassable
+        const terrain = this.gameWorld.grid[n.y][n.x];
+        if (!terrain || terrain.type === TerrainType.MOUNTAIN) continue;
+
+        // Avoid occupied tiles (except if it's the target)
+        if (nKey !== targetKey && this.isPositionOccupied(n)) continue;
+
+        const tentativeG = (gScore.get(currentKey) ?? Infinity) + (this.gameWorld.grid[n.y][n.x].movementCost ?? 1);
+
+        const existingG = gScore.get(nKey) ?? Infinity;
+        if (tentativeG < existingG) {
+          cameFrom.set(nKey, currentKey);
+          gScore.set(nKey, tentativeG);
+          const f = tentativeG + heuristic(n, target);
+          fScore.set(nKey, f);
+          // add to openSet if not present
+          if (!openSet.some(p => keyOf(p) === nKey)) openSet.push({ x: n.x, y: n.y });
+        }
+      }
+    }
+
+    return null; // no path found
+  }
+
+  // Request the server to compute a path and enqueue movement for the player.
+  // Returns a MoveResult with success and optional path length info.
+  public requestMoveTo(playerId: string, target: Position): MoveResult {
+    const player = this.getPlayer(playerId);
+    if (!player) return { success: false, message: 'Player not found' };
+    if (!player.isAlive) return { success: false, message: 'Player not alive' };
+
+    const now = Date.now();
+    // Allow queueing even if on cooldown; movement will occur on next available tick.
+
+    const path = this.findPath(player.position, target);
+    if (!path || path.length === 0) return { success: false, message: 'No path found' };
+
+    // Store queue excluding current position
+    const queue = path.slice(1);
+    this.playerMovementQueues.set(playerId, queue);
+
+    // Attempt an immediate step if possible
+    const immediate = this.processSinglePlayerQueueStep(playerId);
+    const remaining = this.playerMovementQueues.get(playerId)?.length ?? 0;
+    return { success: immediate.success, message: immediate.message, newPosition: immediate.newPosition, data: { queued: remaining } };
+  }
+
+  // Process one queued step for a particular player (respecting cooldown). Returns a MoveResult-like object.
+  private processSinglePlayerQueueStep(playerId: string): MoveResult {
+    const queue = this.playerMovementQueues.get(playerId);
+    if (!queue || queue.length === 0) return { success: false, message: 'No queued moves' };
+    const player = this.getPlayer(playerId);
+    if (!player) return { success: false, message: 'Player not found' };
+    if (!player.isAlive) return { success: false, message: 'Player not alive' };
+
+    const now = Date.now();
+    if (now - player.lastMoveTime < MOVEMENT_CONSTANTS.BASE_MOVE_COOLDOWN) return { success: false, message: 'Movement on cooldown' };
+
+    const next = queue[0];
+    if (!this.isValidMove(player.position, next)) return { success: false, message: 'Invalid move (queued)' };
+    if (this.isPositionOccupied(next)) return { success: false, message: 'Position occupied (queued)' };
+
+    // Perform move
+    this.occupiedPositions.delete(`${player.position.x},${player.position.y}`);
+    const oldPos = { ...player.position };
+    player.position = { x: next.x, y: next.y };
+    this.occupiedPositions.add(`${player.position.x},${player.position.y}`);
+    player.lastMoveTime = now;
+
+    // Pop the queue and clean up
+    queue.shift();
+    if (queue.length === 0) this.playerMovementQueues.delete(playerId);
+    else this.playerMovementQueues.set(playerId, queue);
+
+    this.recordEvent({ type: 'player_moved', data: { playerId, newPosition: { ...player.position }, direction: (player.position.x - oldPos.x === 1 ? 'right' : player.position.x - oldPos.x === -1 ? 'left' : player.position.y - oldPos.y === 1 ? 'down' : 'up') } } as any);
+
+    return { success: true, message: 'Moved', newPosition: { ...player.position } };
+  }
+
+  // Process movement queues for all players on the server tick (called from update)
+  private processPlayerMovementQueues(): void {
+    for (const playerId of Array.from(this.playerMovementQueues.keys())) {
+      // Attempt a single step; ignore failures (will retry next tick)
+      this.processSinglePlayerQueueStep(playerId);
+    }
   }
 
   private initializeOccupiedPositions(): void {
@@ -201,8 +432,6 @@ export class GameStateManager {
     this.availableSpawnPoints.delete(`${finalPosition.x},${finalPosition.y}`);
 
     this.recordEvent({ type: 'player_joined', data: { player: { ...player }, position: finalPosition } });
-
-    this.releaseReservedPosition(finalPosition);
 
     return { success: true, message: `Player ${player.displayName} joined`, data: { player, position: finalPosition } };
   }
@@ -380,6 +609,7 @@ export class GameStateManager {
   public update(): void {
     this.updateNPCs();
     this.updateCataclysm();
+    this.processPlayerMovementQueues();
   }
 
   private updateNPCs(): void {
@@ -432,7 +662,7 @@ export class GameStateManager {
     this.gameWorld.cataclysmCircle.isActive = false;
     this.gameWorld.cataclysmCircle.radius = 20;
     this.gameWorld.cataclysmCircle.nextShrinkTime = 0;
-    this.regenerateWorld();
+    this.regenerateTerrain();
     this.gameWorld.players.forEach(player => {
       if (!player.isAlive) {
         player.isAlive = true;
@@ -446,7 +676,7 @@ export class GameStateManager {
     });
   }
 
-  private regenerateWorld(): void {
+  private regenerateTerrain(): void {
     this.gameWorld.items = [];
     this.gameWorld.npcs = [];
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
@@ -518,8 +748,32 @@ export class GameStateManager {
     console.log('[AVAILABLE_SPAWN_POINTS]', Array.from(this.availableSpawnPoints));
   }
 
-  private releaseReservedPosition(position: Position): void {
-    this.reservedPositions.delete(`${position.x},${position.y}`);
+  // Regenerate the world (admin command)
+  public regenerateWorld(): GameActionResult {
+    // Clear all existing entities
+    this.gameWorld.players = [];
+    this.gameWorld.npcs = [];
+    this.gameWorld.items = [];
+
+    // Reset occupied positions and available spawn points
+    this.occupiedPositions.clear();
+    this.availableSpawnPoints.clear();
+
+    // Regenerate terrain
+    this.regenerateTerrain();
+
+    // Reset cataclysm
+    this.gameWorld.cataclysmCircle.isActive = false;
+    this.gameWorld.cataclysmCircle.radius = Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight);
+    this.gameWorld.cataclysmCircle.nextShrinkTime = 0;
+
+    // Reset world age
+    this.gameWorld.worldAge = 0;
+    this.gameWorld.lastResetTime = Date.now();
+
+    this.recordEvent({ type: 'world_regenerated', data: { timestamp: Date.now() } } as any);
+
+    return { success: true, message: 'World regenerated successfully' };
   }
 }
 

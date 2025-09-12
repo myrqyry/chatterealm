@@ -11,10 +11,11 @@ export const drawOcean = (rc: any, startX: number, startY: number, gridSize: num
       // Ocean/deep water with wave animation
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#1e40af',
-        fillStyle: 'solid',
+        fillStyle: 'dots',
         stroke: '#1e3a8a',
-        strokeWidth: 1,
-        roughness: roughness * 0.5
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Animated waves
       for (let w = 0; w < 3; w++) {
@@ -32,10 +33,11 @@ export const drawOcean = (rc: any, startX: number, startY: number, gridSize: num
       // Flowing river with current animation
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#3b82f6',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         stroke: '#1d4ed8',
-        strokeWidth: 1,
-        roughness: roughness * 0.7
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Animated current
       const currentOffset = Math.sin(time * 0.12 + startY) * 3;

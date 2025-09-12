@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../../stores/gameStore';
+import { PlayerClass } from 'shared';
 import { MaterialButton, MaterialCard } from '../index';
 
 const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -12,7 +13,12 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     regenerateWorld
   } = useGameStore();
 
-  const handleJoin = () => joinGame({ name: 'Player' + Math.floor(Math.random() * 1000) });
+  const handleJoin = () => joinGame({
+    id: `player_${Date.now()}`,
+    displayName: 'Player' + Math.floor(Math.random() * 1000),
+    class: PlayerClass.KNIGHT,
+    avatar: '🙂'
+  });
   const handleMove = (dir: 'up' | 'down' | 'left' | 'right') => movePlayer(dir);
   const handlePickup = () => pickupItem('nearest');
   const handleCataclysm = () => startCataclysm();

@@ -1,3 +1,7 @@
+/* Load web fonts (Inter and JetBrains Mono) for consistent typography across the app.
+  Using Google Fonts with display=swap for better performance. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

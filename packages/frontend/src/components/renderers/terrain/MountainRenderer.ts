@@ -9,10 +9,11 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       // Snow-capped mountain peaks
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#64748b',
-        fillStyle: 'solid',
+        fillStyle: 'cross-hatch',
         stroke: '#475569',
-        strokeWidth: 1,
-        roughness: roughness * 1.5
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Peak details
       rc.polygon([
@@ -21,7 +22,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         [startX + 18, startY + 15]
       ], {
         fill: '#f1f5f9',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         roughness: roughness * 1.2
       });
       break;
@@ -30,10 +31,11 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       // Rocky mountains with shadow
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#78716c',
-        fillStyle: 'solid',
+        fillStyle: 'cross-hatch',
         stroke: '#57534e',
-        strokeWidth: 1,
-        roughness: roughness * 1.8
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Mountain silhouette
       rc.polygon([
@@ -43,7 +45,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         [startX + gridSize, startY + 18]
       ], {
         fill: '#374151',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         roughness: roughness * 1.3
       });
       break;
@@ -52,15 +54,16 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       // Rolling hills
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#a3a3a3',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         stroke: '#737373',
-        strokeWidth: 1,
-        roughness: roughness * 1.2
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Hill contours
       rc.ellipse(startX + 8, startY + 12, 12, 6, {
         fill: '#d4d4d8',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         roughness: roughness * 0.8
       });
       break;

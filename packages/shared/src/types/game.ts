@@ -92,6 +92,7 @@ export enum MovementStyle {
 export enum Theme {
   DARK = 'dark',
   LIGHT = 'light',
+  NIGHT = 'night',
   AUTO = 'auto'
 }
 
@@ -223,6 +224,7 @@ export interface GameSettings {
     visibilityModifier: number;
     spawnChance: number;
   }>;
+  nightMode: boolean; // Toggle for night time rendering effects
 }
 
 export interface BattleResult {
@@ -324,6 +326,9 @@ export interface WorldSettings {
   treeSwaySpeed: number;
   flowerSpawnRate: number;
   windSpeed: number;
+
+  // World Rendering
+  nightMode: boolean;
 }
 
 export interface AnimationSettings {
@@ -350,6 +355,18 @@ export interface AnimationSettings {
   hachureGap: number;
   fillStyle?: string;
   seed?: number;
+  strokeWidth: number;
+  simplification: number;
+  dashOffset: number;
+  dashGap: number;
+  zigzagOffset: number;
+  curveFitting: number;
+  curveTightness: number;
+  curveStepCount: number;
+  fillShapeRoughnessGain: number;
+  disableMultiStroke: boolean;
+  disableMultiStrokeFill: boolean;
+  preserveVertices: boolean;
 }
 
 // Combined Settings Type

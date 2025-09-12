@@ -10,7 +10,7 @@ export interface ClientData {
 }
 
 export interface PlayerCommand {
-  type: 'move' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
+  type: 'move' | 'move_to' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
   playerId: string;
   data?: any;
 }
@@ -38,7 +38,8 @@ export class WebSocketServer {
     // Initialize Socket.IO server with CORS configuration
     this.io = new SocketIOServer(httpServer, {
       cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        // Allow all origins to simplify local testing and CLI test clients
+        origin: true,
         methods: ["GET", "POST"],
         credentials: true
       },
@@ -268,6 +269,13 @@ export class WebSocketServer {
           throw new Error('Missing direction for move command');
         }
         result = this.gameStateManager.movePlayer(clientData.playerId, command.data.direction);
+        break;
+
+      case 'move_to':
+        if (!command.data?.target) {
+          throw new Error('Missing target for move_to command');
+        }
+        result = this.gameStateManager.requestMoveTo(clientData.playerId, command.data.target);
         break;
 
       case 'attack':

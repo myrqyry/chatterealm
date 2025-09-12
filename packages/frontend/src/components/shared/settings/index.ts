@@ -9,6 +9,7 @@ export { default as MaterialSlider } from './MaterialSlider';
 export { default as MaterialCheckbox } from './MaterialCheckbox';
 export { default as MaterialDropdown } from './MaterialDropdown';
 export { default as MaterialGroup } from './MaterialGroup';
+export { default as MaterialMultiSelect } from './MaterialMultiSelect';
 
 // Export types for easier importing
 export type { DropdownOption } from './SettingDropdown';

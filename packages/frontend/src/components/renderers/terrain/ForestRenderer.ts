@@ -3,6 +3,7 @@ import { TerrainType } from 'shared';
 
 export const drawForest = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
+  const fillStyle = settings?.fillStyle || 'hachure';
   const treeSwaySpeed = settings?.treeSwaySpeed || 0.03;
 
   switch (terrainType) {
@@ -10,10 +11,11 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
       // Very thick forest
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#14532d',
-        fillStyle: 'solid',
+        fillStyle: 'cross-hatch',
         stroke: '#166534',
-        strokeWidth: 1,
-        roughness: roughness * 2.2
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Dense trees
       for (let t = 0; t < 4; t++) {
@@ -27,7 +29,7 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         });
         rc.circle(treeX + swayOffset, treeY - 2, 4, {
           fill: '#166534',
-          fillStyle: 'solid',
+          fillStyle: 'hachure',
           roughness: roughness * 1.5
         });
       }
@@ -37,10 +39,11 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
       // Regular forest
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#166534',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         stroke: '#15803d',
-        strokeWidth: 1,
-        roughness: roughness * 1.7
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Forest trees
       for (let t = 0; t < 3; t++) {
@@ -54,7 +57,7 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         });
         rc.circle(treeX + swayOffset, treeY - 2, 3.5, {
           fill: '#22c55e',
-          fillStyle: 'solid',
+          fillStyle: 'hachure',
           roughness: roughness * 1.3
         });
       }
@@ -64,10 +67,11 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
       // Forest clearing
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#84cc16',
-        fillStyle: 'solid',
+        fillStyle: 'hachure',
         stroke: '#65a30d',
-        strokeWidth: 1,
-        roughness: roughness * 0.8
+        strokeWidth: 1.5,
+        roughness: roughness,
+        bowing: 1.2
       });
       // Small campfire
       rc.circle(startX + 8, startY + 10, 2, {

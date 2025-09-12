@@ -1,27 +1,13 @@
 import React from 'react';
-import GameCanvas from './GameCanvas';
-import NotificationSystem from './NotificationSystem';
-import UnifiedSettingsMenuModal from './UnifiedSettingsMenuModal';
-import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from './index';
-import { useGameStore } from '../stores/gameStore';
-import { COLORS } from '../constants/colors';
+import GameCanvas from '../GameCanvas';
+import PlayerSidebar from '../sidebars/PlayerSidebar';
+import ModeNavigation from '../ModeNavigation';
+import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from '../index';
+import { useGameStore } from '../../stores/gameStore';
+import { COLORS } from '../../constants/colors';
 
-interface GameLayoutProps {
-  handleRegenerateWorld: () => void;
-  handleMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
-  handleJoinGame: () => void;
-  handleStartCataclysm: () => void;
-  handlePickUpItem: () => void;
-}
-
-const GameLayout: React.FC<GameLayoutProps> = ({
-  handleRegenerateWorld,
-  handleMove,
-  handleJoinGame,
-  handleStartCataclysm,
-  handlePickUpItem,
-}) => {
-  const { gameWorld, currentPlayer, gameMessage } = useGameStore();
+const PlayLayout: React.FC = () => {
+  const { gameWorld } = useGameStore();
 
   return (
     <div style={{
@@ -33,18 +19,73 @@ const GameLayout: React.FC<GameLayoutProps> = ({
       margin: '0',
       background: 'var(--color-background-primary)',
       fontFamily: 'Inter, Roboto, sans-serif',
+      color: 'var(--color-text-primary)',
       overflow: 'hidden',
       boxSizing: 'border-box'
     }}>
-      <NotificationSystem />
+      {/* Header */}
+      <div style={{
+        padding: '8px 16px',
+        background: 'rgba(25, 23, 36, 0.9)',
+        borderBottom: '1px solid rgba(196, 167, 231, 0.2)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <h1 style={{
+            margin: 0,
+            color: 'var(--color-text-primary)',
+            fontSize: '1.8em',
+            fontWeight: '700',
+            textShadow: '0 0 10px rgba(196, 167, 231, 0.5)'
+          }}>
+            ChatteRealm
+          </h1>
+          <span style={{
+            color: 'var(--color-text-secondary)',
+            fontSize: '1.2em',
+            fontWeight: '500'
+          }}>
+            🎮 Play Mode
+          </span>
+          <MaterialChip
+            label={`Phase: ${gameWorld?.phase || 'Unknown'}`}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
+              color: 'var(--color-text-primary)'
+            }}
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <MaterialChip
+            label={`${gameWorld?.players?.length || 0} Players`}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(33, 150, 243, 0.2)',
+              color: 'var(--color-text-primary)'
+            }}
+          />
+          <MaterialChip
+            label={`${gameWorld?.npcs?.length || 0} NPCs`}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(156, 39, 176, 0.2)',
+              color: 'var(--color-text-primary)'
+            }}
+          />
+          <ModeNavigation compact />
+        </div>
+      </div>
 
-      {/* Main Content Area - Two Column Layout */}
+      {/* Main Content Area */}
       <div style={{
         display: 'flex',
         flex: 1,
         overflow: 'hidden'
       }}>
-        {/* Game Canvas - Left Side, Scales to Fit */}
+        {/* Game Canvas */}
         <div style={{
           flex: 1,
           background: 'var(--color-surface)',
@@ -57,14 +98,14 @@ const GameLayout: React.FC<GameLayoutProps> = ({
           <div style={{
             width: '100%',
             height: '100%',
-            maxWidth: 'calc(100vw - 320px)', // Leave space for sidebar
-            maxHeight: '100vh', // Full viewport height now
+            maxWidth: 'calc(100vw - 320px)',
+            maxHeight: '100vh',
             overflow: 'hidden'
           }}>
             <GameCanvas />
           </div>
 
-          {/* Material UI Legend - Positioned over game canvas */}
+          {/* Game Legend */}
           <MaterialPaper
             sx={{
               position: 'absolute',
@@ -132,11 +173,11 @@ const GameLayout: React.FC<GameLayoutProps> = ({
           </MaterialPaper>
         </div>
 
-        {/* Right Sidebar - Comprehensive Settings Modal Interface */}
-        <UnifiedSettingsMenuModal />
+        {/* Player Sidebar */}
+        <PlayerSidebar />
       </div>
     </div>
   );
 };
 
-export default GameLayout;
+export default PlayLayout;

@@ -1,8 +1,13 @@
 import './App.css';
 import ResponsiveLayout from './components/ResponsiveLayout';
 import { useGameWorld } from './hooks/useGameWorld';
+import { useTheme } from './hooks/useTheme';
 import GameLayout from './components/GameLayout';
+import PlayLayout from './components/layouts/PlayLayout';
+import SpectateLayout from './components/layouts/SpectateLayout';
+import DevLayout from './components/layouts/DevLayout';
 import styled from '@emotion/styled';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 const StyledAppContainer = styled.div`
   display: flex;
@@ -27,18 +32,64 @@ function App() {
     handlePickUpItem,
   } = useGameWorld();
 
+  // Apply theme globally
+  useTheme();
+
   return (
-    <StyledAppContainer className="app-container">
-      <ResponsiveLayout>
-        <GameLayout
-          handleRegenerateWorld={handleRegenerateWorld}
-          handleMove={handleMove}
-          handleJoinGame={handleJoinGame}
-          handleStartCataclysm={handleStartCataclysm}
-          handlePickUpItem={handlePickUpItem}
-        />
-      </ResponsiveLayout>
-    </StyledAppContainer>
+    <Router>
+      <StyledAppContainer className="app-container">
+        <Routes>
+          {/* Default route redirects to /play */}
+          <Route path="/" element={<Navigate to="/play" replace />} />
+
+          {/* Play mode - Player interface with settings */}
+          <Route
+            path="/play"
+            element={
+              <ResponsiveLayout>
+                <PlayLayout />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Spectate mode - Full game monitoring */}
+          <Route
+            path="/spectate"
+            element={
+              <ResponsiveLayout>
+                <SpectateLayout />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Developer mode - Complete configuration access */}
+          <Route
+            path="/dev"
+            element={
+              <ResponsiveLayout>
+                <DevLayout />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Legacy route for backward compatibility */}
+          <Route
+            path="/game"
+            element={
+              <ResponsiveLayout>
+                <GameLayout
+                  handleRegenerateWorld={handleRegenerateWorld}
+                  handleMove={handleMove}
+                  handleJoinGame={handleJoinGame}
+                  handleStartCataclysm={handleStartCataclysm}
+                  handlePickUpItem={handlePickUpItem}
+                />
+              </ResponsiveLayout>
+            }
+          />
+        </Routes>
+      </StyledAppContainer>
+    </Router>
   );
 }
 

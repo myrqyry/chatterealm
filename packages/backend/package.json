@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "dev": "nodemon src/index.ts",
+  "test:join": "node ./scripts/join-and-move.js",
     "build": "tsc"
   },
   "keywords": [],

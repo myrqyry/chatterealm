@@ -5,9 +5,10 @@ import {
   SettingCheckbox,
   SettingDropdown,
   SettingGroup,
+  MaterialMultiSelect,
 } from './shared/settings';
 import { DropdownOption } from './shared/settings/SettingDropdown';
-import { MovementStyle, Theme } from 'shared';
+import { MovementStyle, Theme, PlayerClass } from 'shared';
 
 /**
  * UnifiedSettingsMenu
@@ -109,11 +110,22 @@ const UnifiedSettingsMenu: React.FC = () => {
   };
 
   // Action handlers mapped to store actions
-  const handleJoin = () => joinGame({ name: 'Player' + Math.floor(Math.random() * 1000) });
+  const handleJoin = () => joinGame({
+    id: `player_${Date.now()}`,
+    displayName: 'Player' + Math.floor(Math.random() * 1000),
+    class: PlayerClass.KNIGHT,
+    avatar: '🙂'
+  });
   const handleMove = (dir: 'up' | 'down' | 'left' | 'right') => movePlayer(dir);
   const handlePickup = () => pickupItem('nearest'); // Assuming backend interprets 'nearest'
   const handleCataclysm = () => startCataclysm();
   const handleRegenerate = () => regenerateWorld();
+
+  const notificationTypeOptions = [
+    { value: 'desktop', label: 'Desktop' },
+    { value: 'sound', label: 'Sound' },
+    { value: 'ingame', label: 'In-Game' },
+  ];
 
   return (
     <div style={{
@@ -440,6 +452,61 @@ const UnifiedSettingsMenu: React.FC = () => {
                 checked={unifiedSettings.audio.musicEnabled}
                 onChange={(c) => updateAudioSettings({ musicEnabled: c })}
                 description="Play background music"
+              />
+            </SettingGroup>
+            <SettingGroup title="Notifications" icon="🔔">
+              <SettingCheckbox
+                label="Desktop Notifications"
+                checked={unifiedSettings.notifications.desktopNotifications}
+                onChange={(c) => updateNotificationSettings({ desktopNotifications: c })}
+                description="Show desktop notifications"
+              />
+              <SettingCheckbox
+                label="Sound Notifications"
+                checked={unifiedSettings.notifications.soundNotifications}
+                onChange={(c) => updateNotificationSettings({ soundNotifications: c })}
+                description="Play sound on notifications"
+              />
+              <SettingCheckbox
+                label="Battle Notifications"
+                checked={unifiedSettings.notifications.battleNotifications}
+                onChange={(c) => updateNotificationSettings({ battleNotifications: c })}
+                description="Notify on battle events"
+              />
+              <SettingCheckbox
+                label="System Notifications"
+                checked={unifiedSettings.notifications.systemNotifications}
+                onChange={(c) => updateNotificationSettings({ systemNotifications: c })}
+                description="General system notifications"
+              />
+              {/* Multi-select event notification types */}
+              <MaterialMultiSelect
+                label="Player Join Notifications"
+                value={unifiedSettings.notifications.playerJoinNotifications}
+                options={notificationTypeOptions}
+                onChange={(vals) => updateNotificationSettings({ playerJoinNotifications: vals as any })}
+                description="Notification channels when players join"
+              />
+              <MaterialMultiSelect
+                label="Item Drop Notifications"
+                value={unifiedSettings.notifications.itemDropNotifications}
+                options={notificationTypeOptions}
+                onChange={(vals) => updateNotificationSettings({ itemDropNotifications: vals as any })}
+                description="Notification channels for item drops"
+              />
+              <MaterialMultiSelect
+                label="Level Up Notifications"
+                value={unifiedSettings.notifications.levelUpNotifications}
+                options={notificationTypeOptions}
+                onChange={(vals) => updateNotificationSettings({ levelUpNotifications: vals as any })}
+                description="Notification channels on level up"
+              />
+              <MaterialMultiSelect
+                label="Cataclysm Notifications"
+                value={unifiedSettings.notifications.cataclysmNotifications}
+                options={notificationTypeOptions}
+                onChange={(vals) => updateNotificationSettings({ cataclysmNotifications: vals as any })}
+                description="Notification channels when cataclysm starts"
               />
             </SettingGroup>
           </div>

@@ -15,4 +15,6 @@ export { default as GameLayout } from './GameLayout';
 export { default as GameCanvas } from './GameCanvas';
 export { default as NotificationSystem } from './NotificationSystem';
 export { default as EnhancedPlayerStatus } from './EnhancedPlayerStatus';
+export { default as RightSidebar } from './RightSidebar';
 export { default as UnifiedSettingsMenu } from './UnifiedSettingsMenu';
+export { default as ModeNavigation } from './ModeNavigation';

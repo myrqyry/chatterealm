@@ -4,7 +4,7 @@ import { useGameStore } from '../stores/gameStore';
 import { throttledLog, throttledError, throttledWarn } from '../utils/loggingUtils';
 
 export interface PlayerCommand {
-  type: 'move' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
+  type: 'move' | 'move_to' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
   playerId: string;
   data?: any;
 }
@@ -83,22 +83,45 @@ export class WebSocketClient {
     });
 
     // Game events
-    this.socket.on('game_joined', (data: { player: Player; gameWorld: GameWorld }) => {
-      throttledLog('GAME_JOINED', `Successfully joined game: ${data.player.displayName}`, true);
-      useGameStore.getState().setCurrentPlayer(data.player);
-      useGameStore.getState().setGameWorld(data.gameWorld);
-      useGameStore.getState().setGameMessage(`Welcome to the game, ${data.player.displayName}!`);
-      this.hasJoinedGame = true;
-    });
+  this.socket.on('game_joined', (data: { player: Player; gameWorld: GameWorld }) => {
+    throttledLog('GAME_JOINED', `Successfully joined game: ${data.player.displayName}`, true);
+    useGameStore.getState().setCurrentPlayer(data.player);
+    useGameStore.getState().setGameWorld(data.gameWorld);
+    useGameStore.getState().setGameMessage(`Welcome to the game, ${data.player.displayName}!`);
+    this.hasJoinedGame = true;
+  });    this.socket.on('game_state_delta', (deltas: any[]) => {
+      // Handle delta updates by applying them to the current game world
+      const currentWorld = useGameStore.getState().gameWorld;
+      if (!currentWorld) return;
 
-    this.socket.on('game_state_update', (gameWorld: GameWorld) => {
-      // Update the game world state in real-time
-      useGameStore.getState().setGameWorld(gameWorld);
+      // Apply deltas to update the game world
+      for (const delta of deltas) {
+        switch (delta.type) {
+          case 'player_joined':
+            if (!currentWorld.players.find(p => p.id === delta.data.player.id)) {
+              currentWorld.players.push(delta.data.player);
+            }
+            break;
+          case 'player_left':
+            currentWorld.players = currentWorld.players.filter(p => p.id !== delta.data.playerId);
+            break;
+          case 'player_moved':
+            const player = currentWorld.players.find(p => p.id === delta.data.playerId);
+            if (player) {
+              player.position = delta.data.newPosition;
+            }
+            break;
+          // Add more delta types as needed
+        }
+      }
 
-      // Update current player data if it exists in the game world
+      // Update the store with the modified world
+      useGameStore.getState().setGameWorld({ ...currentWorld });
+
+      // Update current player if it was affected
       const currentPlayerId = useGameStore.getState().currentPlayer?.id;
       if (currentPlayerId) {
-        const updatedPlayer = gameWorld.players.find(p => p.id === currentPlayerId);
+        const updatedPlayer = currentWorld.players.find(p => p.id === currentPlayerId);
         if (updatedPlayer) {
           useGameStore.getState().setCurrentPlayer(updatedPlayer);
         }
@@ -212,6 +235,13 @@ export class WebSocketClient {
     this.sendPlayerCommand({
       type: 'move',
       data: { direction }
+    });
+  }
+
+  public moveTo(target: { x: number; y: number }): void {
+    this.sendPlayerCommand({
+      type: 'move_to',
+      data: { target }
     });
   }
 

@@ -1,10 +1,16 @@
 import React from 'react';
 import { useGameStore } from '../../stores/gameStore';
-import { SettingSlider, SettingCheckbox } from '../shared/settings';
+import { SettingSlider, SettingCheckbox, MaterialMultiSelect } from '../shared/settings';
 import { MaterialCard } from '../index';
 
 const AudioModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { unifiedSettings, updateAudioSettings } = useGameStore();
+  const { unifiedSettings, updateAudioSettings, updateNotificationSettings } = useGameStore();
+
+  const notificationTypeOptions = [
+    { value: 'desktop', label: 'Desktop' },
+    { value: 'sound', label: 'Sound' },
+    { value: 'ingame', label: 'In-Game' },
+  ];
 
   return (
     <div style={{
@@ -213,6 +219,103 @@ const AudioModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               checked={unifiedSettings.audio.musicEnabled}
               onChange={(c) => updateAudioSettings({ musicEnabled: c })}
               description="Play background music"
+            />
+          </div>
+        </MaterialCard>
+
+        <MaterialCard
+          sx={{
+            backgroundColor: 'rgba(25, 23, 36, 0.8)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 152, 0, 0.2)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(255, 152, 0, 0.1)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(255, 152, 0, 0.15)',
+              borderColor: 'rgba(255, 152, 0, 0.3)'
+            }
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '20px'
+          }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '1.1rem' }}>🔔</span>
+            </div>
+            <h3 style={{
+              margin: 0,
+              color: 'var(--color-text-primary)',
+              fontSize: '1.2rem',
+              fontWeight: 600
+            }}>
+              Notifications
+            </h3>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <SettingCheckbox
+              label="Desktop Notifications"
+              checked={unifiedSettings.notifications.desktopNotifications}
+              onChange={(c) => updateNotificationSettings({ desktopNotifications: c })}
+              description="Show desktop notifications"
+            />
+            <SettingCheckbox
+              label="Sound Notifications"
+              checked={unifiedSettings.notifications.soundNotifications}
+              onChange={(c) => updateNotificationSettings({ soundNotifications: c })}
+              description="Play sound on notifications"
+            />
+            <SettingCheckbox
+              label="Battle Notifications"
+              checked={unifiedSettings.notifications.battleNotifications}
+              onChange={(c) => updateNotificationSettings({ battleNotifications: c })}
+              description="Notify on battle events"
+            />
+            <SettingCheckbox
+              label="System Notifications"
+              checked={unifiedSettings.notifications.systemNotifications}
+              onChange={(c) => updateNotificationSettings({ systemNotifications: c })}
+              description="General system notifications"
+            />
+            <MaterialMultiSelect
+              label="Player Join Notifications"
+              value={unifiedSettings.notifications.playerJoinNotifications}
+              options={notificationTypeOptions}
+              onChange={(vals) => updateNotificationSettings({ playerJoinNotifications: vals as any })}
+              description="Notification channels when players join"
+            />
+            <MaterialMultiSelect
+              label="Item Drop Notifications"
+              value={unifiedSettings.notifications.itemDropNotifications}
+              options={notificationTypeOptions}
+              onChange={(vals) => updateNotificationSettings({ itemDropNotifications: vals as any })}
+              description="Notification channels for item drops"
+            />
+            <MaterialMultiSelect
+              label="Level Up Notifications"
+              value={unifiedSettings.notifications.levelUpNotifications}
+              options={notificationTypeOptions}
+              onChange={(vals) => updateNotificationSettings({ levelUpNotifications: vals as any })}
+              description="Notification channels on level up"
+            />
+            <MaterialMultiSelect
+              label="Cataclysm Notifications"
+              value={unifiedSettings.notifications.cataclysmNotifications}
+              options={notificationTypeOptions}
+              onChange={(vals) => updateNotificationSettings({ cataclysmNotifications: vals as any })}
+              description="Notification channels when cataclysm starts"
             />
           </div>
         </MaterialCard>

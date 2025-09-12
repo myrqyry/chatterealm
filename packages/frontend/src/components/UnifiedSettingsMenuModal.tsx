@@ -10,6 +10,8 @@ import {
   SportsEsports as ActionsIcon,
 } from '@mui/icons-material';
 
+import { MaterialMultiSelect } from './shared/settings';
+
 // Import individual modal components
 import OverviewModal from './settings/OverviewModal';
 import GameplayModal from './settings/GameplayModal';
@@ -77,6 +79,12 @@ const UnifiedSettingsMenuModal: React.FC = () => {
       alert('All settings reset.');
     }
   };
+
+  const notificationTypeOptions = [
+    { value: 'desktop', label: 'Desktop' },
+    { value: 'sound', label: 'Sound' },
+    { value: 'ingame', label: 'In-Game' },
+  ];
 
   const openModal = (modalId: string) => {
     setActiveModal(modalId);
@@ -226,6 +234,35 @@ const UnifiedSettingsMenuModal: React.FC = () => {
           </MaterialButton>
         </MaterialCard>
       )}
+
+      {/* Notifications panel (quick access in modal) */}
+      <MaterialCard sx={{ mb: 2, p: 2 }}>
+        <h3 style={{ margin: 0, marginBottom: 8 }}>🔔 Notifications</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="action-btn" onClick={() => updateNotificationSettings({ desktopNotifications: !unifiedSettings.notifications.desktopNotifications })}>
+              Toggle Desktop
+            </button>
+            <button className="action-btn" onClick={() => updateNotificationSettings({ soundNotifications: !unifiedSettings.notifications.soundNotifications })}>
+              Toggle Sound
+            </button>
+          </div>
+          <div>
+            <MaterialMultiSelect
+              label="Player Join Notifications"
+              value={unifiedSettings.notifications.playerJoinNotifications}
+              options={notificationTypeOptions}
+              onChange={(vals) => updateNotificationSettings({ playerJoinNotifications: vals as any })}
+            />
+            <MaterialMultiSelect
+              label="Cataclysm Notifications"
+              value={unifiedSettings.notifications.cataclysmNotifications}
+              options={notificationTypeOptions}
+              onChange={(vals) => updateNotificationSettings({ cataclysmNotifications: vals as any })}
+            />
+          </div>
+        </div>
+      </MaterialCard>
 
       {/* Category Buttons - Compact Single Row */}
       <div style={{

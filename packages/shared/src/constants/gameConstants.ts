@@ -2,13 +2,14 @@ import { PlayerClass, TerrainType, GameSettings } from '../types/game';
 
 // Game Configuration Constants
 export const GAME_CONFIG: GameSettings = {
-  gridWidth: 40,
-  gridHeight: 30,
+  gridWidth: 20,
+  gridHeight: 15,
   tileSize: 32, // Standard tile size in pixels for UI rendering (increased from 20px for larger canvas)
   maxPlayers: 50,
   cataclysmDuration: 300000, // 5 minutes in milliseconds
   spawnCost: 100, // channel points to spawn
   autoWanderCost: 50, // channel points for auto-wander
+  nightMode: false, // Default to day mode
   baseStats: {
     [PlayerClass.KNIGHT]: {
       hp: 120,
@@ -37,158 +38,158 @@ export const GAME_CONFIG: GameSettings = {
       movementCost: 1,
       defenseBonus: 0,
       visibilityModifier: 0,
-      spawnChance: 0.6
+      spawnChance: 0.3
     },
     [TerrainType.FOREST]: {
       movementCost: 2,
       defenseBonus: 5,
       visibilityModifier: -2,
-      spawnChance: 0.25
+      spawnChance: 0.15
     },
     [TerrainType.MOUNTAIN]: {
       movementCost: 3,
       defenseBonus: 15,
       visibilityModifier: 3,
-      spawnChance: 0.15
+      spawnChance: 0.1
     },
-    // New terrain types with placeholder values
+    // New terrain types with spawn chances
     [TerrainType.WATER]: {
       movementCost: 1.5,
       defenseBonus: 0,
       visibilityModifier: 0,
-      spawnChance: 0.0
+      spawnChance: 0.05
     },
     [TerrainType.OCEAN]: {
       movementCost: 2.0,
       defenseBonus: 0,
       visibilityModifier: 0,
-      spawnChance: 0.0
+      spawnChance: 0.02
     },
     [TerrainType.RIVER]: {
       movementCost: 1.2,
       defenseBonus: 0,
       visibilityModifier: 0,
-      spawnChance: 0.0
+      spawnChance: 0.03
     },
     [TerrainType.MOUNTAIN_PEAK]: {
       movementCost: 4,
       defenseBonus: 20,
       visibilityModifier: 4,
-      spawnChance: 0.05
+      spawnChance: 0.02
     },
     [TerrainType.HILLS]: {
       movementCost: 1.2,
       defenseBonus: 2,
       visibilityModifier: 0,
-      spawnChance: 0.2
+      spawnChance: 0.08
     },
     [TerrainType.SNOW]: {
       movementCost: 1.8,
       defenseBonus: 5,
       visibilityModifier: -1,
-      spawnChance: 0.0
+      spawnChance: 0.01
     },
     [TerrainType.ICE]: {
       movementCost: 2.5,
       defenseBonus: 0,
       visibilityModifier: -1.5,
-      spawnChance: 0.0
+      spawnChance: 0.01
     },
     [TerrainType.SNOWY_HILLS]: {
       movementCost: 2.0,
       defenseBonus: 7,
       visibilityModifier: 0,
-      spawnChance: 0.1
+      spawnChance: 0.03
     },
     [TerrainType.DUNES]: {
       movementCost: 1.5,
       defenseBonus: 0,
       visibilityModifier: 0.5,
-      spawnChance: 0.05
+      spawnChance: 0.02
     },
     [TerrainType.OASIS]: {
       movementCost: 1.0,
       defenseBonus: 1,
       visibilityModifier: 0,
-      spawnChance: 0.01
+      spawnChance: 0.005
     },
     [TerrainType.SAND]: {
       movementCost: 1.3,
       defenseBonus: 0,
       visibilityModifier: 0.3,
-      spawnChance: 0.1
+      spawnChance: 0.04
     },
     [TerrainType.DENSE_JUNGLE]: {
       movementCost: 3.0,
       defenseBonus: 10,
       visibilityModifier: -3,
-      spawnChance: 0.05
+      spawnChance: 0.02
     },
     [TerrainType.JUNGLE]: {
       movementCost: 2.5,
       defenseBonus: 8,
       visibilityModifier: -2.5,
-      spawnChance: 0.1
+      spawnChance: 0.04
     },
     [TerrainType.DEEP_WATER]: {
       movementCost: 3.0,
       defenseBonus: 0,
       visibilityModifier: -1,
-      spawnChance: 0.0
+      spawnChance: 0.01
     },
     [TerrainType.MARSH]: {
       movementCost: 2.0,
       defenseBonus: 3,
       visibilityModifier: -1,
-      spawnChance: 0.05
+      spawnChance: 0.02
     },
     [TerrainType.SWAMP]: {
       movementCost: 2.2,
       defenseBonus: 5,
       visibilityModifier: -1.5,
-      spawnChance: 0.05
+      spawnChance: 0.02
     },
     [TerrainType.DENSE_FOREST]: {
       movementCost: 2.8,
       defenseBonus: 12,
       visibilityModifier: -2.5,
-      spawnChance: 0.1
+      spawnChance: 0.03
     },
     [TerrainType.CLEARING]: {
       movementCost: 1.0,
       defenseBonus: 0,
       visibilityModifier: 0,
-      spawnChance: 0.1
+      spawnChance: 0.02
     },
     [TerrainType.ROLLING_HILLS]: {
       movementCost: 1.3,
       defenseBonus: 3,
       visibilityModifier: 0,
-      spawnChance: 0.15
+      spawnChance: 0.06
     },
     [TerrainType.FLOWER_FIELD]: {
       movementCost: 1.0,
       defenseBonus: 1,
       visibilityModifier: 0,
-      spawnChance: 0.02
+      spawnChance: 0.01
     },
     [TerrainType.GRASSLAND]: {
       movementCost: 1.0,
       defenseBonus: 0,
       visibilityModifier: 0,
-      spawnChance: 0.3
+      spawnChance: 0.08
     },
     [TerrainType.ROUGH_TERRAIN]: {
       movementCost: 2.0,
       defenseBonus: 5,
       visibilityModifier: 0,
-      spawnChance: 0.08
+      spawnChance: 0.03
     },
     [TerrainType.ANCIENT_RUINS]: {
       movementCost: 1.5,
       defenseBonus: 8,
       visibilityModifier: 1,
-      spawnChance: 0.03
+      spawnChance: 0.005
     }
   }
 };
@@ -323,8 +324,8 @@ export const ACHIEVEMENTS = {
 // Default world configuration
 export const DEFAULT_WORLD_CONFIG = {
   cataclysmCircle: {
-    center: { x: 20, y: 15 }, // center of 40x30 grid
-    radius: 40,
+    center: { x: 10, y: 8 }, // center of 20x15 grid
+    radius: 20,
     isActive: false,
     shrinkRate: 1,
     nextShrinkTime: 0
