@@ -11,6 +11,8 @@ import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
 import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
 import styled from '@emotion/styled';
+import { useState } from 'react';
+import { initializeSounds } from './services/soundService';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 const StyledAppContainer = styled.div`
@@ -27,6 +29,25 @@ const StyledAppContainer = styled.div`
   overflow: hidden;
 `;
 
+const StyledEnableButton = styled.button`
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+`;
+
 function App() {
   const {
     handleRegenerateWorld,
@@ -39,9 +60,23 @@ function App() {
   // Apply theme globally
   useTheme();
 
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  async function handleEnableSound() {
+    try {
+      await initializeSounds();
+      setSoundEnabled(true);
+      console.log('🎵 Sound initialized');
+    } catch (err) {
+      console.error('Failed to initialize sound', err);
+    }
+  }
+
   return (
     <Router>
       <StyledAppContainer className="app-container">
+        <StyledEnableButton onClick={handleEnableSound} disabled={soundEnabled}>
+          {soundEnabled ? 'Sound enabled' : 'Enable sound'}
+        </StyledEnableButton>
         <Routes>
           {/* Default route redirects to /play */}
           <Route path="/" element={<Navigate to="/play" replace />} />
