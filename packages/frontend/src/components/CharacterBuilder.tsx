@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlayerClass, Stats } from 'shared';
 import { CLASS_INFO, GAME_CONFIG } from 'shared';
 import { MaterialCard, MaterialButton, MaterialDialog, MaterialChip } from './index';
+import SVGAvatarUpload from './SVGAvatarUpload';
 import { gsap } from 'gsap';
 
 interface CharacterBuilderProps {
@@ -39,6 +40,10 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
   const [displayName, setDisplayName] = useState<string>(
     currentPlayer?.displayName || ''
   );
+  const [customAvatar, setCustomAvatar] = useState<{
+    original: string;
+    rough: string;
+  } | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
   // Get stats for selected class
@@ -64,6 +69,12 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
     });
   };
 
+  // Handle custom avatar selection
+  const handleCustomAvatarSelect = (originalSvg: string, roughSvg: string) => {
+    setCustomAvatar({ original: originalSvg, rough: roughSvg });
+    setSelectedAvatar('custom');
+  };
+
   // Handle joining game
   const handleJoinGame = () => {
     if (!displayName.trim()) {
@@ -74,7 +85,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
     onJoinGame({
       displayName: displayName.trim(),
       class: selectedClass,
-      avatar: selectedAvatar
+      avatar: selectedAvatar === 'custom' && customAvatar ? customAvatar.rough : selectedAvatar
     });
   };
 
@@ -126,7 +137,11 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
                         transition: 'all 0.3s ease'
                       }}
                     >
-                      {selectedAvatar}
+                      {selectedAvatar === 'custom' && customAvatar ? (
+                        <div dangerouslySetInnerHTML={{ __html: customAvatar.rough }} />
+                      ) : (
+                        selectedAvatar
+                      )}
                     </div>
                     <div className="absolute -bottom-2 -right-2 bg-gray-800 rounded-full px-3 py-1 border border-purple-400/50">
                       <span className="text-sm font-medium text-white">
@@ -277,6 +292,14 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
                       {avatar}
                     </button>
                   ))}
+                </div>
+
+                {/* Custom SVG Upload */}
+                <div className="mt-4">
+                  <SVGAvatarUpload
+                    onAvatarSelect={handleCustomAvatarSelect}
+                    currentAvatar={selectedAvatar === 'custom' && customAvatar ? customAvatar.rough : undefined}
+                  />
                 </div>
               </div>
             </MaterialCard>

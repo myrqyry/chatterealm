@@ -19,6 +19,8 @@ export { default as RightSidebar } from './RightSidebar';
 export { default as UnifiedSettingsMenu } from './UnifiedSettingsMenu';
 export { default as ModeNavigation } from './ModeNavigation';
 export { default as CharacterBuilder } from './CharacterBuilder';
+export { default as SVGAssetDemo } from './SVGAssetDemo';
+export { default as SVGAvatarUpload } from './SVGAvatarUpload';
 
 // Animation Components
 export { AnimationDemo } from './AnimationDemo';

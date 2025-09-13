@@ -9,6 +9,7 @@ import DevLayout from './components/layouts/DevLayout';
 import { AnimationDemo } from './components';
 import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
 import { CataclysmDemo } from './components/CataclysmDemo';
+import { SVGAssetDemo } from './components';
 import styled from '@emotion/styled';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -101,6 +102,16 @@ function App() {
             element={
               <ResponsiveLayout>
                 <CataclysmDemo />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* SVG Asset Converter - svg2roughjs integration */}
+          <Route
+            path="/svg-assets"
+            element={
+              <ResponsiveLayout>
+                <SVGAssetDemo />
               </ResponsiveLayout>
             }
           />

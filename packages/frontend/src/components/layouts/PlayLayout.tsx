@@ -106,6 +106,22 @@ const PlayLayout: React.FC = () => {
               color: 'var(--color-text-primary)'
             }}
           />
+          <MaterialButton
+            onClick={() => window.open('/svg-assets', '_blank')}
+            variant="outlined"
+            size="small"
+            sx={{
+              borderColor: 'rgba(196, 167, 231, 0.5)',
+              color: 'var(--color-text-primary)',
+              fontSize: '0.7rem',
+              '&:hover': {
+                borderColor: 'rgba(196, 167, 231, 0.8)',
+                backgroundColor: 'rgba(196, 167, 231, 0.1)'
+              }
+            }}
+          >
+            🎨 Assets
+          </MaterialButton>
           <ModeNavigation compact />
         </div>
       </div>
