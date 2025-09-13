@@ -28,6 +28,7 @@ export const createMockGameWorld = (gridWidth: number, gridHeight: number): Game
       shrinkRate: 1,
       nextShrinkTime: 0,
     },
+    cataclysmRoughnessMultiplier: 1.0,
     worldAge: 0,
     lastResetTime: Date.now(),
     phase: 'exploration',

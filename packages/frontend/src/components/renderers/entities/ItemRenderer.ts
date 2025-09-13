@@ -23,7 +23,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
     fill: color,
     fillStyle: 'solid',
     stroke: '#FFF',
-    strokeWidth: 2,
+    strokeWidth: 4,
     roughness: 1.5
   });
 
@@ -42,7 +42,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
         fill: '#C0C0C0',
         fillStyle: 'solid',
         stroke: '#808080',
-        strokeWidth: 1
+        strokeWidth: 2
       });
     } else if (item.type === 'consumable') {
       // Potion bottle
@@ -50,7 +50,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
         fill: color,
         fillStyle: 'solid',
         stroke: '#000',
-        strokeWidth: 1
+        strokeWidth: 2
       });
       // Cork
       rc.rectangle(-1, -6, 2, 2, {
@@ -63,7 +63,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
         fill: color,
         fillStyle: 'solid',
         stroke: '#000',
-        strokeWidth: 1
+        strokeWidth: 2
       });
     }
 

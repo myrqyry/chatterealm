@@ -24,7 +24,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
     fill: currentClass.color,
     fillStyle: 'solid',
     stroke: currentClass.secondary,
-    strokeWidth: 1,
+    strokeWidth: 2,
     roughness: 2
   });
 
@@ -34,7 +34,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
     fill: currentClass.color,
     fillStyle: 'solid',
     stroke: '#FFF',
-    strokeWidth: 2,
+    strokeWidth: 4,
     roughness: 1
   });
 
@@ -45,17 +45,17 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
       fill: '#C0C0C0',
       fillStyle: 'solid',
       stroke: '#808080',
-      strokeWidth: 1,
+      strokeWidth: 2,
       roughness: 1
     });
     // Cross on shield
     rc.line(centerX - 6, centerY - 6, centerX - 6, centerY + 6, {
       stroke: '#FFD700',
-      strokeWidth: 2
+      strokeWidth: 4
     });
     rc.line(centerX - 8, centerY, centerX - 4, centerY, {
       stroke: '#FFD700',
-      strokeWidth: 2
+      strokeWidth: 4
     });
   } else if (player.class === 'rogue') {
     // Rogue: Daggers/stealth effect
@@ -70,7 +70,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
         fill: '#C0C0C0',
         fillStyle: 'solid',
         stroke: '#808080',
-        strokeWidth: 1
+        strokeWidth: 2
       });
     }
   } else if (player.class === 'mage') {
@@ -84,7 +84,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
         fill: '#9370DB',
         fillStyle: 'solid',
         stroke: '#8A2BE2',
-        strokeWidth: 1
+        strokeWidth: 2
       });
     }
   }

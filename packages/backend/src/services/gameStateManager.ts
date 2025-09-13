@@ -59,19 +59,18 @@ export class GameStateManager {
         center: { x: Math.floor(GAME_CONFIG.gridWidth / 2), y: Math.floor(GAME_CONFIG.gridHeight / 2) },
         radius: Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight),
         isActive: false,
-        shrinkRate: 1,
-        nextShrinkTime: 0
+        shrinkRate: WORLD_CONSTANTS.CATACLYSM_SHRINK_RATE,
+        nextShrinkTime: 0,
       },
+      cataclysmRoughnessMultiplier: 1.0,
       worldAge: 0,
       lastResetTime: Date.now(),
       phase: 'exploration'
     } as GameWorld;
 
-    // Create clustered biomes so mountains and forests span multiple tiles
-    for (let y = 0; y < GAME_CONFIG.gridHeight; y++) newGameWorld.grid[y] = [];
-
-    // Start with plains everywhere
+    // Initialize grid with default terrain
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
+      newGameWorld.grid[y] = [];
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
         newGameWorld.grid[y][x] = {
           type: TerrainType.PLAIN,
@@ -83,80 +82,226 @@ export class GameStateManager {
       }
     }
 
-    // Helper to place a cluster of a given terrain type with a radius/probability falloff
-    // This creates more uniformly-shaped blobs compared to a pure random walk.
-    const placeCluster = (centerX: number, centerY: number, size: number, terrain: TerrainType) => {
-      // Approximate radius from size (area ~ pi * r^2) => r ~ sqrt(size/pi)
-      const radius = Math.max(1, Math.round(Math.sqrt(size / Math.PI)));
-      const placed = new Set<string>();
+    // Enhanced biome generation with compatibility rules and transition zones
+    const biomeCompatibility: Record<TerrainType, TerrainType[]> = {
+      [TerrainType.PLAIN]: [TerrainType.FOREST, TerrainType.GRASSLAND, TerrainType.HILLS, TerrainType.CLEARING],
+      [TerrainType.FOREST]: [TerrainType.PLAIN, TerrainType.DENSE_FOREST, TerrainType.MOUNTAIN, TerrainType.HILLS],
+      [TerrainType.MOUNTAIN]: [TerrainType.FOREST, TerrainType.HILLS, TerrainType.SNOW, TerrainType.ROUGH_TERRAIN],
+      [TerrainType.OCEAN]: [TerrainType.WATER, TerrainType.SAND, TerrainType.MARSH],
+      [TerrainType.SAND]: [TerrainType.OCEAN, TerrainType.DUNES, TerrainType.PLAIN],
+      [TerrainType.GRASSLAND]: [TerrainType.PLAIN, TerrainType.FOREST, TerrainType.FLOWER_FIELD],
+      [TerrainType.HILLS]: [TerrainType.PLAIN, TerrainType.MOUNTAIN, TerrainType.ROUGH_TERRAIN],
+      [TerrainType.SNOW]: [TerrainType.MOUNTAIN, TerrainType.ICE],
+      [TerrainType.WATER]: [TerrainType.OCEAN, TerrainType.RIVER, TerrainType.MARSH],
+      [TerrainType.RIVER]: [TerrainType.WATER, TerrainType.PLAIN, TerrainType.FOREST],
+      [TerrainType.DENSE_FOREST]: [TerrainType.FOREST, TerrainType.MOUNTAIN],
+      [TerrainType.CLEARING]: [TerrainType.FOREST, TerrainType.PLAIN],
+      [TerrainType.FLOWER_FIELD]: [TerrainType.GRASSLAND, TerrainType.PLAIN],
+      [TerrainType.ROUGH_TERRAIN]: [TerrainType.HILLS, TerrainType.MOUNTAIN],
+      [TerrainType.DUNES]: [TerrainType.SAND, TerrainType.PLAIN],
+      [TerrainType.MARSH]: [TerrainType.WATER, TerrainType.SWAMP],
+      [TerrainType.SWAMP]: [TerrainType.MARSH, TerrainType.WATER],
+      [TerrainType.ICE]: [TerrainType.SNOW, TerrainType.WATER],
+      [TerrainType.ANCIENT_RUINS]: [TerrainType.PLAIN, TerrainType.FOREST],
+      [TerrainType.MOUNTAIN_PEAK]: [TerrainType.MOUNTAIN],
+      [TerrainType.DENSE_JUNGLE]: [TerrainType.FOREST, TerrainType.JUNGLE],
+      [TerrainType.JUNGLE]: [TerrainType.DENSE_JUNGLE, TerrainType.FOREST],
+      [TerrainType.DEEP_WATER]: [TerrainType.OCEAN, TerrainType.WATER],
+      [TerrainType.OASIS]: [TerrainType.SAND, TerrainType.DUNES],
+      [TerrainType.ROLLING_HILLS]: [TerrainType.HILLS, TerrainType.PLAIN],
+      [TerrainType.SNOWY_HILLS]: [TerrainType.HILLS, TerrainType.SNOW]
+    };
 
-      for (let dy = -radius; dy <= radius; dy++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-          const x = centerX + dx;
-          const y = centerY + dy;
+    // Enhanced cluster generation with different shapes and transition zones
+    const generateBiomeCluster = (centerX: number, centerY: number, primaryBiome: TerrainType, size: number) => {
+      const placed = new Map<string, TerrainType>();
+      const transitionZone = new Set<string>();
+
+      // Generate primary cluster with organic shape
+      const generateOrganicShape = (cx: number, cy: number, biome: TerrainType, clusterSize: number) => {
+        const localPlaced = new Set<string>();
+        const seeds = [{ x: cx, y: cy }];
+
+        for (let i = 0; i < clusterSize && seeds.length > 0; i++) {
+          const idx = Math.floor(Math.random() * seeds.length);
+          const { x, y } = seeds.splice(idx, 1)[0];
+          const key = `${x},${y}`;
+
           if (x < 0 || y < 0 || x >= GAME_CONFIG.gridWidth || y >= GAME_CONFIG.gridHeight) continue;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > radius) continue;
+          if (localPlaced.has(key)) continue;
 
-          // Probability falls off smoothly with distance; add a small randomness factor
-          const normalized = 1 - dist / (radius + 0.0001);
-          const acceptance = normalized * 0.9 + (Math.random() * 0.2 - 0.1);
-          if (acceptance > 0.35 && placed.size < size) {
-            placed.add(`${x},${y}`);
-            newGameWorld.grid[y][x] = {
-              type: terrain,
-              position: { x, y },
-              movementCost: GAME_CONFIG.terrainConfig[terrain].movementCost,
-              defenseBonus: GAME_CONFIG.terrainConfig[terrain].defenseBonus,
-              visibilityModifier: GAME_CONFIG.terrainConfig[terrain].visibilityModifier
-            } as any;
+          localPlaced.add(key);
+          placed.set(key, biome);
+
+          // Add neighboring tiles with decreasing probability
+          const neighbors = [
+            { x: x + 1, y }, { x: x - 1, y },
+            { x, y: y + 1 }, { x, y: y - 1 }
+          ];
+
+          for (const n of neighbors) {
+            if (!localPlaced.has(`${n.x},${n.y}`) && Math.random() < 0.7) {
+              seeds.push(n);
+            }
+          }
+        }
+
+        return localPlaced;
+      };
+
+      // Generate primary cluster
+      const primaryTiles = generateOrganicShape(centerX, centerY, primaryBiome, size);
+
+      // Generate transition zones around compatible biomes
+      const compatibleBiomes = biomeCompatibility[primaryBiome] || [];
+      for (const tileKey of primaryTiles) {
+        const [xStr, yStr] = tileKey.split(',');
+        const x = parseInt(xStr), y = parseInt(yStr);
+
+        // Check adjacent tiles for transition opportunities
+        const adjacent = [
+          { x: x + 1, y }, { x: x - 1, y },
+          { x, y: y + 1 }, { x, y: y - 1 }
+        ];
+
+        for (const adj of adjacent) {
+          if (adj.x < 0 || adj.y < 0 || adj.x >= GAME_CONFIG.gridWidth || adj.y >= GAME_CONFIG.gridHeight) continue;
+
+          const adjKey = `${adj.x},${adj.y}`;
+          // Ensure the grid position exists before accessing it
+          if (!newGameWorld.grid[adj.y] || !newGameWorld.grid[adj.y][adj.x]) continue;
+
+          const currentBiome = newGameWorld.grid[adj.y][adj.x].type;
+
+          // If adjacent tile is compatible and not already set, mark for transition
+          if (compatibleBiomes.includes(currentBiome) && !placed.has(adjKey)) {
+            transitionZone.add(adjKey);
           }
         }
       }
 
-      // If cluster ended up too small, seed a few random neighbors to grow organically
-      const seeds = Array.from(placed).map(k => k.split(',').map(Number));
-      let attempts = 0;
-      while (placed.size < size && attempts < size * 4) {
-        attempts++;
-        if (seeds.length === 0) break;
-        const idx = Math.floor(Math.random() * seeds.length);
-        const [sx, sy] = seeds[idx];
-        const nbors = [ [sx+1, sy], [sx-1, sy], [sx, sy+1], [sx, sy-1] ];
-        const pick = nbors[Math.floor(Math.random() * nbors.length)];
-        const [nx, ny] = pick;
-        if (nx < 0 || ny < 0 || nx >= GAME_CONFIG.gridWidth || ny >= GAME_CONFIG.gridHeight) continue;
-        const key = `${nx},${ny}`;
-        if (placed.has(key)) continue;
-        placed.add(key);
-        newGameWorld.grid[ny][nx] = {
-          type: terrain,
-          position: { x: nx, y: ny },
-          movementCost: GAME_CONFIG.terrainConfig[terrain].movementCost,
-          defenseBonus: GAME_CONFIG.terrainConfig[terrain].defenseBonus,
-          visibilityModifier: GAME_CONFIG.terrainConfig[terrain].visibilityModifier
+      // Apply transition zones with reduced density
+      for (const tileKey of transitionZone) {
+        if (Math.random() < 0.4) { // 40% chance for transition tiles
+          const [xStr, yStr] = tileKey.split(',');
+          const x = parseInt(xStr), y = parseInt(yStr);
+          const currentBiome = newGameWorld.grid[y][x].type;
+
+          // Choose a transition biome that's compatible
+          const transitionOptions = compatibleBiomes.filter(b => b !== primaryBiome);
+          if (transitionOptions.length > 0) {
+            const transitionBiome = transitionOptions[Math.floor(Math.random() * transitionOptions.length)];
+            placed.set(tileKey, transitionBiome);
+          }
+        }
+      }
+
+      // Apply all placed tiles to the world
+      for (const [key, biome] of placed) {
+        const [xStr, yStr] = key.split(',');
+        const x = parseInt(xStr), y = parseInt(yStr);
+        newGameWorld.grid[y][x] = {
+          type: biome,
+          position: { x, y },
+          movementCost: GAME_CONFIG.terrainConfig[biome].movementCost,
+          defenseBonus: GAME_CONFIG.terrainConfig[biome].defenseBonus,
+          visibilityModifier: GAME_CONFIG.terrainConfig[biome].visibilityModifier
         } as any;
-        seeds.push([nx, ny]);
       }
     };
 
-    // Place several forest and mountain clusters across the map
-    const forestClusters = Math.max(3, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 300));
-    const mountainClusters = Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 600));
+    // Generate biome clusters with strategic placement
+    const biomeClusters = [
+      // Core biomes with larger clusters
+      { biome: TerrainType.FOREST, count: Math.max(4, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 250)), sizeRange: [8, 18] },
+      { biome: TerrainType.MOUNTAIN, count: Math.max(3, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 400)), sizeRange: [6, 14] },
+      { biome: TerrainType.OCEAN, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 600)), sizeRange: [10, 20] },
+      { biome: TerrainType.SAND, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 500)), sizeRange: [7, 15] },
 
-    for (let i = 0; i < forestClusters; i++) {
-      const cx = Math.floor(Math.random() * GAME_CONFIG.gridWidth);
-      const cy = Math.floor(Math.random() * GAME_CONFIG.gridHeight);
-      const size = 6 + Math.floor(Math.random() * 12);
-      placeCluster(cx, cy, size, TerrainType.FOREST);
+      // Secondary biomes with smaller clusters
+      { biome: TerrainType.GRASSLAND, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 800)), sizeRange: [5, 12] },
+      { biome: TerrainType.HILLS, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 700)), sizeRange: [4, 10] },
+      { biome: TerrainType.SNOW, count: Math.max(1, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 1200)), sizeRange: [3, 8] },
+      { biome: TerrainType.WATER, count: Math.max(1, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 1000)), sizeRange: [4, 12] },
+    ];
+
+    // Place all biome clusters
+    for (const cluster of biomeClusters) {
+      for (let i = 0; i < cluster.count; i++) {
+        const cx = Math.floor(Math.random() * GAME_CONFIG.gridWidth);
+        const cy = Math.floor(Math.random() * GAME_CONFIG.gridHeight);
+        const size = cluster.sizeRange[0] + Math.floor(Math.random() * (cluster.sizeRange[1] - cluster.sizeRange[0]));
+        generateBiomeCluster(cx, cy, cluster.biome, size);
+      }
     }
 
-    for (let i = 0; i < mountainClusters; i++) {
-      const cx = Math.floor(Math.random() * GAME_CONFIG.gridWidth);
-      const cy = Math.floor(Math.random() * GAME_CONFIG.gridHeight);
-      const size = 4 + Math.floor(Math.random() * 10);
-      placeCluster(cx, cy, size, TerrainType.MOUNTAIN);
-    }
+    // Add some rivers connecting water bodies
+    const addRivers = () => {
+      const waterBodies: Array<{ x: number, y: number }> = [];
+
+      // Find all water tiles
+      for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
+        for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
+          const tile = newGameWorld.grid[y][x];
+          if (tile.type === TerrainType.OCEAN || tile.type === TerrainType.WATER) {
+            waterBodies.push({ x, y });
+          }
+        }
+      }
+
+      // Create rivers between some water bodies
+      const riverCount = Math.min(3, Math.floor(waterBodies.length / 4));
+      for (let i = 0; i < riverCount; i++) {
+        if (waterBodies.length < 2) break;
+
+        const startIdx = Math.floor(Math.random() * waterBodies.length);
+        const start = waterBodies.splice(startIdx, 1)[0];
+
+        const endIdx = Math.floor(Math.random() * waterBodies.length);
+        const end = waterBodies[endIdx];
+
+        // Create a winding river path
+        let current = { ...start };
+        const riverTiles: Array<{ x: number, y: number }> = [];
+
+        for (let step = 0; step < 20 && (current.x !== end.x || current.y !== end.y); step++) {
+          riverTiles.push({ ...current });
+
+          // Move towards end with some randomness
+          const dx = end.x - current.x;
+          const dy = end.y - current.y;
+
+          if (Math.abs(dx) > Math.abs(dy)) {
+            current.x += Math.sign(dx) + (Math.random() > 0.7 ? Math.sign(Math.random() - 0.5) : 0);
+          } else {
+            current.y += Math.sign(dy) + (Math.random() > 0.7 ? Math.sign(Math.random() - 0.5) : 0);
+          }
+
+          // Keep within bounds
+          current.x = Math.max(0, Math.min(GAME_CONFIG.gridWidth - 1, current.x));
+          current.y = Math.max(0, Math.min(GAME_CONFIG.gridHeight - 1, current.y));
+        }
+
+        // Apply river tiles
+        for (const tile of riverTiles) {
+          if (tile.x >= 0 && tile.y >= 0 && tile.x < GAME_CONFIG.gridWidth && tile.y < GAME_CONFIG.gridHeight) {
+            const currentType = newGameWorld.grid[tile.y][tile.x].type;
+            // Only place river on plains or grasslands
+            if (currentType === TerrainType.PLAIN || currentType === TerrainType.GRASSLAND) {
+              newGameWorld.grid[tile.y][tile.x] = {
+                type: TerrainType.RIVER,
+                position: { x: tile.x, y: tile.y },
+                movementCost: GAME_CONFIG.terrainConfig[TerrainType.RIVER].movementCost,
+                defenseBonus: GAME_CONFIG.terrainConfig[TerrainType.RIVER].defenseBonus,
+                visibilityModifier: GAME_CONFIG.terrainConfig[TerrainType.RIVER].visibilityModifier
+              } as any;
+            }
+          }
+        }
+      }
+    };
+
+    addRivers();
 
     // Mark available spawn points (non-mountain tiles) and initialize movement/defense modifiers
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
@@ -351,6 +496,8 @@ export class GameStateManager {
     if (!this.gameWorld.cataclysmCircle.isActive) {
       this.gameWorld.cataclysmCircle.isActive = true;
       this.gameWorld.cataclysmCircle.nextShrinkTime = Date.now() + 60000;
+      this.gameWorld.phase = 'cataclysm';
+      this.gameWorld.cataclysmRoughnessMultiplier = 1.0; // Start at normal roughness
       this.recordEvent({ type: 'cataclysm_started', data: { timestamp: Date.now() } } as any);
       return { success: true, message: 'Cataclysm started', data: { nextShrinkTime: this.gameWorld.cataclysmCircle.nextShrinkTime } };
     }
@@ -639,6 +786,13 @@ export class GameStateManager {
     const now = Date.now();
     if (now >= this.gameWorld.cataclysmCircle.nextShrinkTime) {
       this.gameWorld.cataclysmCircle.radius = Math.max(0, this.gameWorld.cataclysmCircle.radius - 1);
+
+      // Calculate roughness multiplier based on cataclysm progress
+      // Start at 1.0 (normal), increase to 4.0 (very chaotic) as radius shrinks
+      const initialRadius = Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight);
+      const progress = 1 - (this.gameWorld.cataclysmCircle.radius / initialRadius);
+      this.gameWorld.cataclysmRoughnessMultiplier = 1.0 + (progress * 3.0); // 1.0 to 4.0
+
       if (this.gameWorld.cataclysmCircle.radius <= 0) {
         this.resetWorld();
       } else {
@@ -662,6 +816,8 @@ export class GameStateManager {
     this.gameWorld.cataclysmCircle.isActive = false;
     this.gameWorld.cataclysmCircle.radius = 20;
     this.gameWorld.cataclysmCircle.nextShrinkTime = 0;
+    this.gameWorld.cataclysmRoughnessMultiplier = 1.0; // Reset to normal
+    this.gameWorld.phase = 'rebirth'; // Enter rebirth phase for regeneration effects
     this.regenerateTerrain();
     this.gameWorld.players.forEach(player => {
       if (!player.isAlive) {
@@ -674,6 +830,10 @@ export class GameStateManager {
         }
       }
     });
+    // After a brief delay, return to exploration phase
+    setTimeout(() => {
+      this.gameWorld.phase = 'exploration';
+    }, 5000); // 5 seconds of rebirth effects
   }
 
   private regenerateTerrain(): void {
@@ -766,6 +926,8 @@ export class GameStateManager {
     this.gameWorld.cataclysmCircle.isActive = false;
     this.gameWorld.cataclysmCircle.radius = Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight);
     this.gameWorld.cataclysmCircle.nextShrinkTime = 0;
+    this.gameWorld.cataclysmRoughnessMultiplier = 1.0;
+    this.gameWorld.phase = 'exploration';
 
     // Reset world age
     this.gameWorld.worldAge = 0;

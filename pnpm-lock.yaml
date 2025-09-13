@@ -106,6 +106,9 @@ importers:
       react-router-dom:
         specifier: ^6.8.0
         version: 6.30.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      rough-notation:
+        specifier: ^0.5.1
+        version: 0.5.1
       roughjs:
         specifier: ^4.6.6
         version: 4.6.6
@@ -2529,6 +2532,9 @@ packages:
     resolution: {integrity: sha512-GVsDdsbJzzy4S/v3dqWPJ7EfvZJfCHiDqe80IyrF59LYuP+e6U1LJoUqeuqRbwAWoMNoXivMNeNAOf5E22VA1w==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
     hasBin: true
+
+  rough-notation@0.5.1:
+    resolution: {integrity: sha512-ITHofTzm13cWFVfoGsh/4c/k2Mg8geKgBCwex71UZLnNuw403tCRjYPQ68jSAd37DMbZIePXPjDgY0XdZi9HPw==}
 
   roughjs@4.6.6:
     resolution: {integrity: sha512-ZUz/69+SYpFN/g/lUlo2FXcIjRkSu3nDarreVdGGndHEBJ6cXPdKguS8JGxwj5HA5xIbVKSmLgr5b3AWxtRfvQ==}
@@ -5749,6 +5755,8 @@ snapshots:
   rollup@3.29.5:
     optionalDependencies:
       fsevents: 2.3.3
+
+  rough-notation@0.5.1: {}
 
   roughjs@4.6.6:
     dependencies:

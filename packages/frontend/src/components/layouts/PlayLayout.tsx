@@ -1,13 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GameCanvas from '../GameCanvas';
 import PlayerSidebar from '../sidebars/PlayerSidebar';
 import ModeNavigation from '../ModeNavigation';
-import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from '../index';
+import CharacterBuilder from '../CharacterBuilder';
+import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper, MaterialButton } from '../index';
 import { useGameStore } from '../../stores/gameStore';
+import { useGameWorld } from '../../hooks/useGameWorld';
 import { COLORS } from '../../constants/colors';
 
 const PlayLayout: React.FC = () => {
   const { gameWorld } = useGameStore();
+  const { handleJoinGame } = useGameWorld();
+  const [isCharacterBuilderOpen, setIsCharacterBuilderOpen] = useState(false);
+  const [currentPlayer, setCurrentPlayer] = useState<{
+    displayName: string;
+    class: any;
+    avatar: string;
+  } | null>(null);
+
+  // Handle character creation/join
+  const handleCharacterJoin = (characterData: {
+    displayName: string;
+    class: any;
+    avatar: string;
+  }) => {
+    setCurrentPlayer(characterData);
+    setIsCharacterBuilderOpen(false);
+    // Call the game join handler
+    handleJoinGame(characterData);
+  };
+
+  // Handle opening character builder
+  const handleOpenCharacterBuilder = () => {
+    setIsCharacterBuilderOpen(true);
+  };
+
+  // Handle closing character builder
+  const handleCloseCharacterBuilder = () => {
+    setIsCharacterBuilderOpen(false);
+  };
 
   return (
     <div style={{
@@ -85,7 +116,7 @@ const PlayLayout: React.FC = () => {
         flex: 1,
         overflow: 'hidden'
       }}>
-        {/* Game Canvas */}
+        {/* Game Canvas or Character Builder */}
         <div style={{
           flex: 1,
           background: 'var(--color-surface)',
@@ -95,87 +126,210 @@ const PlayLayout: React.FC = () => {
           justifyContent: 'center',
           position: 'relative'
         }}>
-          <div style={{
-            width: '100%',
-            height: '100%',
-            maxWidth: 'calc(100vw - 320px)',
-            maxHeight: '100vh',
-            overflow: 'hidden'
-          }}>
-            <GameCanvas />
-          </div>
-
-          {/* Game Legend */}
-          <MaterialPaper
-            sx={{
-              position: 'absolute',
-              bottom: '20px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+          {!currentPlayer ? (
+            // Character Creation Screen
+            <div style={{
               display: 'flex',
-              gap: 1,
-              p: 1,
-              zIndex: 1000,
-              backgroundColor: 'rgba(25, 23, 36, 0.95)',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            <MaterialChip
-              label="Knight"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-knight)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="Rogue"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-rogue)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="Mage"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-mage)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="NPC"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-npc)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="Item"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-item)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-          </MaterialPaper>
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '2rem',
+              padding: '2rem',
+              textAlign: 'center'
+            }}>
+              <div>
+                <h1 style={{
+                  fontSize: '3rem',
+                  fontWeight: 'bold',
+                  color: 'var(--color-text-primary)',
+                  marginBottom: '1rem',
+                  textShadow: '0 0 20px rgba(196, 167, 231, 0.5)'
+                }}>
+                  ⚔️ Welcome to ChatteRealm ⚔️
+                </h1>
+                <p style={{
+                  fontSize: '1.2rem',
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: '2rem',
+                  maxWidth: '600px'
+                }}>
+                  Embark on an epic adventure in a procedurally generated world.
+                  Choose your class, customize your character, and join the realm!
+                </p>
+              </div>
+
+              <MaterialButton
+                onClick={handleOpenCharacterBuilder}
+                variant="contained"
+                sx={{
+                  backgroundColor: 'rgba(196, 167, 231, 0.8)',
+                  color: 'white',
+                  fontSize: '1.2rem',
+                  padding: '1rem 2rem',
+                  borderRadius: '12px',
+                  '&:hover': {
+                    backgroundColor: 'rgba(196, 167, 231, 1)',
+                    transform: 'scale(1.05)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                🎮 Create Your Character
+              </MaterialButton>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                maxWidth: '800px',
+                marginTop: '2rem'
+              }}>
+                <MaterialCard
+                  sx={{
+                    background: 'rgba(49, 46, 56, 0.8)',
+                    border: '1px solid rgba(196, 167, 231, 0.2)',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    textAlign: 'center'
+                  }}
+                >
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+                    🏰 Dynamic World
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                    Explore procedurally generated terrain with biomes, rivers, and cataclysmic events
+                  </p>
+                </MaterialCard>
+
+                <MaterialCard
+                  sx={{
+                    background: 'rgba(49, 46, 56, 0.8)',
+                    border: '1px solid rgba(196, 167, 231, 0.2)',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    textAlign: 'center'
+                  }}
+                >
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+                    ⚔️ Class System
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                    Choose from Knight, Rogue, or Mage with unique abilities and playstyles
+                  </p>
+                </MaterialCard>
+
+                <MaterialCard
+                  sx={{
+                    background: 'rgba(49, 46, 56, 0.8)',
+                    border: '1px solid rgba(196, 167, 231, 0.2)',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    textAlign: 'center'
+                  }}
+                >
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+                    🎨 Rich Animations
+                  </h3>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                    Experience smooth GSAP animations and hand-drawn effects throughout your journey
+                  </p>
+                </MaterialCard>
+              </div>
+            </div>
+          ) : (
+            // Game Canvas
+            <>
+              <div style={{
+                width: '100%',
+                height: '100%',
+                maxWidth: 'calc(100vw - 320px)',
+                maxHeight: '100vh',
+                overflow: 'hidden'
+              }}>
+                <GameCanvas />
+              </div>
+
+              {/* Game Legend */}
+              <MaterialPaper
+                sx={{
+                  position: 'absolute',
+                  bottom: '20px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: 1,
+                  p: 1,
+                  zIndex: 1000,
+                  backgroundColor: 'rgba(25, 23, 36, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                <MaterialChip
+                  label="Knight"
+                  size="small"
+                  sx={{
+                    backgroundColor: 'var(--color-legend-knight)',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    height: '20px'
+                  }}
+                />
+                <MaterialChip
+                  label="Rogue"
+                  size="small"
+                  sx={{
+                    backgroundColor: 'var(--color-legend-rogue)',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    height: '20px'
+                  }}
+                />
+                <MaterialChip
+                  label="Mage"
+                  size="small"
+                  sx={{
+                    backgroundColor: 'var(--color-legend-mage)',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    height: '20px'
+                  }}
+                />
+                <MaterialChip
+                  label="NPC"
+                  size="small"
+                  sx={{
+                    backgroundColor: 'var(--color-legend-npc)',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    height: '20px'
+                  }}
+                />
+                <MaterialChip
+                  label="Item"
+                  size="small"
+                  sx={{
+                    backgroundColor: 'var(--color-legend-item)',
+                    color: 'white',
+                    fontSize: '0.7rem',
+                    height: '20px'
+                  }}
+                />
+              </MaterialPaper>
+            </>
+          )}
         </div>
 
-        {/* Player Sidebar */}
-        <PlayerSidebar />
+        {/* Player Sidebar - Only show when player exists */}
+        {currentPlayer && <PlayerSidebar />}
       </div>
+
+      {/* Character Builder Modal */}
+      <CharacterBuilder
+        isOpen={isCharacterBuilderOpen}
+        onClose={handleCloseCharacterBuilder}
+        onJoinGame={handleCharacterJoin}
+        currentPlayer={currentPlayer}
+      />
     </div>
   );
 };

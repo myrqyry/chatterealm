@@ -18,3 +18,8 @@ export { default as EnhancedPlayerStatus } from './EnhancedPlayerStatus';
 export { default as RightSidebar } from './RightSidebar';
 export { default as UnifiedSettingsMenu } from './UnifiedSettingsMenu';
 export { default as ModeNavigation } from './ModeNavigation';
+export { default as CharacterBuilder } from './CharacterBuilder';
+
+// Animation Components
+export { AnimationDemo } from './AnimationDemo';
+export * from './animations';

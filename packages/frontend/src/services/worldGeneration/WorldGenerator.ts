@@ -68,6 +68,7 @@ export const createMockGameWorld = (): GameWorld => {
       shrinkRate: 1,
       nextShrinkTime: Date.now() + 300000
     },
+    cataclysmRoughnessMultiplier: 1.0,
     worldAge: 0,
     lastResetTime: Date.now(),
     phase: 'exploration'

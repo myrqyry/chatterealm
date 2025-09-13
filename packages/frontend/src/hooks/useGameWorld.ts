@@ -18,7 +18,7 @@ interface GameWorldHook {
   movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
   handleRegenerateWorld: () => void;
   handleMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
-  handleJoinGame: () => void;
+  handleJoinGame: (characterData?: { displayName: string; class: any; avatar: string }) => void;
   handleStartCataclysm: () => void;
   handlePickUpItem: () => void;
 }
@@ -56,8 +56,13 @@ export const useGameWorld = (): GameWorldHook => {
     movePlayer(direction);
   };
 
-  const handleJoinGame = () => {
-    const playerData = {
+  const handleJoinGame = (characterData?: { displayName: string; class: any; avatar: string }) => {
+    const playerData = characterData ? {
+      id: 'player_' + Date.now(),
+      displayName: characterData.displayName,
+      class: characterData.class,
+      avatar: characterData.avatar
+    } : {
       id: 'player_' + Date.now(),
       displayName: 'TestPlayer',
       class: 'knight' as any,

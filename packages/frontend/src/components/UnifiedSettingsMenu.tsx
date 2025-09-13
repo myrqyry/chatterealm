@@ -218,11 +218,11 @@ const UnifiedSettingsMenu: React.FC = () => {
       }}>
         {[
           { id: 'overview', label: '🧭 Overview' },
-          { id: 'gameplay', label: '🎮 Gameplay' },
+          { id: 'rendering', label: '� Rendering' },
           { id: 'audio', label: '🎵 Audio' },
-          { id: 'visual', label: '👁️ Visual' },
-          { id: 'world', label: '🌍 World & Advanced' },
-          { id: 'actions', label: '⚔️ Actions & Debug' },
+          { id: 'gameplay', label: '🎮 Gameplay' },
+          { id: 'world', label: '🌍 World' },
+          { id: 'actions', label: '⚔️ Actions' },
         ].map(t => (
           <button
             key={t.id}
@@ -512,9 +512,94 @@ const UnifiedSettingsMenu: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'visual' && (
+        {activeTab === 'rendering' && (
           <div className="tab-panel">
-            <SettingGroup title="Theme & UI" icon="🎨">
+            <SettingGroup title="Drawing Style" icon="✏️">
+              <SettingSlider
+                label="Roughness"
+                value={unifiedSettings.animations.roughness}
+                min={0} max={5} step={0.1}
+                onChange={(v) => updateAnimationSettings({ roughness: v })}
+                showReset resetValue={1.5}
+                description="Hand-drawn sketchiness level"
+              />
+              <SettingSlider
+                label="Bowing"
+                value={unifiedSettings.animations.bowing}
+                min={0} max={5} step={0.1}
+                onChange={(v) => updateAnimationSettings({ bowing: v })}
+                showReset resetValue={1.2}
+                description="Line curvature and waviness"
+              />
+              <SettingDropdown
+                label="Fill Style"
+                value={unifiedSettings.animations.fillStyle || 'hachure'}
+                options={fillStyleOptions}
+                onChange={(v) => updateAnimationSettings({ fillStyle: String(v) })}
+                description="Pattern used for filled areas"
+              />
+              <SettingSlider
+                label="Stroke Width"
+                value={unifiedSettings.animations.strokeWidth || 1.5}
+                min={0.5} max={4} step={0.1}
+                onChange={(v) => updateAnimationSettings({ strokeWidth: v })}
+                showReset resetValue={1.5}
+                description="Thickness of all outlines"
+              />
+            </SettingGroup>
+            <SettingGroup title="Advanced Drawing" icon="🎨">
+              <SettingSlider
+                label="Fill Weight"
+                value={unifiedSettings.animations.fillWeight}
+                min={0} max={5} step={0.1}
+                onChange={(v) => updateAnimationSettings({ fillWeight: v })}
+                showReset resetValue={1.5}
+                description="Thickness of fill patterns"
+              />
+              <SettingSlider
+                label="Hachure Angle"
+                value={unifiedSettings.animations.hachureAngle}
+                min={0} max={180} step={15}
+                onChange={(v) => updateAnimationSettings({ hachureAngle: v })}
+                unit="°" showReset resetValue={45}
+                description="Angle for hatching patterns"
+              />
+              <SettingSlider
+                label="Hachure Gap"
+                value={unifiedSettings.animations.hachureGap}
+                min={1} max={20} step={1}
+                onChange={(v) => updateAnimationSettings({ hachureGap: v })}
+                showReset resetValue={4}
+                description="Spacing between hatch lines"
+              />
+              <SettingSlider
+                label="Random Seed"
+                value={unifiedSettings.animations.seed || 1}
+                min={1} max={10000} step={1}
+                onChange={(v) => updateAnimationSettings({ seed: v })}
+                showReset resetValue={1}
+                description="Seed for deterministic randomness"
+              />
+            </SettingGroup>
+            <SettingGroup title="Animation & Effects" icon="🎞️">
+              <SettingSlider
+                label="Animation Speed"
+                value={unifiedSettings.animations.animationSpeed}
+                min={0.1} max={3} step={0.1}
+                onChange={(v) => updateAnimationSettings({ animationSpeed: v })}
+                unit="x" showReset resetValue={1.0}
+                description="Global animation speed multiplier"
+              />
+              <SettingSlider
+                label="Particle Count"
+                value={unifiedSettings.animations.particleCount}
+                min={0} max={20} step={1}
+                onChange={(v) => updateAnimationSettings({ particleCount: v })}
+                showReset resetValue={5}
+                description="Number of effect particles"
+              />
+            </SettingGroup>
+            <SettingGroup title="Display Options" icon="👁️">
               <SettingDropdown
                 label="Theme"
                 value={unifiedSettings.visual.theme}
@@ -537,8 +622,6 @@ const UnifiedSettingsMenu: React.FC = () => {
                 onChange={(v) => updateVisualSettings({ language: String(v) })}
                 description="Interface language"
               />
-            </SettingGroup>
-            <SettingGroup title="Accessibility" icon="♿">
               <SettingCheckbox
                 label="High Contrast"
                 checked={unifiedSettings.visual.highContrast}
@@ -568,79 +651,6 @@ const UnifiedSettingsMenu: React.FC = () => {
                 checked={unifiedSettings.visual.showHealthBars}
                 onChange={(c) => updateVisualSettings({ showHealthBars: c })}
                 description="Display entity health bars"
-              />
-            </SettingGroup>
-            <SettingGroup title="Animation" icon="🎞️">
-              <SettingSlider
-                label="Animation Speed"
-                value={unifiedSettings.animations.animationSpeed}
-                min={0.1} max={3} step={0.1}
-                onChange={(v) => updateAnimationSettings({ animationSpeed: v })}
-                unit="x" showReset resetValue={1.0}
-                description="Global animation speed multiplier"
-              />
-              <SettingSlider
-                label="Particle Count"
-                value={unifiedSettings.animations.particleCount}
-                min={0} max={20} step={1}
-                onChange={(v) => updateAnimationSettings({ particleCount: v })}
-                showReset resetValue={5}
-                description="Number of effect particles"
-              />
-              <SettingSlider
-                label="Roughness"
-                value={unifiedSettings.animations.roughness}
-                min={0} max={5} step={0.1}
-                onChange={(v) => updateAnimationSettings({ roughness: v })}
-                showReset resetValue={1.5}
-                description="Hand-drawn roughness"
-              />
-              <SettingSlider
-                label="Bowing"
-                value={unifiedSettings.animations.bowing}
-                min={0} max={5} step={0.1}
-                onChange={(v) => updateAnimationSettings({ bowing: v })}
-                showReset resetValue={1.2}
-                description="Curvature of lines"
-              />
-              <SettingSlider
-                label="Fill Weight"
-                value={unifiedSettings.animations.fillWeight}
-                min={0} max={5} step={0.1}
-                onChange={(v) => updateAnimationSettings({ fillWeight: v })}
-                showReset resetValue={1.5}
-                description="Thickness of fills"
-              />
-              <SettingSlider
-                label="Hachure Angle"
-                value={unifiedSettings.animations.hachureAngle}
-                min={0} max={180} step={15}
-                onChange={(v) => updateAnimationSettings({ hachureAngle: v })}
-                unit="°" showReset resetValue={45}
-                description="Angle for hatching"
-              />
-              <SettingSlider
-                label="Hachure Gap"
-                value={unifiedSettings.animations.hachureGap}
-                min={1} max={20} step={1}
-                onChange={(v) => updateAnimationSettings({ hachureGap: v })}
-                showReset resetValue={4}
-                description="Spacing of hatch lines"
-              />
-              <SettingDropdown
-                label="Fill Style"
-                value={unifiedSettings.animations.fillStyle || 'hachure'}
-                options={fillStyleOptions}
-                onChange={(v) => updateAnimationSettings({ fillStyle: String(v) })}
-                description="Rough.js fill style"
-              />
-              <SettingSlider
-                label="Random Seed"
-                value={unifiedSettings.animations.seed || 1}
-                min={1} max={10000} step={1}
-                onChange={(v) => updateAnimationSettings({ seed: v })}
-                showReset resetValue={1}
-                description="Seed for deterministic randomness"
               />
             </SettingGroup>
           </div>
@@ -729,28 +739,6 @@ const UnifiedSettingsMenu: React.FC = () => {
                   <li>Last Reset: {new Date(gameWorld.lastResetTime).toLocaleTimeString()}</li>
                 </ul>
               )}
-            </SettingGroup>
-            <SettingGroup title="Developer (Animation Style)" icon="🔧" description="Advanced rough.js drawing style controls.">
-              <SettingSlider
-                label="Roughness"
-                value={unifiedSettings.animations.roughness}
-                min={0} max={5} step={0.1}
-                onChange={(v) => updateAnimationSettings({ roughness: v })}
-                showReset resetValue={1.5}
-              />
-              <SettingSlider
-                label="Bowing"
-                value={unifiedSettings.animations.bowing}
-                min={0} max={5} step={0.1}
-                onChange={(v) => updateAnimationSettings({ bowing: v })}
-                showReset resetValue={1.2}
-              />
-              <SettingDropdown
-                label="Fill Style"
-                value={unifiedSettings.animations.fillStyle || 'hachure'}
-                options={fillStyleOptions}
-                onChange={(v) => updateAnimationSettings({ fillStyle: String(v) })}
-              />
             </SettingGroup>
           </div>
         )}

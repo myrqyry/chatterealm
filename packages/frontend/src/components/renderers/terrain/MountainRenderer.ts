@@ -10,10 +10,10 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#64748b',
         fillStyle: 'cross-hatch',
-        stroke: '#475569',
-        strokeWidth: 1.5,
-        roughness: roughness,
-        bowing: 1.2
+        stroke: '#5A6B7D', // Lighter slate stroke
+        strokeWidth: 1.5, // Reduced for cohesion
+        roughness: roughness * 0.8, // Smoother
+        bowing: 0.8 // More uniform
       });
       // Peak details
       rc.polygon([
@@ -23,7 +23,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       ], {
         fill: '#f1f5f9',
         fillStyle: 'hachure',
-        roughness: roughness * 1.2
+        roughness: roughness * 0.9
       });
       break;
 
@@ -32,10 +32,10 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#78716c',
         fillStyle: 'cross-hatch',
-        stroke: '#57534e',
-        strokeWidth: 1.5,
-        roughness: roughness,
-        bowing: 1.2
+        stroke: '#6B6763', // Lighter stone stroke
+        strokeWidth: 1.5, // Reduced for cohesion
+        roughness: roughness * 0.8,
+        bowing: 0.8
       });
       // Mountain silhouette
       rc.polygon([
@@ -46,7 +46,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       ], {
         fill: '#374151',
         fillStyle: 'hachure',
-        roughness: roughness * 1.3
+        roughness: roughness * 1.0
       });
       break;
 
@@ -55,16 +55,16 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#a3a3a3',
         fillStyle: 'hachure',
-        stroke: '#737373',
-        strokeWidth: 1.5,
-        roughness: roughness,
-        bowing: 1.2
+        stroke: '#858585', // Lighter gray stroke
+        strokeWidth: 1.5, // Reduced for cohesion
+        roughness: roughness * 0.8,
+        bowing: 0.8
       });
       // Hill contours
       rc.ellipse(startX + 8, startY + 12, 12, 6, {
         fill: '#d4d4d8',
         fillStyle: 'hachure',
-        roughness: roughness * 0.8
+        roughness: roughness * 0.6
       });
       break;
   }

@@ -11,6 +11,7 @@ import { useGameStore } from '../stores/gameStore';
 import { setupCanvas } from './renderers/canvas/CanvasUtils';
 import { updateParticles, Particle, addParticles } from './renderers/effects/ParticleSystem';
 import { renderGame } from './renderers/canvas/RenderCoordinator';
+import { CanvasDrawEffectComponent, createCanvasCirclePath, createCanvasLightningPath, createCanvasStarPath } from './animations/CanvasDrawEffect';
 
 const GameCanvas: React.FC = () => {
   const gameWorld = useGameStore(state => state.gameWorld);
@@ -24,7 +25,7 @@ const GameCanvas: React.FC = () => {
     // Prefer animations category but fall back to visual booleans for backward compatibility
     showParticles: unifiedSettings?.animations?.showParticles ?? unifiedSettings?.visual?.showParticles ?? false,
     showGrid: unifiedSettings?.animations?.showGrid ?? unifiedSettings?.visual?.showGrid ?? true,
-    roughness: unifiedSettings?.animations?.roughness ?? 1.5,
+    roughness: (unifiedSettings?.animations?.roughness ?? 1.5) * (gameWorld?.cataclysmRoughnessMultiplier ?? 1.0),
     bowing: unifiedSettings?.animations?.bowing ?? 1.2,
     fillWeight: unifiedSettings?.animations?.fillWeight ?? 1.5,
     hachureAngle: unifiedSettings?.animations?.hachureAngle ?? 45,
@@ -67,6 +68,55 @@ const GameCanvas: React.FC = () => {
   const timeRef = useRef(0);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
+  // Drawing effects state
+  const [drawEffects, setDrawEffects] = useState<Array<{
+    id: string;
+    path: Array<{x: number, y: number}>;
+    active: boolean;
+    duration?: number;
+    strokeColor?: string;
+  }>>([]);
+
+    // Trigger regeneration effects when entering rebirth phase
+  useEffect(() => {
+    if (gameWorld?.phase === 'rebirth') {
+      // Create regeneration effects across the map
+      const effects: Array<{id: string, x: number, y: number, type: 'circle' | 'star' | 'lightning', active: boolean}> = [];
+      const numEffects = Math.min(20, Math.floor((grid.length * grid[0]?.length || 0) / 50)); // Scale with world size
+
+      for (let i = 0; i < numEffects; i++) {
+        const x = Math.floor(Math.random() * (grid[0]?.length || 60));
+        const y = Math.floor(Math.random() * grid.length);
+        const types: Array<'circle' | 'star' | 'lightning'> = ['circle', 'star', 'lightning'];
+        const type = types[Math.floor(Math.random() * types.length)];
+
+        effects.push({
+          id: `regen-${i}-${Date.now()}`,
+          x: x * tileSizeRef.current + tileSizeRef.current / 2,
+          y: y * tileSizeRef.current + tileSizeRef.current / 2,
+          type,
+          active: true
+        });
+      }
+
+      setRegenerationEffects(effects);
+
+      // Clear effects after rebirth phase ends
+      const timer = setTimeout(() => {
+        setRegenerationEffects([]);
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [gameWorld?.phase, grid, tileSizeRef.current]);
+  const [regenerationEffects, setRegenerationEffects] = useState<Array<{
+    id: string;
+    x: number;
+    y: number;
+    type: 'circle' | 'star' | 'lightning';
+    active: boolean;
+  }>>([]);
+
   // Inner padding in CSS pixels (kept in code for pointer mapping)
   const innerPadding = 8;
 
@@ -93,6 +143,53 @@ const GameCanvas: React.FC = () => {
 
   const addParticlesToState = useCallback((x: number, y: number, color: string, count: number = 5) => {
     setParticles(prev => [...prev, ...addParticles(x, y, color, count)]);
+  }, []);
+
+  // Function to trigger drawing effects
+  const triggerDrawEffect = useCallback((x: number, y: number, effectType: 'circle' | 'lightning' | 'star' = 'circle') => {
+    const effectId = `effect-${Date.now()}-${Math.random()}`;
+
+    let path: Array<{x: number, y: number}>;
+    let strokeColor: string;
+    let duration: number;
+
+    switch (effectType) {
+      case 'circle':
+        path = createCanvasCirclePath(x, y, 30, 16);
+        strokeColor = '#00ff88';
+        duration = 1.5;
+        break;
+      case 'lightning':
+        // Create lightning from center to a random nearby point
+        const endX = x + (Math.random() - 0.5) * 100;
+        const endY = y + (Math.random() - 0.5) * 100;
+        path = createCanvasLightningPath(x, y, endX, endY, 6, 15);
+        strokeColor = '#ffff00';
+        duration = 0.8;
+        break;
+      case 'star':
+        path = createCanvasStarPath(x, y, 25, 15, 5);
+        strokeColor = '#ff6b6b';
+        duration = 2;
+        break;
+      default:
+        path = createCanvasCirclePath(x, y, 20);
+        strokeColor = '#ffffff';
+        duration = 1;
+    }
+
+    setDrawEffects(prev => [...prev, {
+      id: effectId,
+      path,
+      active: true,
+      duration,
+      strokeColor
+    }]);
+
+    // Remove effect after animation completes
+    setTimeout(() => {
+      setDrawEffects(prev => prev.filter(effect => effect.id !== effectId));
+    }, duration * 1000 + 100);
   }, []);
 
   // Use shared game configuration constant for consistent tile size
@@ -250,11 +347,49 @@ const GameCanvas: React.FC = () => {
 
     // Send move-to command with the clicked tile as target
     useGameStore.getState().moveTo({ x: tx, y: ty });
+
+    // Trigger a drawing effect at the click location (convert tile coords to pixel coords)
+    const pixelX = tx * tileSizeRef.current + tileSizeRef.current / 2;
+    const pixelY = ty * tileSizeRef.current + tileSizeRef.current / 2;
+    triggerDrawEffect(pixelX, pixelY, 'circle');
   };
 
   return (
     <div ref={containerRef} className="game-canvas-container">
       <canvas ref={canvasRef} className="game-canvas" onPointerDown={handlePointerDown} />
+      {drawEffects.map(effect => (
+        <CanvasDrawEffectComponent
+          key={effect.id}
+          canvasRef={canvasRef}
+          path={effect.path}
+          active={effect.active}
+          duration={effect.duration}
+          strokeColor={effect.strokeColor}
+          strokeWidth={3}
+          clearBeforeDraw={false}
+        />
+      ))}
+      {regenerationEffects.map(effect => (
+        <CanvasDrawEffectComponent
+          key={effect.id}
+          canvasRef={canvasRef}
+          path={
+            effect.type === 'circle'
+              ? createCanvasCirclePath(effect.x, effect.y, 15, 12)
+              : effect.type === 'star'
+              ? createCanvasStarPath(effect.x, effect.y, 12, 8, 5)
+              : createCanvasLightningPath(effect.x - 10, effect.y - 10, effect.x + 10, effect.y + 10, 4, 10)
+          }
+          active={effect.active}
+          duration={2}
+          strokeColor={
+            effect.type === 'circle' ? '#00ff88' :
+            effect.type === 'star' ? '#ff6b6b' : '#ffff00'
+          }
+          strokeWidth={2}
+          clearBeforeDraw={false}
+        />
+      ))}
     </div>
   );
 };

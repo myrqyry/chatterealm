@@ -188,6 +188,7 @@ export interface GameWorld {
     shrinkRate: number;
     nextShrinkTime: number;
   };
+  cataclysmRoughnessMultiplier: number; // Multiplier for terrain roughness during cataclysm (1.0 = normal, higher = more chaotic)
   worldAge: number;
   lastResetTime: number;
   phase: 'exploration' | 'cataclysm' | 'rebirth';

@@ -6,6 +6,9 @@ import GameLayout from './components/GameLayout';
 import PlayLayout from './components/layouts/PlayLayout';
 import SpectateLayout from './components/layouts/SpectateLayout';
 import DevLayout from './components/layouts/DevLayout';
+import { AnimationDemo } from './components';
+import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
+import { CataclysmDemo } from './components/CataclysmDemo';
 import styled from '@emotion/styled';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -68,6 +71,36 @@ function App() {
             element={
               <ResponsiveLayout>
                 <DevLayout />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Animation demo - GSAP and Rough animation showcase */}
+          <Route
+            path="/animations"
+            element={
+              <ResponsiveLayout>
+                <AnimationDemo />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Drawing effects demo - Canvas and SVG drawing animations */}
+          <Route
+            path="/drawing-effects"
+            element={
+              <ResponsiveLayout>
+                <DrawingEffectsDemo />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Cataclysm effects demo - Roughness modulation and regeneration */}
+          <Route
+            path="/cataclysm-demo"
+            element={
+              <ResponsiveLayout>
+                <CataclysmDemo />
               </ResponsiveLayout>
             }
           />

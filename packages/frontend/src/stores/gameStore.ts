@@ -179,7 +179,7 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     hachureGap: 4,
     fillStyle: 'hachure', // Default fill style
     seed: 1, // Default seed for rough.js randomness
-    strokeWidth: 1.5,
+    strokeWidth: 3.0,
     simplification: 0.8,
     dashOffset: 0,
     dashGap: 0,
@@ -515,6 +515,18 @@ export const useGameStore = create<GameState>()(
                     hachureGap: legacyAnimationSettings.hachureGap ?? 4,
                     fillStyle: legacyAnimationSettings.fillStyle ?? 'hachure',
                     seed: legacyAnimationSettings.seed ?? 1,
+                    strokeWidth: 3.0,
+                    simplification: 0.8,
+                    dashOffset: 0,
+                    dashGap: 0,
+                    zigzagOffset: 0,
+                    curveFitting: 0.95,
+                    curveTightness: 0,
+                    curveStepCount: 9,
+                    fillShapeRoughnessGain: 0.8,
+                    disableMultiStroke: false,
+                    disableMultiStrokeFill: false,
+                    preserveVertices: false,
                   },
                 };
                 set({ unifiedSettings: migratedSettings });
