@@ -88,12 +88,18 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@18.3.24)(react@18.3.1))(@types/react@18.3.24)(react@18.3.1)
+      '@fontsource/noto-emoji':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@mui/icons-material':
         specifier: ^5.18.0
         version: 5.18.0(@mui/material@5.18.0(@emotion/react@11.14.0(@types/react@18.3.24)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.24)(react@18.3.1))(@types/react@18.3.24)(react@18.3.1))(@types/react@18.3.24)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.24)(react@18.3.1)
       '@mui/material':
         specifier: ^5.18.0
         version: 5.18.0(@emotion/react@11.14.0(@types/react@18.3.24)(react@18.3.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@18.3.24)(react@18.3.1))(@types/react@18.3.24)(react@18.3.1))(@types/react@18.3.24)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@svgmoji/noto':
+        specifier: ^3.2.0
+        version: 3.2.0
       gsap:
         specifier: ^3.13.0
         version: 3.13.0
@@ -118,6 +124,9 @@ importers:
       svg2roughjs:
         specifier: ^3.2.1
         version: 3.2.1
+      svgmoji:
+        specifier: ^3.2.0
+        version: 3.2.0
       tone:
         specifier: ^14.7.77
         version: 14.9.17
@@ -564,6 +573,9 @@ packages:
     resolution: {integrity: sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
+  '@fontsource/noto-emoji@5.2.7':
+    resolution: {integrity: sha512-MQesT2k4DQYFhWsfGK3BZXPL/pWXreqbK5VTiJsoeE3Ks6cPc3unjYT/hutaV80xvnmF6smLuiGrrTWNWQu3vA==}
+
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
     engines: {node: '>=10.10.0'}
@@ -814,6 +826,21 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
+
+  '@svgmoji/blob@3.2.0':
+    resolution: {integrity: sha512-N96WOrH9GxPSPZ/FuvZl6T9Rh54stAEuUcBppIRFh9/WwkU7Hczrjabw4uunwxFLX5TgR+rHlKJl3/jaTnXJrQ==}
+
+  '@svgmoji/core@3.2.0':
+    resolution: {integrity: sha512-QsD78Op3S/5kUVsa5ierr4Wu/xwAdYuMI3Zmc/Y2ekYBEMGEUY8QxilXQRSAQ4ku4PnNV4xlB9e7xhD5hy113A==}
+
+  '@svgmoji/noto@3.2.0':
+    resolution: {integrity: sha512-JgtNciB06hMDI1Pb1N2IgLh44XRMZUUNwBANzjY5jXTPqOCu1A1VA35ENvUsRhEUZOm8I+hbdAEHkwMVqxLeIQ==}
+
+  '@svgmoji/openmoji@3.2.0':
+    resolution: {integrity: sha512-USHbG+O80HfmdoNAHbOnlO+2gppXJfHFWKSRFj53Th4aimWEx4/9MB3cFbC3KZ1NOqXaLBq9jDaw4vFuGDVTUQ==}
+
+  '@svgmoji/twemoji@3.2.0':
+    resolution: {integrity: sha512-6xqZgh9viFDKf5wvrxw56ImCR3Ni84IqwK45lxojOe1Gc1Mni1GpPfr4gb7WHDKjumfx+K7BHSvX0KXt3Nr3CQ==}
 
   '@tailwindcss/node@4.1.13':
     resolution: {integrity: sha512-eq3ouolC1oEFOAvOMOBAmfCIqZBJuvWvvYWh5h5iOYfe1HFC6+GZ6EIL0JdM3/niGRJmnrOc+8gl9/HGUaaptw==}
@@ -1459,6 +1486,12 @@ packages:
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
 
+  emojibase-regex@5.1.3:
+    resolution: {integrity: sha512-gT8T9LxLA8VJdI+8KQtyykB9qKzd7WuUL3M2yw6y9tplFeufOUANg3UKVaKUvkMcRNvZsSElWhxcJrx8WPE12g==}
+
+  emojibase@5.2.0:
+    resolution: {integrity: sha512-5T02oTJaWpScAtYbukKVc8vQ1367MyfVtFHUMoOVZ9/r1kFcbYqjSktD56TICBAeyW9uc1t+7qQuXEtntM6p5A==}
+
   encodeurl@2.0.0:
     resolution: {integrity: sha512-Q0n9HRi4m6JuGIV1eFlmvJB7ZEVxu93IrMyiMsGC0lrMJMWzRgx6WGquyfQgZVb31vhGgXnfmPNNXmxnOkRBrg==}
     engines: {node: '>= 0.8'}
@@ -1773,6 +1806,9 @@ packages:
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
     engines: {node: '>=0.10.0'}
+
+  idb-keyval@5.1.5:
+    resolution: {integrity: sha512-J1utxYWQokYjy01LvDQ7WmiAtZCGUSkVi9EIBfUSyLOr/BesnMIxNGASTh9A1LzeISSjSqEPsfFdTss7EE7ofQ==}
 
   ignore-by-default@1.0.1:
     resolution: {integrity: sha512-Ius2VYcGNk7T90CppJqcIkS5ooHUZyIQK+ClZfMfMNFEF9VSE73Fq+906u/CWu92x4gzZMWOwfFYckPObzdEbA==}
@@ -2172,6 +2208,9 @@ packages:
   makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
 
+  match-sorter@6.3.4:
+    resolution: {integrity: sha512-jfZW7cWS5y/1xswZo8VBOdudUiSd9nifYRWphc9M5D/ee4w4AoXLgBEdRbgVaxbMuagBPeUC5y2Hi8DO6o9aDg==}
+
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
@@ -2497,6 +2536,9 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
+  remove-accents@0.5.0:
+    resolution: {integrity: sha512-8g3/Otx1eJaVD12e31UbJj1YzdtVvzH85HV7t+9MJYk/u3XmkOUJ5Ys9wQrf9PCPK8+xn4ymzqYCiZl6QWKn+A==}
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -2548,6 +2590,9 @@ packages:
 
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
+
+  safari-14-idb-fix@1.0.6:
+    resolution: {integrity: sha512-oTEQOdMwRX+uCtWCKT1nx2gAeSdpr8elg/2gcaKUH00SJU2xWESfkx11nmXwTRHy7xfQoj1o4TTQvdmuBosTnA==}
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
@@ -2718,6 +2763,9 @@ packages:
   svg2roughjs@3.2.1:
     resolution: {integrity: sha512-38OYXS0/otPfF3sdutfv1u+iZ7bvLIptaDTNHQh0hBjOYm5KsObAhWdVqUsmWKk85xt7XWOD8obyrqkELq7apw==}
 
+  svgmoji@3.2.0:
+    resolution: {integrity: sha512-tjmdQhIju2ZQ81FLBlPngg1aWMOhQjP9ErXb2ROikM0aBGA/hqI0/DN/5J0sDsXzJPHmODpSFhWfiSsUieU3bA==}
+
   tailwindcss@4.1.13:
     resolution: {integrity: sha512-i+zidfmTqtwquj4hMEwdjshYYgMbOrPzb9a0M3ZgNa0JMoZeFC6bxZvO8yr8ozS6ix2SDz0+mvryPeBs2TFE+w==}
 
@@ -2828,6 +2876,10 @@ packages:
 
   type-fest@0.21.3:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
+    engines: {node: '>=10'}
+
+  type-fest@1.4.0:
+    resolution: {integrity: sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==}
     engines: {node: '>=10'}
 
   type-fest@4.41.0:
@@ -3405,6 +3457,8 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
+  '@fontsource/noto-emoji@5.2.7': {}
+
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
       '@humanwhocodes/object-schema': 2.0.3
@@ -3776,6 +3830,35 @@ snapshots:
       '@sinonjs/commons': 3.0.1
 
   '@socket.io/component-emitter@3.1.2': {}
+
+  '@svgmoji/blob@3.2.0':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@svgmoji/core': 3.2.0
+
+  '@svgmoji/core@3.2.0':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      emojibase: 5.2.0
+      emojibase-regex: 5.1.3
+      idb-keyval: 5.1.5
+      match-sorter: 6.3.4
+      type-fest: 1.4.0
+
+  '@svgmoji/noto@3.2.0':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@svgmoji/core': 3.2.0
+
+  '@svgmoji/openmoji@3.2.0':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@svgmoji/core': 3.2.0
+
+  '@svgmoji/twemoji@3.2.0':
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@svgmoji/core': 3.2.0
 
   '@tailwindcss/node@4.1.13':
     dependencies:
@@ -4487,6 +4570,10 @@ snapshots:
 
   emoji-regex@8.0.0: {}
 
+  emojibase-regex@5.1.3: {}
+
+  emojibase@5.2.0: {}
+
   encodeurl@2.0.0: {}
 
   engine.io-client@6.6.3:
@@ -4902,6 +4989,10 @@ snapshots:
   iconv-lite@0.6.3:
     dependencies:
       safer-buffer: 2.1.2
+
+  idb-keyval@5.1.5:
+    dependencies:
+      safari-14-idb-fix: 1.0.6
 
   ignore-by-default@1.0.1: {}
 
@@ -5465,6 +5556,11 @@ snapshots:
     dependencies:
       tmpl: 1.0.5
 
+  match-sorter@6.3.4:
+    dependencies:
+      '@babel/runtime': 7.28.4
+      remove-accents: 0.5.0
+
   math-intrinsics@1.1.0: {}
 
   media-typer@1.1.0: {}
@@ -5741,6 +5837,8 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
+  remove-accents@0.5.0: {}
+
   require-directory@2.1.1: {}
 
   resolve-cwd@3.0.0:
@@ -5791,6 +5889,8 @@ snapshots:
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
+
+  safari-14-idb-fix@1.0.6: {}
 
   safe-buffer@5.2.1: {}
 
@@ -5991,6 +6091,15 @@ snapshots:
       svg-pathdata: 6.0.3
       tinycolor2: 1.6.0
 
+  svgmoji@3.2.0:
+    dependencies:
+      '@babel/runtime': 7.28.4
+      '@svgmoji/blob': 3.2.0
+      '@svgmoji/core': 3.2.0
+      '@svgmoji/noto': 3.2.0
+      '@svgmoji/openmoji': 3.2.0
+      '@svgmoji/twemoji': 3.2.0
+
   tailwindcss@4.1.13: {}
 
   tapable@2.2.3: {}
@@ -6093,6 +6202,8 @@ snapshots:
   type-fest@0.20.2: {}
 
   type-fest@0.21.3: {}
+
+  type-fest@1.4.0: {}
 
   type-fest@4.41.0: {}
 

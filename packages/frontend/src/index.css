@@ -2,6 +2,18 @@
   Using Google Fonts with display=swap for better performance. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
+/* Noto Emoji font for comprehensive emoji support */
+@import '@fontsource/noto-emoji';
+
+/* Emoji font optimization */
+.emoji-font {
+  font-family: 'Noto Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', 'EmojiOne Mozilla', 'Twemoji Mozilla', 'Segoe UI', sans-serif;
+  font-variant-emoji: unicode;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
