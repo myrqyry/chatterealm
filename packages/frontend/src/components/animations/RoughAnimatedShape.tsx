@@ -36,18 +36,33 @@ export const RoughAnimatedShape: React.FC<RoughAnimatedShapeProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const pathRef = useRef<SVGPathElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
     if (!canvas || !container) return;
 
-    const rc = rough.canvas(canvas);
+    // Handle HiDPI / devicePixelRatio so canvas drawing aligns with SVG/CSS coordinates
+    const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+    // Keep CSS size at logical pixels, back buffer at physical pixels
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    canvas.width = Math.max(1, Math.round(width * dpr));
+    canvas.height = Math.max(1, Math.round(height * dpr));
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
+    // Scale drawing operations so 1 unit === 1 CSS pixel
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Clear in CSS pixel space
     ctx.clearRect(0, 0, width, height);
+
+    // Create rough canvas after sizing/scaling so rough uses the correct context
+    const rc = rough.canvas(canvas);
 
     // Set rough.js options
     const options = {
@@ -83,7 +98,7 @@ export const RoughAnimatedShape: React.FC<RoughAnimatedShapeProps> = ({
 
     switch (animationType) {
       case 'draw':
-        // Animate stroke dash for drawing effect
+        // Animate container then overlay SVG path to simulate progressive drawing
         tl.fromTo(container, {
           opacity: 0,
           scale: 0.8
@@ -93,6 +108,90 @@ export const RoughAnimatedShape: React.FC<RoughAnimatedShapeProps> = ({
           duration: duration * 0.3,
           ease: "back.out(1.7)"
         });
+
+        // Build a path that matches the rough shape geometry so we can animate its stroke
+        const createPathData = () => {
+          switch (shape) {
+            case 'rectangle':
+              return `M 20 20 L ${width - 20} 20 L ${width - 20} ${height - 20} L 20 ${height - 20} Z`;
+            case 'circle': {
+              const cx = width / 2;
+              const cy = height / 2;
+              const r = Math.max(0, Math.min(width, height) / 2 - 20);
+              // two arcs to make a full circle
+              return `M ${cx + r} ${cy} A ${r} ${r} 0 1 0 ${cx - r} ${cy} A ${r} ${r} 0 1 0 ${cx + r} ${cy}`;
+            }
+            case 'ellipse': {
+              const rx = Math.max(0, (width - 40) / 2);
+              const ry = Math.max(0, (height - 40) / 2);
+              const cx = width / 2;
+              const cy = height / 2;
+              return `M ${cx + rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx - rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx + rx} ${cy}`;
+            }
+            case 'line':
+              return `M 20 ${height / 2} L ${width - 20} ${height / 2}`;
+            default:
+              return `M 20 20 L ${width - 20} 20 L ${width - 20} ${height - 20} L 20 ${height - 20} Z`;
+          }
+        };
+
+        const pathData = createPathData();
+
+        // If svg and path nodes exist, set path d and prepare stroke-dash animation
+        const setupAndAnimatePath = () => {
+          const pathEl = pathRef.current;
+          const svgEl = svgRef.current;
+          if (!pathEl || !svgEl) return;
+
+          // Set path data first
+          pathEl.setAttribute('d', pathData);
+
+          // Defer measurement/animation to next paint to ensure getTotalLength returns a valid value
+          // (this avoids timing races on some browsers / SSR / fast renders)
+          requestAnimationFrame(() => {
+            try {
+              const len = pathEl.getTotalLength();
+              // If length is 0 for some reason, fallback to simple fade
+              if (!len || len === 0) {
+                pathEl.style.opacity = '0';
+                svgEl.style.display = 'none';
+                return;
+              }
+
+              pathEl.style.strokeDasharray = `${len}`;
+              pathEl.style.strokeDashoffset = `${len}`;
+              pathEl.style.opacity = '1';
+
+              // Animate stroke drawing
+              gsap.to(pathEl, {
+                strokeDashoffset: 0,
+                duration: duration,
+                ease: "power1.out",
+                delay: 0
+              });
+
+              // Fade out overlay SVG after the draw finishes and remove from layout
+              gsap.to(svgEl, {
+                opacity: 0,
+                duration: 0.25,
+                delay: duration,
+                onComplete: () => {
+                  // Hide/remove overlay to avoid interaction or layout issues
+                  try { svgEl.style.display = 'none'; } catch (e) { /* ignore */ }
+                }
+              });
+            } catch (e) {
+              // If anything goes wrong (eg. getTotalLength not supported), hide overlay
+              try {
+                pathEl.style.opacity = '0';
+                svgEl.style.display = 'none';
+              } catch (err) { /* ignore */ }
+            }
+          });
+        };
+
+        // Schedule path animation to run after the initial transform (so user sees the container pop)
+        tl.call(setupAndAnimatePath, null, `+=0`);
         break;
 
       case 'fade':
@@ -146,13 +245,32 @@ export const RoughAnimatedShape: React.FC<RoughAnimatedShapeProps> = ({
   }, [width, height, animationType, duration, delay, roughness, stroke, strokeWidth, fill, fillStyle, shape, shapeProps]);
 
   return (
-    <div ref={containerRef} className={`rough-animated-shape ${className}`}>
+    <div ref={containerRef} className={`rough-animated-shape ${className}`} style={{ position: 'relative', width, height }}>
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
         style={{ display: 'block' }}
       />
+      <svg
+        ref={svgRef}
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none', overflow: 'visible', opacity: 1 }}
+        aria-hidden="true"
+      >
+        <path
+          ref={pathRef}
+          d=""
+          fill="none"
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ transition: 'opacity 0.2s' }}
+        />
+      </svg>
     </div>
   );
 };

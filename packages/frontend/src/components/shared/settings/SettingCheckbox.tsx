@@ -21,30 +21,22 @@ const SettingCheckbox: React.FC<SettingCheckboxProps> = ({
   };
 
   return (
-    <Box className={`control-group checkbox ${className} mb-2`}>
+    <Box className={`flex items-start mb-2 ${className}`}>
       <FormControlLabel
         control={
           <Checkbox
             checked={checked}
             onChange={handleChange}
-            sx={{
-              '&.Mui-checked': {
-                color: 'var(--color-primary)',
-              },
-              '& .MuiSvgIcon-root': {
-                fontSize: 20,
-              },
-            }}
-            className="text-text-secondary"
+            className="text-primary"
           />
         }
         label={
-          <Box className="jetbrains text-sm font-medium text-text-primary mb-0.5">
-            <Typography className="jetbrains text-sm font-medium text-text-primary mb-0.5">
+          <Box className="ml-2">
+            <Typography className="text-primary text-sm font-medium mb-0.5">
               {label}
             </Typography>
             {description && (
-              <Typography className="jetbrains text-xs text-text-secondary italic">
+              <Typography className="text-secondary text-xs italic">
                 {description}
               </Typography>
             )}
@@ -54,9 +46,6 @@ const SettingCheckbox: React.FC<SettingCheckboxProps> = ({
           alignItems: 'flex-start',
           margin: 0,
           width: '100%',
-          '& .MuiFormControlLabel-label': {
-            marginLeft: 1,
-          },
         }}
       />
     </Box>

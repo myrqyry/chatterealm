@@ -147,7 +147,7 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
 
     // Terrain Animation
     grassWaveSpeed: 0.1,
-    treeSwaySpeed: 0.03,
+    treeSwaySpeed: 0.015,
     flowerSpawnRate: 0.01,
     windSpeed: 0.02,
 
@@ -167,19 +167,19 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
 
     // Terrain Animation (duplicated with world for backward compatibility)
     grassWaveSpeed: 0.1,
-    treeSwaySpeed: 0.03,
+    treeSwaySpeed: 0.015,
     flowerSpawnRate: 0.01,
     windSpeed: 0.02,
 
     // Rough.js Settings
     roughness: 1.5,
     bowing: 1.2,
-    fillWeight: 1.5,
+    fillWeight: 2.0, // Increased for thicker fills
     hachureAngle: 45,
     hachureGap: 4,
     fillStyle: 'hachure', // Default fill style
     seed: 1, // Default seed for rough.js randomness
-    strokeWidth: 3.0,
+    strokeWidth: 4.0, // Increased for thicker lines
     simplification: 0.8,
     dashOffset: 0,
     dashGap: 0,
@@ -493,7 +493,7 @@ export const useGameStore = create<GameState>()(
                     worldWidth: legacyAnimationSettings.worldWidth ?? 40,
                     worldHeight: legacyAnimationSettings.worldHeight ?? 30,
                     grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? 0.1,
-                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.03,
+                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.015,
                     flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? 0.01,
                     windSpeed: legacyAnimationSettings.windSpeed ?? 0.02,
                     nightMode: false, // Default to day mode for legacy settings
@@ -505,7 +505,7 @@ export const useGameStore = create<GameState>()(
                     showParticles: legacyAnimationSettings.showParticles ?? legacySettings.showParticles ?? true,
                     showGrid: legacyAnimationSettings.showGrid ?? legacySettings.showGrid ?? true,
                     grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? legacySettings.grassWaveSpeed ?? 0.1,
-                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? legacySettings.treeSwaySpeed ?? 0.03,
+                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? legacySettings.treeSwaySpeed ?? 0.015,
                     flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? legacySettings.flowerSpawnRate ?? 0.01,
                     windSpeed: legacyAnimationSettings.windSpeed ?? legacySettings.windSpeed ?? 0.02,
                     roughness: legacyAnimationSettings.roughness ?? 1.5,

@@ -4,7 +4,8 @@ import { TerrainType } from 'shared';
 export const drawForest = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
   const fillStyle = settings?.fillStyle || 'hachure';
-  const treeSwaySpeed = settings?.treeSwaySpeed || 0.03;
+  const treeSwaySpeed = settings?.treeSwaySpeed || 0.015; // Much slower tree swaying
+  const seed = settings?.seed || 1;
 
   switch (terrainType) {
     case TerrainType.DENSE_FOREST:
@@ -13,9 +14,11 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         fill: '#14532d',
         fillStyle: 'cross-hatch',
         stroke: '#1A5A35', // Lighter green stroke
-        strokeWidth: 1.5, // Reduced for cohesion
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
         roughness: roughness * 0.8, // Smoother
-        bowing: 0.8 // More uniform
+        bowing: 0.8, // More uniform
+        seed: seed + startX + startY * 1000
       });
       // Dense trees
       for (let t = 0; t < 4; t++) {
@@ -24,13 +27,15 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         const swayOffset = Math.sin(time * treeSwaySpeed + startX + t) * 2;
         rc.line(treeX + swayOffset, treeY + 8, treeX + swayOffset, treeY, {
           stroke: '#92400e',
-          strokeWidth: 2.5, // Thinner trunks
-          roughness: roughness * 0.9
+          strokeWidth: 3, // Thicker trunks
+          roughness: roughness * 0.9,
+          seed: seed + startX + startY * 1000 + t * 10
         });
         rc.circle(treeX + swayOffset, treeY - 2, 4, {
           fill: '#166534',
           fillStyle: 'hachure',
-          roughness: roughness * 1.1
+          roughness: roughness * 1.1,
+          seed: seed + startX + startY * 1000 + t * 10 + 1
         });
       }
       break;
@@ -41,9 +46,11 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         fill: '#166534',
         fillStyle: 'hachure',
         stroke: '#1B703D', // Lighter green stroke
-        strokeWidth: 1.5, // Reduced for cohesion
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
         roughness: roughness * 0.8,
-        bowing: 0.8
+        bowing: 0.8,
+        seed: seed + startX + startY * 1000
       });
       // Forest trees
       for (let t = 0; t < 3; t++) {
@@ -52,13 +59,15 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         const swayOffset = Math.sin(time * treeSwaySpeed + startX + t) * 1.5;
         rc.line(treeX + swayOffset, treeY + 8, treeX + swayOffset, treeY, {
           stroke: '#a16207',
-          strokeWidth: 2.5, // Thinner trunks
-          roughness: roughness * 0.8
+          strokeWidth: 3, // Thicker trunks
+          roughness: roughness * 0.8,
+          seed: seed + startX + startY * 1000 + t * 10
         });
         rc.circle(treeX + swayOffset, treeY - 2, 3.5, {
           fill: '#22c55e',
           fillStyle: 'hachure',
-          roughness: roughness * 1.0
+          roughness: roughness * 1.0,
+          seed: seed + startX + startY * 1000 + t * 10 + 1
         });
       }
       break;
@@ -69,15 +78,18 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
         fill: '#84cc16',
         fillStyle: 'hachure',
         stroke: '#7AB312', // Lighter green stroke
-        strokeWidth: 1.5, // Reduced for cohesion
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
         roughness: roughness * 0.8,
-        bowing: 0.8
+        bowing: 0.8,
+        seed: seed + startX + startY * 1000
       });
       // Small campfire
       rc.circle(startX + 8, startY + 10, 2, {
         fill: '#f59e0b',
         fillStyle: 'solid',
-        roughness: roughness * 0.4
+        roughness: roughness * 0.4,
+        seed: seed + startX + startY * 1000 + 1000
       });
       break;
   }

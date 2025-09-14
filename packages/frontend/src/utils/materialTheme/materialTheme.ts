@@ -7,51 +7,51 @@ export const createMaterialTheme = (): Theme => {
     palette: {
       mode: 'dark',
       primary: {
-        main: '#c4a7e7', // Purple accent from existing theme
-        light: '#e5d4f3',
-        dark: '#9b70d3',
-        contrastText: '#191724',
+        main: '#31748f', // primaryBlue from colors.ts
+        light: '#5ba3c7',
+        dark: '#1e5a6b',
+        contrastText: '#1f1d2e',
       },
       secondary: {
-        main: '#9ccfd8', // Cyan accent from existing theme
+        main: '#9ccfd8', // secondaryBlue from colors.ts
         light: '#c4e4f7',
         dark: '#6b9aa5',
         contrastText: '#191724',
       },
       error: {
-        main: '#eb6f92', // Error color from existing theme
+        main: '#dc2626', // healthDying
         light: '#ffb2b8',
         dark: '#dd4b60',
         contrastText: '#ffffff',
       },
       warning: {
-        main: '#f6c177', // Orange/warning color
+        main: '#fbbf24', // healthWounded
         light: '#fff0c2',
         dark: '#e6a94e',
         contrastText: '#191724',
       },
       info: {
-        main: '#31748f', // Info blue
+        main: '#31748f', // same as primary
         light: '#6dc8ff',
         dark: '#005d62',
         contrastText: '#ffffff',
       },
       success: {
-        main: '#40a02b', // Success green
+        main: '#a3e635', // healthHealthy
         light: '#88d96b',
         dark: '#005f00',
-        contrastText: '#ffffff',
+        contrastText: '#191724',
       },
       background: {
-        default: '#191724', // Primary background from existing theme
-        paper: alpha('#1f1d2e', 0.95), // Slightly transparent version
+        default: '#191724', // backgroundDark
+        paper: alpha('#1f1d2e', 0.95), // backgroundMedium
       },
       text: {
-        primary: '#e0def4', // Primary text color
-        secondary: '#908caa', // Secondary text color
+        primary: '#e0def4', // textLight
+        secondary: '#908caa', // textDark
         disabled: alpha('#908caa', 0.5),
       },
-      divider: alpha('#c4a7e7', 0.15),
+      divider: alpha('#6e6a86', 0.15), // borderGray
     },
     typography: {
       fontFamily: [

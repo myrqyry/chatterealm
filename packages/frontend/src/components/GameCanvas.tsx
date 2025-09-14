@@ -27,7 +27,7 @@ const GameCanvas: React.FC = () => {
   // Use the new hooks and managers
   const containerSize = useContainerResize(containerRef);
   const canvasSetup = useCanvasSetup(canvasRef, containerSize, gameWorld?.grid, 8);
-  const { particles, addParticles } = useParticleManager({ 
+  const { particles, addParticles, updateParticles } = useParticleManager({ 
     animationSettings: unifiedSettings.animations, 
     onAddParticles: undefined 
   });
@@ -50,23 +50,43 @@ const GameCanvas: React.FC = () => {
     if (!canvasSetup.isReady || !canvasSetup.ctx || !gameWorld) return;
 
     const rc = rough.canvas(canvasSetup.canvas!);
-    const time = 0; // Or use a time ref if needed
+    let animationId: number;
+    let startTime = performance.now();
 
-    renderGame(
-      rc,
-      canvasSetup.ctx,
-      grid as { type: TerrainType }[][],
-      players,
-      npcs,
-      items,
-      showGrid,
-      time,
-      animationSettings,
-      particles,
-      addParticles,
-      canvasSetup.tileSizePx,
-      unifiedSettings.world.nightMode
-    );
+    const animate = (currentTime: number) => {
+      const time = (currentTime - startTime) / 1000; // Convert to seconds
+
+      // Update particles in the main render loop
+      updateParticles();
+
+      renderGame(
+        rc,
+        canvasSetup.ctx!,
+        grid as { type: TerrainType }[][],
+        players,
+        npcs,
+        items,
+        showGrid,
+        time,
+        animationSettings,
+        particles,
+        addParticles,
+        canvasSetup.tileSizePx,
+        unifiedSettings.world.nightMode
+      );
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    // Start the animation loop
+    animationId = requestAnimationFrame(animate);
+
+    // Cleanup
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
   }, [
     canvasSetup.isReady, 
     canvasSetup.ctx, 
@@ -80,6 +100,7 @@ const GameCanvas: React.FC = () => {
     animationSettings, 
     particles, 
     addParticles, 
+    updateParticles,
     unifiedSettings.world.nightMode 
   ]);
 

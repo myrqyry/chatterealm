@@ -5,6 +5,7 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
   // Simplified Rough.js options to avoid errors
   const roughness = settings?.roughness || 1.5;
   const fillStyle = settings?.fillStyle || 'hachure';
+  const seed = settings?.seed || 1;
 
   // Get biome-specific fill styles
   const getBiomeFillStyle = (terrainType: TerrainType): string => {
@@ -57,13 +58,15 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
 
   const colors = getBiomeColor(terrainType);
 
-  // Simple rectangle with unified styling - thinner strokes for better cohesion
+  // Simple rectangle with unified styling - thicker strokes for better visibility
   rc.rectangle(startX, startY, gridSize, gridSize, {
     fill: colors.fill,
     fillStyle: getBiomeFillStyle(terrainType),
     stroke: colors.stroke,
-    strokeWidth: 1.5, // Reduced from 3.0 for more unified appearance
+    strokeWidth: 2, // Thicker for better visibility
+    fillWeight: 2.0, // Thicker fill lines
     roughness: roughness * 0.8, // Slightly smoother edges
-    bowing: 0.8 // Reduced bowing for more uniform shapes
+    bowing: 0.8, // Reduced bowing for more uniform shapes
+    seed: seed + startX + startY * 1000 // Consistent seed per tile position
   });
 };

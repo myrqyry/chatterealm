@@ -1,4 +1,3 @@
-import './App.css';
 import ResponsiveLayout from './components/ResponsiveLayout';
 import { useGameWorld } from './hooks/useGameWorld';
 import { useTheme } from './hooks/useTheme';
@@ -10,43 +9,9 @@ import { AnimationDemo } from './components';
 import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
 import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
-import styled from '@emotion/styled';
 import { useState } from 'react';
 import { initializeSounds } from './services/soundService';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
-const StyledAppContainer = styled.div`
-  display: flex;
-  gap: 0;
-  min-height: 100vh;
-  padding: 0;
-  background: var(--color-background-primary);
-  font-family: 'Inter', 'Roboto', sans-serif;
-  color: var(--color-text-primary);
-  box-sizing: border-box;
-  width: 100%;
-  max-width: none;
-  overflow: hidden;
-`;
-
-const StyledEnableButton = styled.button`
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 9999;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-`;
 
 function App() {
   const {
@@ -73,10 +38,14 @@ function App() {
 
   return (
     <Router>
-      <StyledAppContainer className="app-container">
-        <StyledEnableButton onClick={handleEnableSound} disabled={soundEnabled}>
+      <div className="flex gap-0 min-h-screen p-0 bg-background font-inter text-text-primary box-border w-full max-w-none overflow-hidden app-container">
+        <button 
+          onClick={handleEnableSound} 
+          disabled={soundEnabled}
+          className="fixed top-4 right-4 z-50 bg-primary text-on-primary border-none px-3 py-2 rounded-md cursor-pointer font-semibold shadow-md disabled:opacity-60 disabled:cursor-default"
+        >
           {soundEnabled ? 'Sound enabled' : 'Enable sound'}
-        </StyledEnableButton>
+        </button>
         <Routes>
           {/* Default route redirects to /play */}
           <Route path="/" element={<Navigate to="/play" replace />} />
@@ -167,7 +136,7 @@ function App() {
             }
           />
         </Routes>
-      </StyledAppContainer>
+      </div>
     </Router>
   );
 }

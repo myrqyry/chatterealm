@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { Particle, updateParticles, addParticles } from '../../renderers/effects/ParticleSystem';
 import { AnimationSettings } from 'shared';
 
@@ -9,7 +9,6 @@ interface ParticleManagerProps {
 
 export const useParticleManager = ({ animationSettings, onAddParticles }: ParticleManagerProps) => {
   const [particles, setParticles] = useState<Particle[]>([]);
-  const timeRef = useRef(0);
 
   const addParticlesToState = useCallback((x: number, y: number, color: string, count: number = 5) => {
     setParticles(prev => [...prev, ...addParticles(x, y, color, count)]);
@@ -18,23 +17,16 @@ export const useParticleManager = ({ animationSettings, onAddParticles }: Partic
     }
   }, [onAddParticles]);
 
-  useEffect(() => {
-    const animate = () => {
-      const speedMultiplier = animationSettings?.animationSpeed || 1.0;
-      timeRef.current = timeRef.current + speedMultiplier;
-
-      if (animationSettings?.showParticles !== false) {
-        setParticles(prev => updateParticles(prev));
-      }
-    };
-
-    const animationId = requestAnimationFrame(animate);
-
-    return () => cancelAnimationFrame(animationId);
-  }, [animationSettings?.animationSpeed, animationSettings?.showParticles]);
+  // Update particles - this will be called from the main render loop
+  const updateParticlesInState = useCallback(() => {
+    if (animationSettings?.showParticles !== false) {
+      setParticles(prev => updateParticles(prev));
+    }
+  }, [animationSettings?.showParticles]);
 
   return {
     particles,
     addParticles: addParticlesToState,
+    updateParticles: updateParticlesInState,
   };
 };

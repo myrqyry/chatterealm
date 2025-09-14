@@ -32,6 +32,14 @@ export const renderGame = (
   const numTilesX = grid[0]?.length || 20;
   const numTilesY = grid.length || 15;
 
+  // Calculate rendered dimensions
+  const renderedWidth = numTilesX * gridSize;
+  const renderedHeight = numTilesY * gridSize;
+
+  // Clear the entire canvas first to prevent ghost frames
+  // Clear the logical rendering area (accounting for transforms)
+  ctx.clearRect(-gridSize, -gridSize, renderedWidth + 2 * gridSize, renderedHeight + 2 * gridSize);
+
   console.log('renderGame called:', {
     gridLength: grid.length,
     numTilesX,
@@ -54,21 +62,21 @@ export const renderGame = (
   // Draw animated items with floating effect
   items.forEach(item => {
     if (item.position) {
-      drawAnimatedItem(rc, item.position.x, item.position.y, gridSize, item, time);
+      drawAnimatedItem(rc, item.position.x, item.position.y, gridSize, item, time, animationSettings.seed);
     }
   });
 
   // Draw animated NPCs with movement
   npcs.forEach(npc => {
     if (npc.isAlive) {
-      drawAnimatedNPC(rc, npc.position.x, npc.position.y, gridSize, time);
+      drawAnimatedNPC(rc, npc.position.x, npc.position.y, gridSize, time, animationSettings.seed);
     }
   });
 
   // Draw animated players with special effects
   players.forEach(player => {
     if (player.isAlive) {
-      drawAnimatedPlayer(rc, player.position.x, player.position.y, gridSize, player, time, addParticlesFn);
+      drawAnimatedPlayer(rc, player.position.x, player.position.y, gridSize, player, time, addParticlesFn, animationSettings.seed);
     }
   });
 
@@ -77,8 +85,6 @@ export const renderGame = (
 
   // Subtle environmental overlays: moving cloud shadows and light shafts
   // These are intentionally low-cost and low-opacity so they remain atmospheric.
-  const renderedWidth = numTilesX * gridSize;
-  const renderedHeight = numTilesY * gridSize;
 
   const drawCloudShadows = () => {
     ctx.save();
@@ -90,7 +96,7 @@ export const renderGame = (
     const cloudCount = 3; // few, large clouds
 
     for (let i = 0; i < cloudCount; i++) {
-      const speed = 0.04 + i * 0.01;
+      const speed = 0.02 + i * 0.005; // Slower cloud movement
       const cx = ((time * speed * 60) % (renderedWidth * 2)) - renderedWidth * 0.5 + i * 120;
       const cy = renderedHeight * (0.2 + (i * 0.15));
       const rx = renderedWidth * (0.6 - i * 0.12);
@@ -116,12 +122,12 @@ export const renderGame = (
     ctx.save();
     // Very subtle additive shafts to emulate sun filtering through foliage
     ctx.globalCompositeOperation = 'lighter';
-    ctx.globalAlpha = 0.06 * (0.6 + 0.4 * Math.sin(time * 0.01));
+    ctx.globalAlpha = 0.06 * (0.7 + 0.3 * Math.sin(time * 0.002)); // Much slower, gentler pulsing
 
     // Draw 2 diagonal thin shafts
     for (let i = 0; i < 2; i++) {
-      const shaftWidth = renderedWidth * 0.12;
-      const pos = (time * 0.02 + i * 0.5) % (renderedWidth + renderedHeight) - (renderedHeight * 0.5);
+      const shaftWidth = renderedWidth * 0.15; // Slightly wider shafts
+      const pos = (time * 0.01 + i * 0.5) % (renderedWidth + renderedHeight) - (renderedHeight * 0.5); // Slower movement
 
       // create gradient along the shaft
       const g = ctx.createLinearGradient(-renderedHeight, pos, renderedWidth, pos + renderedHeight);
