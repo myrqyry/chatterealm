@@ -4,11 +4,10 @@ interface ParticleEmitter {
   (x: number, y: number, color: string, count?: number): void;
 }
 
-export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: number, player: Player, time: number, addParticles: ParticleEmitter, seed?: number) => {
+export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: number, player: Player, time: number, addParticles: ParticleEmitter) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
   const ctx = (rc as any).ctx;
-  const finalSeed = seed || 1;
 
   // Class-specific colors and effects
   const classData = {
@@ -26,8 +25,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
     fillStyle: 'solid',
     stroke: currentClass.secondary,
     strokeWidth: 4, // Thicker stroke
-    roughness: 2,
-    seed: finalSeed + x + y * 100
+    roughness: 2
   });
 
   // Main player body with subtle pulsing
@@ -37,8 +35,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
     fillStyle: 'solid',
     stroke: '#FFF',
     strokeWidth: 6, // Thicker stroke
-    roughness: 1,
-    seed: finalSeed + x + y * 100 + 1
+    roughness: 1
   });
 
   // Class-specific visual effects
@@ -49,19 +46,16 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
       fillStyle: 'solid',
       stroke: '#808080',
       strokeWidth: 4, // Thicker
-      roughness: 1,
-      seed: finalSeed + x + y * 100 + 2
+      roughness: 1
     });
     // Cross on shield
     rc.line(centerX - 7, centerY - 8, centerX - 7, centerY + 8, { // Larger cross
       stroke: '#FFD700',
-      strokeWidth: 6, // Thicker
-      seed: finalSeed + x + y * 100 + 3
+      strokeWidth: 6 // Thicker
     });
     rc.line(centerX - 10, centerY, centerX - 4, centerY, {
       stroke: '#FFD700',
-      strokeWidth: 6,
-      seed: finalSeed + x + y * 100 + 4
+      strokeWidth: 6
     });
   } else if (player.class === 'rogue') {
     // Rogue: Daggers/stealth effect
@@ -76,8 +70,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
         fill: '#C0C0C0',
         fillStyle: 'solid',
         stroke: '#808080',
-        strokeWidth: 4, // Thicker
-        seed: finalSeed + x + y * 100 + 5 + d
+        strokeWidth: 4 // Thicker
       });
     }
   } else if (player.class === 'mage') {
@@ -91,8 +84,7 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
         fill: '#9370DB',
         fillStyle: 'solid',
         stroke: '#8A2BE2',
-        strokeWidth: 4, // Thicker
-        seed: finalSeed + x + y * 100 + 10 + r
+        strokeWidth: 4 // Thicker
       });
     }
   }
@@ -106,16 +98,14 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
   rc.rectangle(centerX - barWidth/2, centerY - 25, barWidth, barHeight, {
     fill: '#8B0000',
     fillStyle: 'solid',
-    roughness: 0.5,
-    seed: finalSeed + x + y * 100 + 20
+    roughness: 0.5
   });
 
   // Health fill
   rc.rectangle(centerX - barWidth/2, centerY - 25, barWidth * healthPercent, barHeight, {
     fill: healthPercent > 0.6 ? '#32CD32' : healthPercent > 0.3 ? '#FFD700' : '#DC143C',
     fillStyle: 'solid',
-    roughness: 0.5,
-    seed: finalSeed + x + y * 100 + 21
+    roughness: 0.5
   });
 
   // Player name with shadow effect

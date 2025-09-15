@@ -147,7 +147,7 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
 
     // Terrain Animation
     grassWaveSpeed: 0.1,
-    treeSwaySpeed: 0.015,
+    treeSwaySpeed: 0.025,
     flowerSpawnRate: 0.01,
     windSpeed: 0.02,
 
@@ -167,7 +167,7 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
 
     // Terrain Animation (duplicated with world for backward compatibility)
     grassWaveSpeed: 0.1,
-    treeSwaySpeed: 0.015,
+    treeSwaySpeed: 0.025,
     flowerSpawnRate: 0.01,
     windSpeed: 0.02,
 
@@ -493,7 +493,7 @@ export const useGameStore = create<GameState>()(
                     worldWidth: legacyAnimationSettings.worldWidth ?? 40,
                     worldHeight: legacyAnimationSettings.worldHeight ?? 30,
                     grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? 0.1,
-                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.015,
+                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.025,
                     flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? 0.01,
                     windSpeed: legacyAnimationSettings.windSpeed ?? 0.02,
                     nightMode: false, // Default to day mode for legacy settings
@@ -505,7 +505,7 @@ export const useGameStore = create<GameState>()(
                     showParticles: legacyAnimationSettings.showParticles ?? legacySettings.showParticles ?? true,
                     showGrid: legacyAnimationSettings.showGrid ?? legacySettings.showGrid ?? true,
                     grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? legacySettings.grassWaveSpeed ?? 0.1,
-                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? legacySettings.treeSwaySpeed ?? 0.015,
+                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? legacySettings.treeSwaySpeed ?? 0.025,
                     flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? legacySettings.flowerSpawnRate ?? 0.01,
                     windSpeed: legacyAnimationSettings.windSpeed ?? legacySettings.windSpeed ?? 0.02,
                     roughness: legacyAnimationSettings.roughness ?? 1.5,

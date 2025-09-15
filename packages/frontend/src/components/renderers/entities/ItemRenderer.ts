@@ -1,9 +1,8 @@
 import type { Item } from 'shared';
 
-export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number, item: Item, time: number, seed?: number) => {
+export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number, item: Item, time: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
-  const finalSeed = seed || 1;
 
   // Floating animation
   const floatOffset = Math.sin(time * 0.015 + x + y) * 2; // Much slower, gentler float
@@ -25,8 +24,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
     fillStyle: 'solid',
     stroke: '#FFF',
     strokeWidth: 7, // Thicker stroke
-    roughness: 1.5,
-    seed: finalSeed + x + y * 100
+    roughness: 1.5
   });
 
   // Inner item shape with rotation
@@ -44,8 +42,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
         fill: '#C0C0C0',
         fillStyle: 'solid',
         stroke: '#808080',
-        strokeWidth: 4, // Thicker
-        seed: finalSeed + x + y * 100 + 1
+        strokeWidth: 4 // Thicker
       });
     } else if (item.type === 'consumable') {
       // Potion bottle
@@ -53,14 +50,12 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
         fill: color,
         fillStyle: 'solid',
         stroke: '#000',
-        strokeWidth: 4, // Thicker
-        seed: finalSeed + x + y * 100 + 2
+        strokeWidth: 4 // Thicker
       });
       // Cork
       rc.rectangle(-2, -9, 4, 3, { // Larger cork
         fill: '#8B4513',
-        fillStyle: 'solid',
-        seed: finalSeed + x + y * 100 + 3
+        fillStyle: 'solid'
       });
     } else {
       // Generic item
@@ -68,8 +63,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
         fill: color,
         fillStyle: 'solid',
         stroke: '#000',
-        strokeWidth: 4, // Thicker
-        seed: finalSeed + x + y * 100 + 4
+        strokeWidth: 4 // Thicker
       });
     }
 
@@ -83,8 +77,7 @@ export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number
       const sparkleY = centerY + floatOffset + Math.cos(time * 0.05 + s * 2) * 8;
       rc.circle(sparkleX, sparkleY, 2, { // Larger sparkles
         fill: '#FFD700',
-        fillStyle: 'solid',
-        seed: finalSeed + x + y * 100 + 10 + s
+        fillStyle: 'solid'
       });
     }
   }

@@ -1,7 +1,6 @@
-export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number, time: number, seed?: number) => {
+export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number, time: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
-  const finalSeed = seed || 1;
 
   // Breathing animation
   const breathScale = 1 + Math.sin(time * 0.05) * 0.1;
@@ -13,8 +12,7 @@ export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number,
     fillStyle: 'solid',
     stroke: '#8B0000',
     strokeWidth: 2,
-    roughness: 2,
-    seed: finalSeed + x + y * 100
+    roughness: 2
   });
 
   // Main NPC body with breathing animation
@@ -23,33 +21,28 @@ export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number,
     fillStyle: 'solid',
     stroke: '#8B0000',
     strokeWidth: 3,
-    roughness: 1.5,
-    seed: finalSeed + x + y * 100 + 1
+    roughness: 1.5
   });
 
   // Angry eyes that follow movement
   const eyeOffset = Math.sin(time * 0.03) * 2;
   rc.circle(centerX - 3, centerY - 2 + eyeOffset, 1.5, {
     fill: '#FFF',
-    fillStyle: 'solid',
-    seed: finalSeed + x + y * 100 + 2
+    fillStyle: 'solid'
   });
   rc.circle(centerX + 3, centerY - 2 + eyeOffset, 1.5, {
     fill: '#FFF',
-    fillStyle: 'solid',
-    seed: finalSeed + x + y * 100 + 3
+    fillStyle: 'solid'
   });
 
   // Pupil
   rc.circle(centerX - 3, centerY - 2 + eyeOffset, 0.8, {
     fill: '#000',
-    fillStyle: 'solid',
-    seed: finalSeed + x + y * 100 + 4
+    fillStyle: 'solid'
   });
   rc.circle(centerX + 3, centerY - 2 + eyeOffset, 0.8, {
     fill: '#000',
-    fillStyle: 'solid',
-    seed: finalSeed + x + y * 100 + 5
+    fillStyle: 'solid'
   });
 
   // Spikes/horns using polygon
@@ -64,8 +57,7 @@ export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number,
     ], {
       fill: '#8B0000',
       fillStyle: 'solid',
-      roughness: 1,
-      seed: finalSeed + x + y * 100 + 10 + s
+      roughness: 1
     });
   }
 };

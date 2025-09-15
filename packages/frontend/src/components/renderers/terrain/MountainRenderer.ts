@@ -3,7 +3,6 @@ import { TerrainType } from 'shared';
 
 export const drawMountain = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
-  const seed = settings?.seed || 1;
 
   switch (terrainType) {
     case TerrainType.MOUNTAIN_PEAK:
@@ -15,8 +14,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         strokeWidth: 2, // Thicker for cohesion
         fillWeight: 2.0, // Thicker fill lines
         roughness: roughness * 0.8, // Smoother
-        bowing: 0.8, // More uniform
-        seed: seed + startX + startY * 1000
+        bowing: 0.8 // More uniform
       });
       // Peak details
       rc.polygon([
@@ -27,8 +25,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         fill: '#f1f5f9',
         fillStyle: 'hachure',
         fillWeight: 2.0, // Thicker fill lines
-        roughness: roughness * 0.9,
-        seed: seed + startX + startY * 1000 + 1
+        roughness: roughness * 0.9
       });
       break;
 
@@ -41,8 +38,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         strokeWidth: 2, // Thicker for cohesion
         fillWeight: 2.0, // Thicker fill lines
         roughness: roughness * 0.8,
-        bowing: 0.8,
-        seed: seed + startX + startY * 1000
+        bowing: 0.8
       });
       // Mountain silhouette
       rc.polygon([
@@ -54,8 +50,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         fill: '#374151',
         fillStyle: 'hachure',
         fillWeight: 2.0, // Thicker fill lines
-        roughness: roughness * 1.0,
-        seed: seed + startX + startY * 1000 + 2
+        roughness: roughness * 1.0
       });
       break;
 
@@ -68,16 +63,14 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         strokeWidth: 2, // Thicker for cohesion
         fillWeight: 2.0, // Thicker fill lines
         roughness: roughness * 0.8,
-        bowing: 0.8,
-        seed: seed + startX + startY * 1000
+        bowing: 0.8
       });
       // Hill contours
       rc.ellipse(startX + 8, startY + 12, 12, 6, {
         fill: '#d4d4d8',
         fillStyle: 'hachure',
         fillWeight: 2.0, // Thicker fill lines
-        roughness: roughness * 0.6,
-        seed: seed + startX + startY * 1000 + 3
+        roughness: roughness * 0.6
       });
       break;
   }

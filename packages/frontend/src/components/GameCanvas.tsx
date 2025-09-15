@@ -99,8 +99,7 @@ const GameCanvas: React.FC = () => {
     showGrid, 
     animationSettings, 
     particles, 
-    addParticles, 
-    updateParticles,
+    addParticles,
     unifiedSettings.world.nightMode 
   ]);
 

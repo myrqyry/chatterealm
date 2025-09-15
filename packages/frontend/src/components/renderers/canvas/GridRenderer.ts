@@ -1,5 +1,5 @@
 export const drawAnimatedGridLines = (rc: any, numTilesX: number, numTilesY: number, gridSize: number, time: number) => {
-  const pulseIntensity = 0.6 + Math.sin(time * 0.01) * 0.2; // Much slower, gentler pulsing
+  const pulseIntensity = 0.6 + Math.sin(time * 0.015) * 0.2; // Slightly faster pulsing
 
   // Draw grid lines with subtle animation
   for (let x = 0; x <= numTilesX; x++) {
