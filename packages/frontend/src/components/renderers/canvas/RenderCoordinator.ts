@@ -40,16 +40,6 @@ export const renderGame = (
   // Clear the logical rendering area (accounting for transforms)
   ctx.clearRect(-gridSize, -gridSize, renderedWidth + 2 * gridSize, renderedHeight + 2 * gridSize);
 
-  console.log('renderGame called:', {
-    gridLength: grid.length,
-    numTilesX,
-    numTilesY,
-    players: players.length,
-    npcs: npcs.length,
-    items: items.length,
-    tileSize: gridSize
-  });
-
   // Draw animated terrain with time-based effects
   for (let y = 0; y < numTilesY; y++) {
     for (let x = 0; x < numTilesX; x++) {

@@ -40,13 +40,13 @@ const SettingSlider: React.FC<SettingSliderProps> = ({
   };
 
   return (
-    <Box className={`control-group slider ${className} mb-3`}>
-      <Box className="flex justify-between items-center mb-1">
-        <FormLabel className="jetbrains text-sm font-medium text-text-primary">
+    <Box sx={{ mb: 3 }} className={className}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <FormLabel sx={{ fontFamily: 'JetBrains Mono', fontSize: '0.875rem', fontWeight: 500, color: 'text.primary' }}>
           {label}
         </FormLabel>
-        <Box className="flex items-center gap-1">
-          <Typography className="jetbrains text-sm font-semibold text-primary min-w-[60px] text-right">
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography sx={{ fontFamily: 'JetBrains Mono', fontSize: '0.875rem', fontWeight: 600, color: 'primary', minWidth: '60px', textAlign: 'right' }}>
             {value}{unit}
           </Typography>
           {showReset && resetValue !== undefined && (
@@ -54,7 +54,20 @@ const SettingSlider: React.FC<SettingSliderProps> = ({
               size="small"
               onClick={handleReset}
               startIcon={<ResetIcon />}
-              className="min-w-auto px-1 py-0.5 text-xs jetbrains no-uppercase bg-purple-900/10 text-text-secondary border border-purple-500/20 hover:bg-purple-900/20 hover:border-purple-500/40"
+              sx={{
+                minWidth: 'auto',
+                px: 1,
+                py: 0.5,
+                fontSize: '0.75rem',
+                fontFamily: 'JetBrains Mono',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                color: 'text.secondary',
+                border: '1px solid rgba(139, 92, 246, 0.2)',
+                '&:hover': {
+                  backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                  borderColor: 'rgba(139, 92, 246, 0.4)'
+                }
+              }}
               title={`Reset to ${resetValue}${unit}`}
             >
               Reset
@@ -70,30 +83,30 @@ const SettingSlider: React.FC<SettingSliderProps> = ({
         max={max}
         step={step}
         sx={{
-          color: 'var(--color-primary)',
+          color: 'primary.main',
           '& .MuiSlider-thumb': {
             width: 20,
             height: 20,
-            backgroundColor: 'var(--color-primary)',
-            border: '2px solid var(--color-on-primary)',
+            backgroundColor: 'primary.main',
+            border: '2px solid',
+            borderColor: 'primary.contrastText',
             '&:hover, &.Mui-focusVisible': {
               boxShadow: `0 0 0 8px rgba(137, 180, 250, 0.16)`,
             },
           },
           '& .MuiSlider-track': {
             height: 6,
-            backgroundColor: 'var(--color-primary)',
+            backgroundColor: 'primary.main',
           },
           '& .MuiSlider-rail': {
             height: 6,
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
           },
         }}
-        className="w-full"
       />
 
       {description && (
-        <Typography className="jetbrains text-xs text-text-secondary italic mt-0.5">
+        <Typography sx={{ fontFamily: 'JetBrains Mono', fontSize: '0.75rem', color: 'text.secondary', fontStyle: 'italic', mt: 0.5 }}>
           {description}
         </Typography>
       )}

@@ -45,9 +45,67 @@ const GameCanvas: React.FC = () => {
   const showGrid = unifiedSettings.animations?.showGrid ?? true;
   const animationSettings = unifiedSettings.animations;
 
+  // Use refs to avoid restarting the animation loop
+  const gameWorldRef = useRef(gameWorld);
+  const gridRef = useRef(grid);
+  const playersRef = useRef(players);
+  const npcsRef = useRef(npcs);
+  const itemsRef = useRef(items);
+  const showGridRef = useRef(showGrid);
+  const animationSettingsRef = useRef(animationSettings);
+  const particlesRef = useRef(particles);
+  const addParticlesRef = useRef(addParticles);
+  const tileSizePxRef = useRef(canvasSetup.tileSizePx);
+  const nightModeRef = useRef(unifiedSettings.world.nightMode);
+
+  // Update refs when values change
+  useEffect(() => {
+    gameWorldRef.current = gameWorld;
+  }, [gameWorld]);
+
+  useEffect(() => {
+    gridRef.current = grid;
+  }, [grid]);
+
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
+  useEffect(() => {
+    npcsRef.current = npcs;
+  }, [npcs]);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
+    showGridRef.current = showGrid;
+  }, [showGrid]);
+
+  useEffect(() => {
+    animationSettingsRef.current = animationSettings;
+  }, [animationSettings]);
+
+  useEffect(() => {
+    particlesRef.current = particles;
+  }, [particles]);
+
+  useEffect(() => {
+    addParticlesRef.current = addParticles;
+  }, [addParticles]);
+
+  useEffect(() => {
+    tileSizePxRef.current = canvasSetup.tileSizePx;
+  }, [canvasSetup.tileSizePx]);
+
+  useEffect(() => {
+    nightModeRef.current = unifiedSettings.world.nightMode;
+  }, [unifiedSettings.world.nightMode]);
+
   // Render the game when setup is ready
   useEffect(() => {
-    if (!canvasSetup.isReady || !canvasSetup.ctx || !gameWorld) return;
+    if (!canvasSetup.isReady || !canvasSetup.ctx) return;
 
     const rc = rough.canvas(canvasSetup.canvas!);
     let animationId: number;
@@ -59,21 +117,24 @@ const GameCanvas: React.FC = () => {
       // Update particles in the main render loop
       updateParticles();
 
-      renderGame(
-        rc,
-        canvasSetup.ctx!,
-        grid as { type: TerrainType }[][],
-        players,
-        npcs,
-        items,
-        showGrid,
-        time,
-        animationSettings,
-        particles,
-        addParticles,
-        canvasSetup.tileSizePx,
-        unifiedSettings.world.nightMode
-      );
+      // Only render if we have a game world
+      if (gameWorldRef.current) {
+        renderGame(
+          rc,
+          canvasSetup.ctx!,
+          gridRef.current as { type: TerrainType }[][],
+          playersRef.current,
+          npcsRef.current,
+          itemsRef.current,
+          showGridRef.current,
+          time,
+          animationSettingsRef.current,
+          particlesRef.current,
+          addParticlesRef.current,
+          tileSizePxRef.current,
+          nightModeRef.current
+        );
+      }
 
       animationId = requestAnimationFrame(animate);
     };
@@ -87,21 +148,7 @@ const GameCanvas: React.FC = () => {
         cancelAnimationFrame(animationId);
       }
     };
-  }, [
-    canvasSetup.isReady, 
-    canvasSetup.ctx, 
-    canvasSetup.tileSizePx, 
-    gameWorld, 
-    grid, 
-    players, 
-    npcs, 
-    items, 
-    showGrid, 
-    animationSettings, 
-    particles, 
-    addParticles,
-    unifiedSettings.world.nightMode 
-  ]);
+  }, [canvasSetup.isReady, canvasSetup.ctx, updateParticles]); // Only depend on setup and updateParticles
 
   const handlePointerDown = (ev: React.PointerEvent) => {
     if (!canvasRef.current || !canvasSetup.isReady || !gameWorld) return;
@@ -135,12 +182,12 @@ const GameCanvas: React.FC = () => {
   const innerPadding = 8;
 
   return (
-    <div ref={containerRef} className="game-canvas-container">
+    <div ref={containerRef} className="w-full h-full flex flex-1 items-stretch justify-stretch overflow-hidden p-2 box-border relative min-w-0 min-h-0">
       <canvas 
         ref={canvasRef} 
-        className="game-canvas" 
+        className="border border-outline rounded-md block w-full h-full max-w-full max-h-full" 
         onPointerDown={handlePointerDown}
-        style={{ display: canvasSetup.isReady ? 'block' : 'none' }}
+        style={{ display: canvasSetup.isReady ? 'block' : 'none', imageRendering: 'pixelated' }}
       />
       {drawEffects.map(effect => (
         <CanvasDrawEffectComponent
