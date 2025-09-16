@@ -4,7 +4,8 @@ interface ParticleEmitter {
   (x: number, y: number, color: string, count?: number): void;
 }
 
-export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: number, player: Player, time: number, addParticles: ParticleEmitter) => {
+// Accept optional `seed` parameter for deterministic/randomized particle effects.
+export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: number, player: Player, time: number, addParticles: ParticleEmitter, seed?: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
   const ctx = (rc as any).ctx;

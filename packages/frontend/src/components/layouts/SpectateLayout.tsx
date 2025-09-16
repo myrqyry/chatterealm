@@ -4,7 +4,7 @@ import SpectatorSidebar from '../sidebars/SpectatorSidebar';
 import ModeNavigation from '../ModeNavigation';
 import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from '../index';
 import { useGameStore } from '../../stores/gameStore';
-import { COLORS } from '../../constants/colors';
+import { COLORS } from '../../utils/tokens';
 
 const SpectateLayout: React.FC = () => {
   const { gameWorld } = useGameStore();

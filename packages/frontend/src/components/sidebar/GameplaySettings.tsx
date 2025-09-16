@@ -18,58 +18,40 @@ const GameplaySettings: React.FC<GameplaySettingsProps> = ({
   updateGameSettings
 }) => {
   return (
-    <div style={{ padding: '16px 0' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+    <div className="py-4">
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Auto-Save
         </label>
         <input
           type="checkbox"
           checked={unifiedSettings.game.autoSaveEnabled}
           onChange={(e) => updateGameSettings({ autoSaveEnabled: e.target.checked })}
-          style={{ marginRight: '8px' }}
+          className="mr-2"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Show Damage Numbers
         </label>
         <input
           type="checkbox"
           checked={unifiedSettings.game.showDamageNumbers}
           onChange={(e) => updateGameSettings({ showDamageNumbers: e.target.checked })}
-          style={{ marginRight: '8px' }}
+          className="mr-2"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Mini-map
         </label>
         <input
           type="checkbox"
           checked={unifiedSettings.game.minimapEnabled}
           onChange={(e) => updateGameSettings({ minimapEnabled: e.target.checked })}
-          style={{ marginRight: '8px' }}
+          className="mr-2"
         />
       </div>
     </div>

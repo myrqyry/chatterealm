@@ -18,15 +18,9 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
   updateAudioSettings
 }) => {
   return (
-    <div style={{ padding: '16px 0' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+    <div className="py-4">
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Master Volume: {unifiedSettings.audio.audioMasterVolume}%
         </label>
         <input
@@ -35,18 +29,12 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
           max="100"
           value={unifiedSettings.audio.audioMasterVolume}
           onChange={(e) => updateAudioSettings({ audioMasterVolume: parseInt(e.target.value) })}
-          style={{ width: '100%' }}
+          className="w-full"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           SFX Volume: {unifiedSettings.audio.sfxVolume}%
         </label>
         <input
@@ -55,18 +43,12 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
           max="100"
           value={unifiedSettings.audio.sfxVolume}
           onChange={(e) => updateAudioSettings({ sfxVolume: parseInt(e.target.value) })}
-          style={{ width: '100%' }}
+          className="w-full"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Music Volume: {unifiedSettings.audio.musicVolume}%
         </label>
         <input
@@ -75,7 +57,7 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
           max="100"
           value={unifiedSettings.audio.musicVolume}
           onChange={(e) => updateAudioSettings({ musicVolume: parseInt(e.target.value) })}
-          style={{ width: '100%' }}
+          className="w-full"
         />
       </div>
     </div>

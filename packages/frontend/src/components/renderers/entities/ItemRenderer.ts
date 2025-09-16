@@ -1,6 +1,8 @@
 import type { Item } from 'shared';
 
-export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number, item: Item, time: number) => {
+// Optional `seed` parameter is accepted for deterministic/randomized effects
+// (kept optional so existing callers without a seed continue to work).
+export const drawAnimatedItem = (rc: any, x: number, y: number, gridSize: number, item: Item, time: number, seed?: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
 

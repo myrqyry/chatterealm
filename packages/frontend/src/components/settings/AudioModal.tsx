@@ -13,90 +13,31 @@ const AudioModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   ];
 
   return (
-    <div style={{
-      padding: '24px',
-      height: '100%',
-      overflow: 'auto',
-      fontFamily: 'JetBrains Mono',
-      background: 'linear-gradient(145deg, rgba(25, 23, 36, 0.95) 0%, rgba(31, 29, 46, 0.9) 100%)'
-    }}>
+    <div className="p-6 h-full overflow-auto font-mono bg-gradient-to-br from-background-primary/95 to-surface/90">
       {/* Modal Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '32px',
-        paddingBottom: '16px',
-        borderBottom: '2px solid rgba(255, 152, 0, 0.3)'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>🎵</span>
+      <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-primary/30">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <span className="text-2xl">🎵</span>
           </div>
           <div>
-            <h1 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.8rem',
-              fontWeight: 700,
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-            }}>
+            <h1 className="m-0 text-text-primary text-2xl font-bold text-shadow">
               Audio
             </h1>
-            <p style={{
-              margin: '4px 0 0 0',
-              color: 'var(--color-text-secondary)',
-              fontSize: '0.9rem',
-              fontWeight: 400
-            }}>
+            <p className="mt-1 mb-0 text-text-secondary text-sm font-normal">
               Sound and music controls
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          style={{
-            minWidth: '40px',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            color: 'var(--color-text-primary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.2rem',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="w-10 h-10 rounded-full bg-white/10 border-none text-text-primary cursor-pointer flex items-center justify-center text-lg transition-all duration-200 hover:bg-white/20 hover:scale-105"
         >
           ✕
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex flex-col gap-6">
         <MaterialCard
           sx={{
             backgroundColor: 'rgba(25, 23, 36, 0.8)',
@@ -112,33 +53,15 @@ const AudioModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🔊</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+              <span className="text-lg">🔊</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               Volume Controls
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex flex-col gap-4">
             <SettingSlider
               label="Master Volume"
               value={unifiedSettings.audio.audioMasterVolume}
@@ -181,33 +104,15 @@ const AudioModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🔈</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+              <span className="text-lg">🔈</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               Audio Toggles
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex flex-col gap-4">
             <SettingCheckbox
               label="Enable SFX"
               checked={unifiedSettings.audio.soundEnabled}
@@ -238,33 +143,15 @@ const AudioModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🔔</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+              <span className="text-lg">🔔</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               Notifications
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex flex-col gap-4">
             <SettingCheckbox
               label="Desktop Notifications"
               checked={unifiedSettings.notifications.desktopNotifications}

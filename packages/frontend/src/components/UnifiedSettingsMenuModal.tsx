@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import { MaterialButton, MaterialPopover, MaterialCard } from './index';
+import CategoryButton from './shared/CategoryButton';
 import {
   Info as InfoIcon,
   VideogameAsset as GameIcon,
@@ -95,213 +96,72 @@ const UnifiedSettingsMenuModal: React.FC = () => {
   };
 
   const categories = [
-    {
-      id: 'overview',
-      label: 'Overview',
-      icon: InfoIcon,
-      color: '#2196f3', // Blue
-      hoverColor: '#1976d2'
-    },
-    {
-      id: 'gameplay',
-      label: 'Gameplay',
-      icon: GameIcon,
-      color: '#4caf50', // Green
-      hoverColor: '#388e3c'
-    },
-    {
-      id: 'audio',
-      label: 'Audio',
-      icon: AudioIcon,
-      color: '#ff9800', // Orange
-      hoverColor: '#f57c00'
-    },
-    {
-      id: 'visual',
-      label: 'Visual',
-      icon: VisualIcon,
-      color: '#9c27b0', // Purple
-      hoverColor: '#7b1fa2'
-    },
-    {
-      id: 'world',
-      label: 'World',
-      icon: WorldIcon,
-      color: '#00bcd4', // Cyan
-      hoverColor: '#0097a7'
-    },
-    {
-      id: 'actions',
-      label: 'Actions',
-      icon: ActionsIcon,
-      color: '#f44336', // Red
-      hoverColor: '#d32f2f'
-    },
+    { id: 'overview', label: 'Overview', icon: InfoIcon, token: 'primary' },
+    { id: 'gameplay', label: 'Gameplay', icon: GameIcon, token: 'health.healthy' },
+    { id: 'audio', label: 'Audio', icon: AudioIcon, token: 'accentPurple' },
+    { id: 'visual', label: 'Visual', icon: VisualIcon, token: 'accentDarkPurple' },
+    { id: 'world', label: 'World', icon: WorldIcon, token: 'secondary' },
+    { id: 'actions', label: 'Actions', icon: ActionsIcon, token: 'error' },
   ];
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: 'Inter, Roboto, sans-serif'
-    }}>
+    <div className="h-full flex flex-col font-inter">
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '16px',
-        paddingBottom: '12px',
-        borderBottom: '1px solid var(--color-divider)'
-      }}>
-        <h3 style={{
-          color: 'var(--color-text-primary)',
-          fontSize: '1em',
-          fontWeight: '600',
-          margin: 0
-        }}>
-          ⚙️ Settings
-        </h3>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <MaterialButton
-            size="small"
-            onClick={() => setShowImportExport(v => !v)}
-            sx={{
-              minHeight: '32px',
-              px: 2,
-              fontSize: '0.8rem'
-            }}
-          >
-            {showImportExport ? 'Hide' : 'I/E'}
-          </MaterialButton>
-          <MaterialButton
-            size="small"
-            color="error"
-            onClick={handleResetAll}
-            sx={{
-              minHeight: '32px',
-              px: 2,
-              fontSize: '0.8rem'
-            }}
-          >
-            Reset
-          </MaterialButton>
+      <div className="flex justify-between items-center mb-4 pb-3 border-b border-divider">
+        <h3 className="text-text-primary text-sm font-semibold m-0">⚙️ Settings</h3>
+        <div className="flex gap-2">
+          <MaterialButton size="small" onClick={() => setShowImportExport(v => !v)} sx={{ minHeight: '32px', px: 2, fontSize: '0.8rem' }}>{showImportExport ? 'Hide' : 'I/E'}</MaterialButton>
+          <MaterialButton size="small" color="error" onClick={handleResetAll} sx={{ minHeight: '32px', px: 2, fontSize: '0.8rem' }}>Reset</MaterialButton>
         </div>
       </div>
 
       {/* Import/Export Panel */}
       {showImportExport && (
-        <MaterialCard sx={{ mb: 2, p: 2 }}>
-          <div style={{ marginBottom: '12px' }}>
-            <MaterialButton
-              onClick={handleExport}
-              sx={{ mr: 1 }}
-            >
-              📤 Export Settings
-            </MaterialButton>
+        <MaterialCard sx={{ mb: 2, p: 2, backgroundColor: 'var(--color-surface-variant)' }}>
+          <div className="mb-3">
+            <MaterialButton onClick={handleExport} sx={{ mr: 1 }}>📤 Export Settings</MaterialButton>
           </div>
-          <div style={{ marginBottom: '8px' }}>
-            <label style={{
-              display: 'block',
-              fontFamily: 'JetBrains Mono',
-              fontSize: '0.9rem',
-              color: 'var(--color-text-primary)',
-              marginBottom: '4px'
-            }}>
-              Import Settings JSON
-            </label>
+          <div className="mb-2">
+            <label className="block font-mono text-sm text-text-primary mb-1">Import Settings JSON</label>
             <textarea
-              style={{
-                width: '100%',
-                minHeight: '80px',
-                padding: '8px',
-                backgroundColor: 'var(--color-background-paper)',
-                border: '1px solid var(--color-divider)',
-                borderRadius: '4px',
-                color: 'var(--color-text-primary)',
-                fontFamily: 'JetBrains Mono',
-                fontSize: '0.8rem',
-                resize: 'vertical'
-              }}
+              className="w-full min-h-[80px] p-2 bg-background-paper border border-divider rounded text-text-primary font-mono text-sm resize-y"
               placeholder="Paste exported JSON here..."
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
             />
           </div>
-          <MaterialButton onClick={handleImport}>
-            📥 Import
-          </MaterialButton>
+          <MaterialButton onClick={handleImport}>📥 Import</MaterialButton>
         </MaterialCard>
       )}
 
-      {/* Notifications panel (quick access in modal) */}
-      <MaterialCard sx={{ mb: 2, p: 2 }}>
-        <h3 style={{ margin: 0, marginBottom: 8 }}>🔔 Notifications</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="action-btn" onClick={() => updateNotificationSettings({ desktopNotifications: !unifiedSettings.notifications.desktopNotifications })}>
-              Toggle Desktop
-            </button>
-            <button className="action-btn" onClick={() => updateNotificationSettings({ soundNotifications: !unifiedSettings.notifications.soundNotifications })}>
-              Toggle Sound
-            </button>
+  {/* Notifications panel (quick access in modal) */}
+  <MaterialCard sx={{ mb: 2, p: 2, backgroundColor: 'var(--color-surface-variant)' }}>
+        <h3 className="m-0 mb-2">🔔 Notifications</h3>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={() => updateNotificationSettings({ desktopNotifications: !unifiedSettings.notifications.desktopNotifications })}>Toggle Desktop</button>
+            <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={() => updateNotificationSettings({ soundNotifications: !unifiedSettings.notifications.soundNotifications })}>Toggle Sound</button>
           </div>
           <div>
-            <MaterialMultiSelect
-              label="Player Join Notifications"
-              value={unifiedSettings.notifications.playerJoinNotifications}
-              options={notificationTypeOptions}
-              onChange={(vals) => updateNotificationSettings({ playerJoinNotifications: vals as any })}
-            />
-            <MaterialMultiSelect
-              label="Cataclysm Notifications"
-              value={unifiedSettings.notifications.cataclysmNotifications}
-              options={notificationTypeOptions}
-              onChange={(vals) => updateNotificationSettings({ cataclysmNotifications: vals as any })}
-            />
+            <MaterialMultiSelect label="Player Join Notifications" value={unifiedSettings.notifications.playerJoinNotifications} options={notificationTypeOptions} onChange={(vals) => updateNotificationSettings({ playerJoinNotifications: vals as any })} />
+            <MaterialMultiSelect label="Cataclysm Notifications" value={unifiedSettings.notifications.cataclysmNotifications} options={notificationTypeOptions} onChange={(vals) => updateNotificationSettings({ cataclysmNotifications: vals as any })} />
           </div>
         </div>
       </MaterialCard>
 
       {/* Category Buttons - Compact Single Row */}
-      <div style={{
-        display: 'flex',
-        gap: '4px',
-        marginBottom: '16px',
-        justifyContent: 'center',
-        flexWrap: 'wrap'
-      }}>
+      <div className="flex gap-1.5 mb-4 justify-center flex-wrap">
         {categories.map(category => {
           const IconComponent = category.icon;
           return (
-            <MaterialButton
+            <CategoryButton
               key={category.id}
-              ref={(el) => buttonRefs.current[category.id] = el}
+              id={category.id}
+              Icon={IconComponent}
               onClick={() => openModal(category.id)}
-              sx={{
-                minWidth: '60px',
-                width: '60px',
-                height: '60px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                p: 1,
-                borderRadius: 2,
-                backgroundColor: `${category.color}20`, // 20 = 12.5% opacity
-                border: `1px solid ${category.color}40`, // 40 = 25% opacity
-                color: 'var(--color-text-primary)',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  backgroundColor: `${category.color}30`, // 30 = 18.75% opacity
-                  borderColor: category.hoverColor,
-                  transform: 'translateY(-2px) scale(1.05)',
-                  boxShadow: `0 4px 12px ${category.color}30` // 30 = 18.75% opacity
-                }
-              }}
-            >
-              <IconComponent sx={{ fontSize: '2.2rem' }} />
-            </MaterialButton>
+              buttonRef={(el) => buttonRefs.current[category.id] = el}
+              colorToken={category.token}
+            />
           );
         })}
       </div>

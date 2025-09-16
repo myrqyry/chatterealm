@@ -17,15 +17,9 @@ const WorldSettings: React.FC<WorldSettingsProps> = ({
   updateWorldSettings
 }) => {
   return (
-    <div style={{ padding: '16px 0' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+    <div className="py-4">
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           World Width: {unifiedSettings.world.worldWidth}
         </label>
         <input
@@ -35,18 +29,12 @@ const WorldSettings: React.FC<WorldSettingsProps> = ({
           step="5"
           value={unifiedSettings.world.worldWidth}
           onChange={(e) => updateWorldSettings({ worldWidth: parseInt(e.target.value) })}
-          style={{ width: '100%' }}
+          className="w-full"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           World Height: {unifiedSettings.world.worldHeight}
         </label>
         <input
@@ -56,7 +44,7 @@ const WorldSettings: React.FC<WorldSettingsProps> = ({
           step="3"
           value={unifiedSettings.world.worldHeight}
           onChange={(e) => updateWorldSettings({ worldHeight: parseInt(e.target.value) })}
-          style={{ width: '100%' }}
+          className="w-full"
         />
       </div>
     </div>

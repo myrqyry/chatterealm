@@ -6,25 +6,21 @@ interface ModeNavigationProps {
   compact?: boolean;
 }
 
+const modes: Array<{ path: string; label: string; description?: string }> = [
+  { path: '/play', label: 'Play', description: 'Join the realm and play' },
+  { path: '/spectate', label: 'Spectate', description: 'Watch ongoing games' },
+  { path: '/dev', label: 'Dev', description: 'Developer tools & testing' }
+];
+
 const ModeNavigation: React.FC<ModeNavigationProps> = ({ compact = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const modes = [
-    { path: '/play', label: '🎮 Play', description: 'Player Interface' },
-    { path: '/spectate', label: '👁️ Spectate', description: 'Watch Game' },
-    { path: '/dev', label: '🛠️ Dev', description: 'Developer Tools' }
-  ];
-
-  const currentMode = modes.find(mode => mode.path === location.pathname);
+  const currentMode = modes.find((mode) => mode.path === location.pathname);
 
   if (compact) {
     return (
-      <div style={{
-        display: 'flex',
-        gap: '4px',
-        alignItems: 'center'
-      }}>
+      <div className="flex gap-1 items-center">
         {modes.map((mode) => (
           <MaterialButton
             key={mode.path}
@@ -37,14 +33,12 @@ const ModeNavigation: React.FC<ModeNavigationProps> = ({ compact = false }) => {
               py: 0.5,
               fontSize: '0.75rem',
               textTransform: 'none',
-              backgroundColor: location.pathname === mode.path ?
-                'rgba(76, 175, 80, 0.2)' :
-                'transparent',
+              backgroundColor: location.pathname === mode.path ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
               borderColor: 'rgba(196, 167, 231, 0.3)',
               color: 'var(--color-text-primary)',
               '&:hover': {
                 backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                borderColor: 'rgba(196, 167, 231, 0.5)',
+                borderColor: 'rgba(196, 167, 231, 0.5)'
               }
             }}
           >
@@ -56,24 +50,8 @@ const ModeNavigation: React.FC<ModeNavigationProps> = ({ compact = false }) => {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '8px',
-      padding: '16px',
-      background: 'rgba(25, 23, 36, 0.9)',
-      borderRadius: '8px',
-      border: '1px solid rgba(196, 167, 231, 0.2)',
-      minWidth: '200px'
-    }}>
-      <h3 style={{
-        margin: 0,
-        color: 'var(--color-text-primary)',
-        fontSize: '1em',
-        fontWeight: '600'
-      }}>
-        Interface Mode
-      </h3>
+    <div className="flex flex-col gap-2 p-4 bg-[var(--color-surface-variant)]/90 rounded-md border border-[var(--color-outline)] min-w-[200px]">
+      <h3 className="m-0 text-[var(--color-text-primary)] text-base font-semibold">Interface Mode</h3>
 
       {currentMode && (
         <MaterialChip
@@ -87,11 +65,7 @@ const ModeNavigation: React.FC<ModeNavigationProps> = ({ compact = false }) => {
         />
       )}
 
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px'
-      }}>
+      <div className="flex flex-col gap-1">
         {modes.map((mode) => (
           <MaterialButton
             key={mode.path}
@@ -101,14 +75,12 @@ const ModeNavigation: React.FC<ModeNavigationProps> = ({ compact = false }) => {
             sx={{
               justifyContent: 'flex-start',
               textTransform: 'none',
-              backgroundColor: location.pathname === mode.path ?
-                'rgba(76, 175, 80, 0.2)' :
-                'transparent',
+              backgroundColor: location.pathname === mode.path ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
               borderColor: 'rgba(196, 167, 231, 0.3)',
               color: 'var(--color-text-primary)',
               '&:hover': {
                 backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                borderColor: 'rgba(196, 167, 231, 0.5)',
+                borderColor: 'rgba(196, 167, 231, 0.5)'
               }
             }}
           >

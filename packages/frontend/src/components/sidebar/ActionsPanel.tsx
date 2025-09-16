@@ -19,38 +19,16 @@ const ActionsPanel: React.FC<ActionsPanelProps> = ({
   onCataclysm
 }) => {
   return (
-    <div style={{ padding: '16px 0' }}>
+    <div className="py-4">
       {/* Quick Actions */}
-      <div style={{ marginBottom: '20px' }}>
-        <h4 style={{
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '600',
-          margin: '0 0 12px 0'
-        }}>
-          Quick Actions
-        </h4>
+      <div className="mb-5">
+        <h4 className="text-[var(--color-text-primary)] text-sm font-semibold mb-3">Quick Actions</h4>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="flex flex-col gap-2">
           {!currentPlayer && (
             <button
               onClick={onJoin}
-              style={{
-                background: 'var(--color-primary)',
-                color: 'var(--color-on-primary)',
-                border: 'none',
-                borderRadius: '6px',
-                padding: '8px 12px',
-                cursor: 'pointer',
-                fontSize: '0.85em',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-md px-3 py-2 text-sm font-medium flex items-center gap-2 transform transition-transform duration-150 hover:scale-[1.02]"
             >
               🔌 Join Game
             </button>
@@ -59,93 +37,33 @@ const ActionsPanel: React.FC<ActionsPanelProps> = ({
           {currentPlayer && (
             <>
               {/* Movement Controls */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', marginBottom: '8px' }}>
-                <div></div>
+              <div className="grid grid-cols-3 gap-1 mb-2">
+                <div />
                 <button
                   onClick={() => onMove('up')}
-                  style={{
-                    background: 'var(--color-surface-variant)',
-                    color: 'var(--color-text-primary)',
-                    border: '1px solid var(--color-outline)',
-                    borderRadius: '4px',
-                    width: '32px',
-                    height: '32px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary-container)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-surface-variant)'}
+                  className="w-8 h-8 rounded-sm border text-[var(--color-text-primary)] bg-[var(--color-surface-variant)] border-[var(--color-outline)] flex items-center justify-center text-sm transition-colors duration-150 hover:bg-[var(--color-primary-container)]"
                 >
                   ↑
                 </button>
-                <div></div>
+                <div />
 
                 <button
                   onClick={() => onMove('left')}
-                  style={{
-                    background: 'var(--color-surface-variant)',
-                    color: 'var(--color-text-primary)',
-                    border: '1px solid var(--color-outline)',
-                    borderRadius: '4px',
-                    width: '32px',
-                    height: '32px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary-container)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-surface-variant)'}
+                  className="w-8 h-8 rounded-sm border text-[var(--color-text-primary)] bg-[var(--color-surface-variant)] border-[var(--color-outline)] flex items-center justify-center text-sm transition-colors duration-150 hover:bg-[var(--color-primary-container)]"
                 >
                   ←
                 </button>
 
                 <button
                   onClick={() => onMove('down')}
-                  style={{
-                    background: 'var(--color-surface-variant)',
-                    color: 'var(--color-text-primary)',
-                    border: '1px solid var(--color-outline)',
-                    borderRadius: '4px',
-                    width: '32px',
-                    height: '32px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary-container)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-surface-variant)'}
+                  className="w-8 h-8 rounded-sm border text-[var(--color-text-primary)] bg-[var(--color-surface-variant)] border-[var(--color-outline)] flex items-center justify-center text-sm transition-colors duration-150 hover:bg-[var(--color-primary-container)]"
                 >
                   ↓
                 </button>
 
                 <button
                   onClick={() => onMove('right')}
-                  style={{
-                    background: 'var(--color-surface-variant)',
-                    color: 'var(--color-text-primary)',
-                    border: '1px solid var(--color-outline)',
-                    borderRadius: '4px',
-                    width: '32px',
-                    height: '32px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-primary-container)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-surface-variant)'}
+                  className="w-8 h-8 rounded-sm border text-[var(--color-text-primary)] bg-[var(--color-surface-variant)] border-[var(--color-outline)] flex items-center justify-center text-sm transition-colors duration-150 hover:bg-[var(--color-primary-container)]"
                 >
                   →
                 </button>
@@ -153,22 +71,7 @@ const ActionsPanel: React.FC<ActionsPanelProps> = ({
 
               <button
                 onClick={onPickup}
-                style={{
-                  background: 'var(--color-secondary)',
-                  color: 'var(--color-on-secondary)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  fontSize: '0.85em',
-                  fontWeight: '500',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                className="bg-[var(--color-secondary)] text-[var(--color-on-secondary)] rounded-md px-3 py-2 text-sm font-medium flex items-center gap-2 transform transition-transform duration-150 hover:scale-[1.02]"
               >
                 🎒 Pick Up
               </button>
@@ -177,44 +80,14 @@ const ActionsPanel: React.FC<ActionsPanelProps> = ({
 
           <button
             onClick={onRegenerate}
-            style={{
-              background: 'var(--color-tertiary)',
-              color: 'var(--color-on-tertiary)',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 12px',
-              cursor: 'pointer',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            className="bg-[var(--color-tertiary)] text-[var(--color-on-tertiary)] rounded-md px-3 py-2 text-sm font-medium flex items-center gap-2 transform transition-transform duration-150 hover:scale-[1.02]"
           >
             🌍 Regen World
           </button>
 
           <button
             onClick={onCataclysm}
-            style={{
-              background: 'var(--color-error)',
-              color: 'var(--color-on-error)',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 12px',
-              cursor: 'pointer',
-              fontSize: '0.85em',
-              fontWeight: '500',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            className="bg-[var(--color-error)] text-[var(--color-on-error)] rounded-md px-3 py-2 text-sm font-medium flex items-center gap-2 transform transition-transform duration-150 hover:scale-[1.02]"
           >
             ⚡ Cataclysm
           </button>

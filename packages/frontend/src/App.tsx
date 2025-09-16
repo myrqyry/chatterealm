@@ -9,6 +9,7 @@ import { AnimationDemo } from './components';
 import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
 import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
+import EmojiSvgSmokeTest from './components/dev/EmojiSvgSmokeTest';
 import { useState } from 'react';
 import { initializeSounds } from './services/soundService';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -76,6 +77,18 @@ function App() {
             element={
               <ResponsiveLayout>
                 <DevLayout />
+              </ResponsiveLayout>
+            }
+          />
+
+          {/* Dev-only emoji smoke test (quick validate svg fetching + conversion) */}
+          <Route
+            path="/dev/emoji-test"
+            element={
+              <ResponsiveLayout>
+                <DevLayout>
+                  <EmojiSvgSmokeTest />
+                </DevLayout>
               </ResponsiveLayout>
             }
           />

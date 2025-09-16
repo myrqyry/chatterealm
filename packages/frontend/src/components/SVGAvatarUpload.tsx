@@ -80,17 +80,15 @@ const SVGAvatarUpload: React.FC<SVGAvatarUploadProps> = ({
         borderRadius: '12px'
       }}
     >
-      <div style={{ padding: '16px' }}>
-        <h4 style={{ color: 'var(--color-text-primary)', marginBottom: '12px' }}>
-          🎨 Custom SVG Avatar
-        </h4>
+      <div className="p-4">
+        <h4 className="text-[var(--color-text-primary)] mb-3">🎨 Custom SVG Avatar</h4>
 
         <input
           ref={fileInputRef}
           type="file"
           accept=".svg"
           onChange={handleFileUpload}
-          style={{ display: 'none' }}
+          className="hidden"
         />
 
         {!uploadedSvg ? (
@@ -110,65 +108,32 @@ const SVGAvatarUpload: React.FC<SVGAvatarUploadProps> = ({
             📁 Upload SVG Avatar
           </MaterialButton>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="flex flex-col gap-3">
             {/* Preview */}
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '4px' }}>
-                  Original
-                </p>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(196, 167, 231, 0.2)'
-                }}>
-                  <div
-                    style={{ fontSize: '2rem' }}
-                    dangerouslySetInnerHTML={{ __html: uploadedSvg }}
-                  />
+            <div className="flex gap-3 items-center justify-center">
+              <div className="text-center">
+                <p className="text-[var(--color-text-secondary)] text-sm mb-1">Original</p>
+                <div className="w-[60px] h-[60px] bg-[rgba(0,0,0,0.2)] rounded-md flex items-center justify-center border border-[var(--color-outline)]">
+                  <div className="text-2xl" dangerouslySetInnerHTML={{ __html: uploadedSvg }} />
                 </div>
               </div>
 
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem', marginBottom: '4px' }}>
-                  Rough Style
-                </p>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid rgba(196, 167, 231, 0.2)'
-                }}>
+              <div className="text-center">
+                <p className="text-[var(--color-text-secondary)] text-sm mb-1">Rough Style</p>
+                <div className="w-[60px] h-[60px] bg-[rgba(0,0,0,0.2)] rounded-md flex items-center justify-center border border-[var(--color-outline)]">
                   {isConverting ? (
-                    <div style={{ color: 'var(--color-text-secondary)' }}>🔄</div>
+                    <div className="text-[var(--color-text-secondary)]">🔄</div>
                   ) : roughSvg ? (
-                    <div
-                      style={{ fontSize: '2rem' }}
-                      dangerouslySetInnerHTML={{ __html: roughSvg }}
-                    />
+                    <div className="text-2xl" dangerouslySetInnerHTML={{ __html: roughSvg }} />
                   ) : (
-                    <div style={{ color: 'var(--color-text-secondary)' }}>❌</div>
+                    <div className="text-[var(--color-text-secondary)]">❌</div>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               <MaterialButton
                 onClick={handleUseAvatar}
                 disabled={!roughSvg || isConverting}
@@ -209,20 +174,12 @@ const SVGAvatarUpload: React.FC<SVGAvatarUploadProps> = ({
         )}
 
         {error && (
-          <div style={{
-            marginTop: '12px',
-            color: '#ff6b6b',
-            backgroundColor: 'rgba(255, 107, 107, 0.1)',
-            padding: '8px',
-            borderRadius: '6px',
-            border: '1px solid rgba(255, 107, 107, 0.3)',
-            fontSize: '0.8rem'
-          }}>
+          <div className="mt-3 text-[#ff6b6b] bg-[rgba(255,107,107,0.1)] p-2 rounded-md border border-[rgba(255,107,107,0.3)] text-sm">
             ❌ {error}
           </div>
         )}
 
-        <div style={{ marginTop: '12px' }}>
+        <div className="mt-3">
           <MaterialChip
             label="SVG → Rough.js conversion"
             size="small"

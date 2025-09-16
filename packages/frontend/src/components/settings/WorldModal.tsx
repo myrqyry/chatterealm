@@ -8,90 +8,31 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { unifiedSettings, updateWorldSettings, updateAnimationSettings } = useGameStore();
 
   return (
-    <div style={{
-      padding: '24px',
-      height: '100%',
-      overflow: 'auto',
-      fontFamily: 'JetBrains Mono',
-      background: 'linear-gradient(145deg, rgba(25, 23, 36, 0.95) 0%, rgba(31, 29, 46, 0.9) 100%)'
-    }}>
+    <div className="p-6 h-full overflow-auto font-mono bg-gradient-to-br from-background-primary/95 to-surface/90">
       {/* Modal Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '32px',
-        paddingBottom: '16px',
-        borderBottom: '2px solid rgba(0, 188, 212, 0.3)'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0, 188, 212, 0.3)'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>🌍</span>
+      <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-primary/30">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+            <span className="text-2xl">🌍</span>
           </div>
           <div>
-            <h1 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.8rem',
-              fontWeight: 700,
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-            }}>
+            <h1 className="m-0 text-text-primary text-2xl font-bold text-shadow">
               World
             </h1>
-            <p style={{
-              margin: '4px 0 0 0',
-              color: 'var(--color-text-secondary)',
-              fontSize: '0.9rem',
-              fontWeight: 400
-            }}>
+            <p className="mt-1 mb-0 text-text-secondary text-sm font-normal">
               Environment and world generation
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          style={{
-            minWidth: '40px',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            color: 'var(--color-text-primary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.2rem',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="w-10 h-10 rounded-full bg-white/10 border-none text-text-primary cursor-pointer flex items-center justify-center text-lg transition-all duration-200 hover:bg-white/20 hover:scale-105"
         >
           ✕
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex flex-col gap-6">
         <MaterialCard
           sx={{
             backgroundColor: 'rgba(25, 23, 36, 0.8)',
@@ -107,33 +48,15 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>📐</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center">
+              <span className="text-lg">📐</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               World Dimensions
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex flex-col gap-4">
             <SettingSlider
               label="World Width"
               value={unifiedSettings.world.worldWidth}
@@ -168,33 +91,15 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🌿</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center">
+              <span className="text-lg">🌿</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               Environment Animation
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex flex-col gap-4">
             <SettingSlider
               label="Grass Wave Speed"
               value={unifiedSettings.world.grassWaveSpeed}
@@ -245,33 +150,15 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🌙</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center">
+              <span className="text-lg">🌙</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               World Rendering
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex flex-col gap-4">
             <SettingCheckbox
               label="Night Mode"
               checked={unifiedSettings.world.nightMode}
@@ -296,43 +183,21 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🎨</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center">
+              <span className="text-lg">🎨</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               Rough.js Styling
             </h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{
-              fontSize: '0.9rem',
-              color: 'var(--color-text-secondary)',
-              marginBottom: '8px'
-            }}>
+          <div className="flex flex-col gap-4">
+            <div className="text-sm text-text-secondary mb-2">
               Advanced rough.js drawing style controls for hand-drawn aesthetics.
             </div>
 
             {/* Basic Roughness Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-2 gap-4">
               <SettingSlider
                 label="Roughness"
                 value={unifiedSettings.animations.roughness}
@@ -352,7 +217,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Stroke and Fill Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-2 gap-4">
               <SettingSlider
                 label="Stroke Width"
                 value={unifiedSettings.animations.strokeWidth}
@@ -372,7 +237,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Hachure Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-2 gap-4">
               <SettingSlider
                 label="Hachure Angle"
                 value={unifiedSettings.animations.hachureAngle}
@@ -392,7 +257,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Curve Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-3 gap-4">
               <SettingSlider
                 label="Curve Fitting"
                 value={unifiedSettings.animations.curveFitting}
@@ -420,7 +285,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Advanced Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-2 gap-4">
               <SettingSlider
                 label="Simplification"
                 value={unifiedSettings.animations.simplification}
@@ -440,7 +305,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Dash and Zigzag Controls */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-3 gap-4">
               <SettingSlider
                 label="Dash Offset"
                 value={unifiedSettings.animations.dashOffset}
@@ -468,7 +333,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Random Seed */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+            <div className="grid grid-cols-1 gap-4">
               <SettingSlider
                 label="Random Seed"
                 value={unifiedSettings.animations.seed}
@@ -480,7 +345,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </div>
 
             {/* Boolean Toggles */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-2 gap-4">
               <SettingCheckbox
                 label="Disable Multi-Stroke"
                 checked={unifiedSettings.animations.disableMultiStroke}
@@ -495,7 +360,7 @@ const WorldModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+            <div className="grid grid-cols-1 gap-4">
               <SettingCheckbox
                 label="Preserve Vertices"
                 checked={unifiedSettings.animations.preserveVertices}

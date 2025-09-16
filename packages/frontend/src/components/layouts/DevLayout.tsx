@@ -4,9 +4,13 @@ import DevSidebar from '../sidebars/DevSidebar';
 import ModeNavigation from '../ModeNavigation';
 import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from '../index';
 import { useGameStore } from '../../stores/gameStore';
-import { COLORS } from '../../constants/colors';
+import { COLORS } from '../../utils/tokens';
 
-const DevLayout: React.FC = () => {
+interface DevLayoutProps {
+  children?: React.ReactNode;
+}
+
+const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
   const { gameWorld } = useGameStore();
 
   return (
@@ -262,6 +266,12 @@ const DevLayout: React.FC = () => {
               </div>
             </div>
           </MaterialPaper>
+          {/* Dev route content (if any) */}
+          {children && (
+            <div style={{ position: 'absolute', top: 120, left: 24, right: 24, bottom: 24, overflow: 'auto', zIndex: 1100 }}>
+              {children}
+            </div>
+          )}
         </div>
 
         {/* Developer Sidebar */}

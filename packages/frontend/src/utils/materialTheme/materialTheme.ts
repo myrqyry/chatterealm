@@ -1,57 +1,60 @@
 import { createTheme, Theme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 
+// Import centralized color tokens
+import { COLORS } from '../tokens';
+
 // Material Design 3 color palette based on the app's dark aesthetic
 export const createMaterialTheme = (): Theme => {
   return createTheme({
     palette: {
       mode: 'dark',
       primary: {
-        main: '#31748f', // primaryBlue from colors.ts
+        main: COLORS.primaryBlue || COLORS.primary || '#31748f',
         light: '#5ba3c7',
-        dark: '#1e5a6b',
-        contrastText: '#1f1d2e',
+        dark: COLORS['primary-container'] || '#1e5a6b',
+        contrastText: COLORS['on-primary'] || '#1f1d2e',
       },
       secondary: {
-        main: '#9ccfd8', // secondaryBlue from colors.ts
+        main: COLORS.secondaryBlue || COLORS.secondary || '#9ccfd8',
         light: '#c4e4f7',
-        dark: '#6b9aa5',
-        contrastText: '#191724',
+        dark: COLORS['secondary-container'] || '#6b9aa5',
+        contrastText: COLORS['on-secondary'] || '#191724',
       },
       error: {
-        main: '#dc2626', // healthDying
+        main: COLORS.error || '#dc2626', // healthDying
         light: '#ffb2b8',
         dark: '#dd4b60',
         contrastText: '#ffffff',
       },
       warning: {
-        main: '#fbbf24', // healthWounded
+        main: (COLORS.health && COLORS.health.wounded) || COLORS['healthFillWoundedStart'] || '#fbbf24', // healthWounded
         light: '#fff0c2',
         dark: '#e6a94e',
-        contrastText: '#191724',
+        contrastText: COLORS['on-background'] || '#191724',
       },
       info: {
-        main: '#31748f', // same as primary
+        main: COLORS.primaryBlue || COLORS.primary || '#31748f', // same as primary
         light: '#6dc8ff',
         dark: '#005d62',
         contrastText: '#ffffff',
       },
       success: {
-        main: '#a3e635', // healthHealthy
+        main: (COLORS.health && COLORS.health.healthy) || COLORS['healthFillHealthyStart'] || '#a3e635', // healthHealthy
         light: '#88d96b',
         dark: '#005f00',
-        contrastText: '#191724',
+        contrastText: COLORS['on-background'] || '#191724',
       },
       background: {
-        default: '#191724', // backgroundDark
-        paper: alpha('#1f1d2e', 0.95), // backgroundMedium
+        default: COLORS.backgroundDark || COLORS.background || '#191724', // backgroundDark
+        paper: alpha(COLORS.backgroundMedium || '#1f1d2e', 0.95), // backgroundMedium
       },
       text: {
-        primary: '#e0def4', // textLight
-        secondary: '#908caa', // textDark
-        disabled: alpha('#908caa', 0.5),
+        primary: COLORS.text && COLORS.text.primary || COLORS.textLight || '#e0def4', // textLight
+        secondary: COLORS.text && COLORS.text.secondary || COLORS.textDark || '#908caa', // textDark
+        disabled: alpha((COLORS.text && COLORS.text.secondary) || COLORS.textDark || '#908caa', 0.5),
       },
-      divider: alpha('#6e6a86', 0.15), // borderGray
+      divider: alpha(COLORS.borderGray || '#6e6a86', 0.15), // borderGray
     },
     typography: {
       fontFamily: [

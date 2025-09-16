@@ -128,62 +128,21 @@ const UnifiedSettingsMenu: React.FC = () => {
   ];
 
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: 'Inter, Roboto, sans-serif'
-    }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '8px',
-        paddingBottom: '6px',
-        borderBottom: '1px solid var(--color-outline)'
-      }}>
-        <h3 style={{
-          color: 'var(--color-text-primary)',
-          fontSize: '1em',
-          fontWeight: '600',
-          margin: 0
-        }}>
+    <div className="h-full flex flex-col font-inter">
+      <div className="flex justify-between items-center mb-2 pb-1.5 border-b border-outline">
+        <h3 className="text-text-primary text-sm font-semibold m-0">
           ⚙️ Settings
         </h3>
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div className="flex gap-1.5">
           <button
-            style={{
-              padding: '3px 6px',
-              background: 'var(--color-secondary-container)',
-              color: 'var(--color-on-secondary-container)',
-              border: '1px solid var(--color-outline)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '0.7em',
-              fontWeight: '500',
-              transition: 'all 0.2s ease'
-            }}
+            className="px-1.5 py-0.5 bg-secondary-container text-on-secondary-container border border-outline rounded cursor-pointer text-xs font-medium transition-all duration-200 hover:bg-secondary"
             onClick={() => setShowImportExport(v => !v)}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-secondary)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-secondary-container)'}
           >
             {showImportExport ? 'Hide' : 'I/E'}
           </button>
           <button
-            style={{
-              padding: '3px 6px',
-              background: 'var(--color-error-container)',
-              color: 'var(--color-on-error-container)',
-              border: '1px solid var(--color-error)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '0.7em',
-              fontWeight: '500',
-              transition: 'all 0.2s ease'
-            }}
+            className="px-1.5 py-0.5 bg-error-container text-on-error-container border border-error rounded cursor-pointer text-xs font-medium transition-all duration-200 hover:bg-error"
             onClick={handleResetAll}
-            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-error)'}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-error-container)'}
           >
             Reset
           </button>
@@ -191,34 +150,28 @@ const UnifiedSettingsMenu: React.FC = () => {
       </div>
 
       {showImportExport && (
-        <div className="import-export-panel">
-          <div className="control-group">
-            <button className="btn-primary" onClick={handleExport}>📤 Export Settings</button>
+        <div className="mb-4 p-3 bg-surface-variant rounded-lg border border-outline-variant">
+          <div className="mb-3">
+            <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={handleExport}>📤 Export Settings</button>
           </div>
-          <div className="control-group">
-            <label>Import Settings JSON</label>
+          <div className="mb-2">
+            <label className="block text-text-primary mb-1">Import Settings JSON</label>
             <textarea
-              className="settings-textarea"
+              className="w-full min-h-20 p-2 bg-background-paper border border-outline rounded text-text-primary font-mono text-sm resize-y"
               rows={4}
               placeholder="Paste exported JSON here..."
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
             />
-            <button className="btn-primary" onClick={handleImport}>📥 Import</button>
+            <button className="btn-primary mt-2" onClick={handleImport}>📥 Import</button>
           </div>
         </div>
       )}
 
-      <div style={{
-        display: 'flex',
-        gap: '6px',
-        marginBottom: '16px',
-        flexWrap: 'wrap',
-        justifyContent: 'center'
-      }}>
+      <div className="flex gap-1.5 mb-4 flex-wrap justify-center">
         {[
           { id: 'overview', label: '🧭 Overview' },
-          { id: 'rendering', label: '� Rendering' },
+          { id: 'rendering', label: '✏️ Rendering' },
           { id: 'audio', label: '🎵 Audio' },
           { id: 'gameplay', label: '🎮 Gameplay' },
           { id: 'world', label: '🌍 World' },
@@ -226,140 +179,40 @@ const UnifiedSettingsMenu: React.FC = () => {
         ].map(t => (
           <button
             key={t.id}
-            style={{
-              padding: '8px 16px',
-              background: activeTab === t.id ? 'var(--color-primary)' : 'var(--color-surface-variant)',
-              color: activeTab === t.id ? 'var(--color-on-primary)' : 'var(--color-text-secondary)',
-              border: activeTab === t.id ? '1px solid var(--color-primary)' : '1px solid var(--color-outline)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '0.8em',
-              fontWeight: '500',
-              transition: 'all 0.2s ease',
-              minWidth: '120px',
-              textAlign: 'center',
-              fontFamily: 'inherit'
-            }}
+            className={`px-4 py-2 rounded-lg min-w-[120px] text-sm font-medium transition-all duration-200 text-center ${activeTab === t.id ? 'bg-primary text-on-primary border border-primary' : 'bg-surface-variant text-text-secondary border border-outline'}`}
             onClick={() => setActiveTab(t.id)}
-            onMouseEnter={(e) => {
-              if (activeTab !== t.id) {
-                e.currentTarget.style.background = 'var(--color-primary-container)';
-                e.currentTarget.style.color = 'var(--color-on-primary-container)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeTab !== t.id) {
-                e.currentTarget.style.background = 'var(--color-surface-variant)';
-                e.currentTarget.style.color = 'var(--color-text-secondary)';
-              }
-            }}
           >
             {t.label}
           </button>
         ))}
       </div>
 
-      <div style={{
-        flex: 1,
-        minHeight: 0,
-        overflowY: 'auto',
-        padding: '8px 0'
-      }}>
+      <div className="flex-1 min-h-0 overflow-y-auto py-2">
         {activeTab === 'overview' && (
-          <div style={{ padding: '0 8px' }}>
-            <div style={{
-              background: 'var(--color-surface-variant)',
-              borderRadius: '8px',
-              padding: '12px',
-              marginBottom: '12px',
-              border: '1px solid var(--color-outline-variant)'
-            }}>
-              <h4 style={{
-                color: 'var(--color-text-primary)',
-                fontSize: '0.9em',
-                fontWeight: '600',
-                margin: '0 0 8px 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                🗺️ World Snapshot
-              </h4>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                fontSize: '0.8em'
-              }}>
-                <div style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>Phase:</strong> {gameWorld?.phase || 'N/A'}
-                </div>
-                <div style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>Players:</strong> {gameWorld ? gameWorld.players.length : 0}
-                </div>
-                <div style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>NPCs:</strong> {gameWorld ? gameWorld.npcs.length : 0}
-                </div>
-                <div style={{ color: 'var(--color-text-secondary)' }}>
-                  <strong>Items:</strong> {gameWorld ? gameWorld.items.length : 0}
-                </div>
-                <div style={{
-                  color: 'var(--color-text-secondary)',
-                  gridColumn: '1 / -1'
-                }}>
-                  <strong>World Age:</strong> {gameWorld?.worldAge || 0} cycles
-                </div>
+          <div className="px-2">
+            <div className="bg-surface-variant rounded-lg p-3 mb-3 border border-outline-variant">
+              <h4 className="text-text-primary text-sm font-semibold mb-2 flex items-center gap-1">🗺️ World Snapshot</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-text-secondary"><strong>Phase:</strong> {gameWorld?.phase || 'N/A'}</div>
+                <div className="text-text-secondary"><strong>Players:</strong> {gameWorld ? gameWorld.players.length : 0}</div>
+                <div className="text-text-secondary"><strong>NPCs:</strong> {gameWorld ? gameWorld.npcs.length : 0}</div>
+                <div className="text-text-secondary"><strong>Items:</strong> {gameWorld ? gameWorld.items.length : 0}</div>
+                <div className="text-text-secondary col-span-2"><strong>World Age:</strong> {gameWorld?.worldAge || 0} cycles</div>
               </div>
             </div>
             {currentPlayer && (
-              <div style={{
-                background: 'var(--color-surface-variant)',
-                borderRadius: '8px',
-                padding: '12px',
-                marginBottom: '12px',
-                border: '1px solid var(--color-outline-variant)'
-              }}>
-                <h4 style={{
-                  color: 'var(--color-text-primary)',
-                  fontSize: '0.9em',
-                  fontWeight: '600',
-                  margin: '0 0 8px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  🧑 Current Player
-                </h4>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '8px',
-                  fontSize: '0.8em'
-                }}>
-                  <div style={{ color: 'var(--color-text-secondary)' }}>
-                    <strong>Name:</strong> {currentPlayer.name}
-                  </div>
-                  <div style={{ color: 'var(--color-text-secondary)' }}>
-                    <strong>Health:</strong> {currentPlayer.health}
-                  </div>
-                  <div style={{ color: 'var(--color-text-secondary)' }}>
-                    <strong>Level:</strong> {currentPlayer.level}
-                  </div>
-                  <div style={{ color: 'var(--color-text-secondary)' }}>
-                    <strong>Pos:</strong> {currentPlayer.position.x},{currentPlayer.position.y}
-                  </div>
+              <div className="bg-surface-variant rounded-lg p-3 mb-3 border border-outline-variant">
+                <h4 className="text-text-primary text-sm font-semibold mb-2 flex items-center gap-1">🧑 Current Player</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-text-secondary"><strong>Name:</strong> {currentPlayer.name}</div>
+                  <div className="text-text-secondary"><strong>Health:</strong> {currentPlayer.health}</div>
+                  <div className="text-text-secondary"><strong>Level:</strong> {currentPlayer.level}</div>
+                  <div className="text-text-secondary"><strong>Pos:</strong> {currentPlayer.position.x},{currentPlayer.position.y}</div>
                 </div>
               </div>
             )}
             {gameMessage && (
-              <div style={{
-                background: 'var(--color-warning-container)',
-                color: 'var(--color-on-warning-container)',
-                borderRadius: '8px',
-                padding: '12px',
-                border: '1px solid var(--color-warning)',
-                fontSize: '0.85em'
-              }}>
+              <div className="bg-warning-container text-on-warning-container rounded-lg p-3 border border-warning text-sm">
                 {gameMessage}
               </div>
             )}
@@ -367,7 +220,7 @@ const UnifiedSettingsMenu: React.FC = () => {
         )}
 
         {activeTab === 'gameplay' && (
-          <div className="tab-panel">
+          <div className="px-2 space-y-4">
             <SettingGroup title="Gameplay" icon="🎯">
               <SettingCheckbox
                 label="Enable Auto-Save"
@@ -413,7 +266,7 @@ const UnifiedSettingsMenu: React.FC = () => {
         )}
 
         {activeTab === 'audio' && (
-          <div className="tab-panel">
+          <div className="px-2 space-y-4">
             <SettingGroup title="Volume" icon="🔊">
               <SettingSlider
                 label="Master Volume"
@@ -513,7 +366,7 @@ const UnifiedSettingsMenu: React.FC = () => {
         )}
 
         {activeTab === 'rendering' && (
-          <div className="tab-panel">
+          <div className="px-2 space-y-4">
             <SettingGroup title="Drawing Style" icon="✏️">
               <SettingSlider
                 label="Roughness"
@@ -657,7 +510,7 @@ const UnifiedSettingsMenu: React.FC = () => {
         )}
 
         {activeTab === 'world' && (
-          <div className="tab-panel">
+          <div className="px-2 space-y-4">
             <SettingGroup title="World Dimensions" icon="📐">
               <SettingSlider
                 label="World Width"
@@ -714,24 +567,24 @@ const UnifiedSettingsMenu: React.FC = () => {
         )}
 
         {activeTab === 'actions' && (
-          <div className="tab-panel">
+          <div className="px-2 space-y-4">
             <SettingGroup title="Player Actions" icon="🕹️">
-              <div className="action-row">
-                <button className="action-btn" onClick={handleJoin}>🔌 Join Game</button>
-                <button className="action-btn" onClick={() => handleMove('up')}>↑</button>
-                <button className="action-btn" onClick={() => handleMove('down')}>↓</button>
-                <button className="action-btn" onClick={() => handleMove('left')}>←</button>
-                <button className="action-btn" onClick={() => handleMove('right')}>→</button>
-                <button className="action-btn" onClick={handlePickup}>🎒 Pick Up</button>
+              <div className="flex flex-wrap gap-2">
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={handleJoin}>🔌 Join Game</button>
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={() => handleMove('up')}>↑</button>
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={() => handleMove('down')}>↓</button>
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={() => handleMove('left')}>←</button>
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={() => handleMove('right')}>→</button>
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={handlePickup}>🎒 Pick Up</button>
               </div>
             </SettingGroup>
             <SettingGroup title="World / Events" icon="🌩️">
-              <div className="action-row">
-                <button className="action-btn" onClick={handleRegenerate}>🌍 Regenerate World</button>
-                <button className="action-btn" onClick={handleCataclysm}>⚡ Start Cataclysm</button>
+              <div className="flex flex-wrap gap-2">
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={handleRegenerate}>🌍 Regenerate World</button>
+                <button className="px-3 py-1.5 bg-primary text-on-primary border border-primary rounded text-sm font-medium transition-colors hover:bg-primary-container" onClick={handleCataclysm}>⚡ Start Cataclysm</button>
               </div>
               {gameWorld && (
-                <ul className="world-properties-list compact">
+                <ul className="space-y-1 text-sm text-text-secondary">
                   <li>Cataclysm Active: {gameWorld.cataclysmCircle.isActive ? 'Yes' : 'No'}</li>
                   {gameWorld.cataclysmCircle.isActive && (
                     <li>Radius: {gameWorld.cataclysmCircle.radius.toFixed(1)}</li>

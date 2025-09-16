@@ -14,11 +14,7 @@ const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
   }
 
   return (
-    <div style={{
-      padding: '16px 20px',
-      borderTop: '1px solid rgba(196, 167, 231, 0.2)',
-      background: 'rgba(25, 23, 36, 0.8)'
-    }}>
+    <div className="pt-4 pb-4 px-5 border-t bg-[var(--color-surface-variant)]/80 border-[var(--color-outline)]">
       <EnhancedPlayerStatus player={currentPlayer} />
     </div>
   );

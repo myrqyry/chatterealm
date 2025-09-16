@@ -1,4 +1,5 @@
-export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number, time: number) => {
+// Accept optional `seed` parameter for deterministic animation variations.
+export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number, time: number, seed?: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
 

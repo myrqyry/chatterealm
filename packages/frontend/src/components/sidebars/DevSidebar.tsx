@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../../stores/gameStore';
-import { MaterialCard, MaterialButton, MaterialChip } from '../index';
-import { COLORS } from '../../constants/colors';
+import { MaterialButton, MaterialChip, MaterialCard } from '../index';
+import Panel from '../shared/Panel';
+import { COLORS } from '../../utils/tokens';
 
 interface DevSidebarProps {
   className?: string;
@@ -67,75 +68,30 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
     switch (activeSection) {
       case 'overview':
         return (
-          <div style={{ padding: '16px 0' }}>
-            <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h3 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                ⚙️ Developer Configuration Panel
-              </h3>
-              <p style={{ margin: '0 0 16px 0', color: 'var(--color-text-secondary)', fontSize: '0.9em' }}>
+          <div className="py-4">
+            <Panel title={<>⚙️ Developer Configuration Panel</>}>
+              <p className="m-0 mb-4 text-text-secondary text-sm">
                 Complete control over all game systems, settings, and configurations.
                 Use with caution - changes affect gameplay experience.
               </p>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <MaterialButton
-                  size="small"
-                  onClick={() => setShowImportExport(!showImportExport)}
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  {showImportExport ? 'Hide' : 'Import/Export'}
-                </MaterialButton>
-                <MaterialButton
-                  size="small"
-                  color="error"
-                  onClick={handleResetAll}
-                  sx={{ fontSize: '0.8rem' }}
-                >
-                  Reset All
-                </MaterialButton>
+              <div className="flex gap-2 flex-wrap">
+                <MaterialButton size="small" onClick={() => setShowImportExport(!showImportExport)} sx={{ fontSize: '0.8rem' }}>{showImportExport ? 'Hide' : 'Import/Export'}</MaterialButton>
+                <MaterialButton size="small" color="error" onClick={handleResetAll} sx={{ fontSize: '0.8rem' }}>Reset All</MaterialButton>
               </div>
-            </MaterialCard>
+            </Panel>
 
             {showImportExport && (
-              <MaterialCard sx={{ mb: 2, p: 2 }}>
-                <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                  📤 Export Settings
-                </h4>
-                <MaterialButton onClick={handleExport} sx={{ mb: 2 }}>
-                  Copy to Clipboard
-                </MaterialButton>
+              <Panel title={<>📤 Export Settings</>}>
+                <MaterialButton onClick={handleExport} sx={{ mb: 2 }}>Copy to Clipboard</MaterialButton>
 
-                <h4 style={{ margin: '16px 0 12px 0', color: 'var(--color-text-primary)' }}>
-                  📥 Import Settings
-                </h4>
-                <textarea
-                  style={{
-                    width: '100%',
-                    minHeight: '120px',
-                    padding: '8px',
-                    backgroundColor: 'var(--color-background-paper)',
-                    border: '1px solid var(--color-divider)',
-                    borderRadius: '4px',
-                    color: 'var(--color-text-primary)',
-                    fontFamily: 'JetBrains Mono',
-                    fontSize: '0.8rem',
-                    resize: 'vertical',
-                    marginBottom: '8px'
-                  }}
-                  placeholder="Paste JSON settings here..."
-                  value={importText}
-                  onChange={(e) => setImportText(e.target.value)}
-                />
-                <MaterialButton onClick={handleImport}>
-                  Import Settings
-                </MaterialButton>
-              </MaterialCard>
+                <h4 className="mt-4 mb-3 text-[var(--color-text-primary)]">📥 Import Settings</h4>
+                <textarea className="w-full min-h-[120px] p-2 bg-background-paper border border-divider rounded text-text-primary font-mono text-sm resize-y mb-2" placeholder="Paste JSON settings here..." value={importText} onChange={(e) => setImportText(e.target.value)} />
+                <MaterialButton onClick={handleImport}>Import Settings</MaterialButton>
+              </Panel>
             )}
 
-            <MaterialCard sx={{ p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                📈 System Status
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.85em' }}>
+            <Panel title={<>📈 System Status</>}>
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><strong>World Phase:</strong> {gameWorld?.phase || 'Unknown'}</div>
                 <div><strong>World Age:</strong> {gameWorld?.worldAge || 0}</div>
                 <div><strong>Active Players:</strong> {gameWorld?.players?.length || 0}</div>
@@ -143,80 +99,48 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                 <div><strong>Items:</strong> {gameWorld?.items?.length || 0}</div>
                 <div><strong>Cataclysm:</strong> {gameWorld?.cataclysmCircle?.isActive ? 'Active' : 'Inactive'}</div>
               </div>
-            </MaterialCard>
+            </Panel>
           </div>
         );
 
       case 'game':
         return (
-          <div style={{ padding: '16px 0' }}>
-            <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🎯 Core Gameplay
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.autoSaveEnabled}
-                    onChange={(e) => updateGameSettings({ autoSaveEnabled: e.target.checked })}
-                  />
+          <div className="py-4">
+                <MaterialCard sx={{ mb: 2, p: 2, backgroundColor: 'var(--color-surface-variant)' }}>
+                  <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🎯 Core Gameplay</h4>
+                  <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.autoSaveEnabled} onChange={(e) => updateGameSettings({ autoSaveEnabled: e.target.checked })} />
                   <span>Auto-Save Enabled</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.tutorialEnabled}
-                    onChange={(e) => updateGameSettings({ tutorialEnabled: e.target.checked })}
-                  />
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.tutorialEnabled} onChange={(e) => updateGameSettings({ tutorialEnabled: e.target.checked })} />
                   <span>Tutorial Enabled</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.minimapEnabled}
-                    onChange={(e) => updateGameSettings({ minimapEnabled: e.target.checked })}
-                  />
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.minimapEnabled} onChange={(e) => updateGameSettings({ minimapEnabled: e.target.checked })} />
                   <span>Mini-map Enabled</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.showNPCNames}
-                    onChange={(e) => updateGameSettings({ showNPCNames: e.target.checked })}
-                  />
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.showNPCNames} onChange={(e) => updateGameSettings({ showNPCNames: e.target.checked })} />
                   <span>Show NPC Names</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.showItemNames}
-                    onChange={(e) => updateGameSettings({ showItemNames: e.target.checked })}
-                  />
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.showItemNames} onChange={(e) => updateGameSettings({ showItemNames: e.target.checked })} />
                   <span>Show Item Names</span>
                 </label>
               </div>
             </MaterialCard>
 
-            <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                ⚔️ Combat Settings
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.showDamageNumbers}
-                    onChange={(e) => updateGameSettings({ showDamageNumbers: e.target.checked })}
-                  />
+            <MaterialCard sx={{ mb: 2, p: 2, backgroundColor: 'var(--color-surface-variant)' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">⚔️ Combat Settings</h4>
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.showDamageNumbers} onChange={(e) => updateGameSettings({ showDamageNumbers: e.target.checked })} />
                   <span>Show Damage Numbers</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.autoCombatEnabled}
-                    onChange={(e) => updateGameSettings({ autoCombatEnabled: e.target.checked })}
-                  />
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={unifiedSettings.game.autoCombatEnabled} onChange={(e) => updateGameSettings({ autoCombatEnabled: e.target.checked })} />
                   <span>Auto-Combat Enabled</span>
                 </label>
               </div>
@@ -226,12 +150,10 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
       case 'audio':
         return (
-          <div style={{ padding: '16px 0' }}>
+          <div className="py-4">
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🔊 Volume Controls
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🔊 Volume Controls</h4>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label>Master Volume: {unifiedSettings.audio.audioMasterVolume}%</label>
                   <input
@@ -240,7 +162,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="100"
                     value={unifiedSettings.audio.audioMasterVolume}
                     onChange={(e) => updateAudioSettings({ audioMasterVolume: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -251,7 +173,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="100"
                     value={unifiedSettings.audio.sfxVolume}
                     onChange={(e) => updateAudioSettings({ sfxVolume: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -262,18 +184,16 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="100"
                     value={unifiedSettings.audio.musicVolume}
                     onChange={(e) => updateAudioSettings({ musicVolume: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
               </div>
             </MaterialCard>
 
             <MaterialCard sx={{ p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🔈 Audio Toggles
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🔈 Audio Toggles</h4>
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.audio.soundEnabled}
@@ -281,7 +201,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Sound Effects Enabled</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.audio.musicEnabled}
@@ -296,18 +216,16 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
       case 'visual':
         return (
-          <div style={{ padding: '16px 0' }}>
+          <div className="py-4">
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🎨 Theme & UI
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🎨 Theme & UI</h4>
+              <div className="flex flex-col gap-3">
                 <div>
                   <label>Theme</label>
                   <select
                     value={unifiedSettings.visual.theme}
                     onChange={(e) => updateVisualSettings({ theme: e.target.value as any })}
-                    style={{ width: '100%', marginTop: '4px', padding: '4px' }}
+                    className="w-full mt-1 p-1"
                   >
                     <option value="dark">🌙 Dark</option>
                     <option value="light">☀️ Light</option>
@@ -320,7 +238,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   <select
                     value={unifiedSettings.visual.language}
                     onChange={(e) => updateVisualSettings({ language: e.target.value })}
-                    style={{ width: '100%', marginTop: '4px', padding: '4px' }}
+                    className="w-full mt-1 p-1"
                   >
                     <option value="en">English</option>
                     <option value="es">Español</option>
@@ -337,18 +255,16 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="150"
                     value={unifiedSettings.visual.fontSize}
                     onChange={(e) => updateVisualSettings({ fontSize: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
               </div>
             </MaterialCard>
 
             <MaterialCard sx={{ p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                ♿ Accessibility & Display
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">♿ Accessibility & Display</h4>
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.visual.highContrast}
@@ -356,7 +272,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>High Contrast</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.visual.reduceMotion}
@@ -364,7 +280,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Reduce Motion</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.visual.showGrid}
@@ -372,7 +288,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Show Grid</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.visual.showParticles}
@@ -380,7 +296,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Show Particles</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.visual.showHealthBars}
@@ -395,12 +311,10 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
       case 'world':
         return (
-          <div style={{ padding: '16px 0' }}>
+          <div className="py-4">
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                📐 World Dimensions
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">📐 World Dimensions</h4>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label>World Width: {unifiedSettings.world.worldWidth} tiles</label>
                   <input
@@ -410,7 +324,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="5"
                     value={unifiedSettings.world.worldWidth}
                     onChange={(e) => updateWorldSettings({ worldWidth: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -422,17 +336,15 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="3"
                     value={unifiedSettings.world.worldHeight}
                     onChange={(e) => updateWorldSettings({ worldHeight: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
               </div>
             </MaterialCard>
 
             <MaterialCard sx={{ p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🌿 Environment Animation
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🌿 Environment Animation</h4>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label>Grass Wave Speed: {unifiedSettings.world.grassWaveSpeed}</label>
                   <input
@@ -442,7 +354,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.world.grassWaveSpeed}
                     onChange={(e) => updateWorldSettings({ grassWaveSpeed: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -454,7 +366,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.world.treeSwaySpeed}
                     onChange={(e) => updateWorldSettings({ treeSwaySpeed: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -466,7 +378,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.world.flowerSpawnRate}
                     onChange={(e) => updateWorldSettings({ flowerSpawnRate: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -478,7 +390,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.world.windSpeed}
                     onChange={(e) => updateWorldSettings({ windSpeed: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
               </div>
@@ -488,12 +400,10 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
       case 'animations':
         return (
-          <div style={{ padding: '16px 0' }}>
+          <div className="py-4">
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🎞️ Animation Controls
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🎞️ Animation Controls</h4>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label>Animation Speed: {unifiedSettings.animations.animationSpeed}x</label>
                   <input
@@ -503,7 +413,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.animations.animationSpeed}
                     onChange={(e) => updateAnimationSettings({ animationSpeed: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -514,7 +424,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="20"
                     value={unifiedSettings.animations.particleCount}
                     onChange={(e) => updateAnimationSettings({ particleCount: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -526,17 +436,15 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.05"
                     value={unifiedSettings.animations.breathingRate}
                     onChange={(e) => updateAnimationSettings({ breathingRate: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
               </div>
             </MaterialCard>
 
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🎨 Rough.js Drawing Style
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🎨 Rough.js Drawing Style</h4>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label>Roughness: {unifiedSettings.animations.roughness}</label>
                   <input
@@ -546,7 +454,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.animations.roughness}
                     onChange={(e) => updateAnimationSettings({ roughness: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -558,7 +466,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.animations.bowing}
                     onChange={(e) => updateAnimationSettings({ bowing: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -570,7 +478,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="0.1"
                     value={unifiedSettings.animations.fillWeight}
                     onChange={(e) => updateAnimationSettings({ fillWeight: parseFloat(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -582,7 +490,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     step="15"
                     value={unifiedSettings.animations.hachureAngle}
                     onChange={(e) => updateAnimationSettings({ hachureAngle: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -593,7 +501,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="20"
                     value={unifiedSettings.animations.hachureGap}
                     onChange={(e) => updateAnimationSettings({ hachureGap: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
                 <div>
@@ -601,7 +509,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   <select
                     value={unifiedSettings.animations.fillStyle || 'hachure'}
                     onChange={(e) => updateAnimationSettings({ fillStyle: e.target.value })}
-                    style={{ width: '100%', marginTop: '4px', padding: '4px' }}
+                    className="w-full mt-1 p-1"
                   >
                     <option value="hachure">Hachure</option>
                     <option value="solid">Solid</option>
@@ -621,7 +529,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                     max="10000"
                     value={unifiedSettings.animations.seed || 1}
                     onChange={(e) => updateAnimationSettings({ seed: parseInt(e.target.value) })}
-                    style={{ width: '100%', marginTop: '4px' }}
+                    className="w-full mt-1"
                   />
                 </div>
               </div>
@@ -631,13 +539,11 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
       case 'notifications':
         return (
-          <div style={{ padding: '16px 0' }}>
+          <div className="py-4">
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🔔 General Notifications
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🔔 General Notifications</h4>
+              <div className="flex flex-col gap-3">
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.notifications.desktopNotifications}
@@ -645,7 +551,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Desktop Notifications</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.notifications.soundNotifications}
@@ -653,7 +559,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Sound Notifications</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.notifications.battleNotifications}
@@ -661,7 +567,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                   />
                   <span>Battle Notifications</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={unifiedSettings.notifications.systemNotifications}
@@ -673,15 +579,13 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
             </MaterialCard>
 
             <MaterialCard sx={{ p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🎯 Event-Specific Notifications
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🎯 Event-Specific Notifications</h4>
+              <div className="flex flex-col gap-4">
                 <div>
                   <label>Player Join Notifications</label>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <div className="flex gap-2 mt-1">
                     {['desktop', 'sound', 'ingame'].map(type => (
-                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <label key={type} className="flex items-center gap-1">
                         <input
                           type="checkbox"
                           checked={unifiedSettings.notifications.playerJoinNotifications.includes(type as any)}
@@ -693,7 +597,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                             updateNotificationSettings({ playerJoinNotifications: updated });
                           }}
                         />
-                        <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                        <span className="capitalize">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -701,9 +605,9 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
                 <div>
                   <label>Item Drop Notifications</label>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <div className="flex gap-2 mt-1">
                     {['desktop', 'sound', 'ingame'].map(type => (
-                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <label key={type} className="flex items-center gap-1">
                         <input
                           type="checkbox"
                           checked={unifiedSettings.notifications.itemDropNotifications.includes(type as any)}
@@ -715,7 +619,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                             updateNotificationSettings({ itemDropNotifications: updated });
                           }}
                         />
-                        <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                        <span className="capitalize">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -723,9 +627,9 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
                 <div>
                   <label>Level Up Notifications</label>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <div className="flex gap-2 mt-1">
                     {['desktop', 'sound', 'ingame'].map(type => (
-                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <label key={type} className="flex items-center gap-1">
                         <input
                           type="checkbox"
                           checked={unifiedSettings.notifications.levelUpNotifications.includes(type as any)}
@@ -737,7 +641,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                             updateNotificationSettings({ levelUpNotifications: updated });
                           }}
                         />
-                        <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                        <span className="capitalize">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -745,9 +649,9 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
                 <div>
                   <label>Cataclysm Notifications</label>
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <div className="flex gap-2 mt-1">
                     {['desktop', 'sound', 'ingame'].map(type => (
-                      <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <label key={type} className="flex items-center gap-1">
                         <input
                           type="checkbox"
                           checked={unifiedSettings.notifications.cataclysmNotifications.includes(type as any)}
@@ -759,7 +663,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
                             updateNotificationSettings({ cataclysmNotifications: updated });
                           }}
                         />
-                        <span style={{ textTransform: 'capitalize' }}>{type}</span>
+                        <span className="capitalize">{type}</span>
                       </label>
                     ))}
                   </div>
@@ -771,12 +675,10 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
 
       case 'debug':
         return (
-          <div style={{ padding: '16px 0' }}>
+          <div className="py-4">
             <MaterialCard sx={{ mb: 2, p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                🔧 Debug Tools
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">🔧 Debug Tools</h4>
+              <div className="flex flex-col gap-3">
                 <MaterialButton
                   onClick={() => console.log('Current Game State:', gameWorld)}
                   sx={{ justifyContent: 'flex-start' }}
@@ -802,10 +704,8 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
             </MaterialCard>
 
             <MaterialCard sx={{ p: 2 }}>
-              <h4 style={{ margin: '0 0 12px 0', color: 'var(--color-text-primary)' }}>
-                📈 Performance Metrics
-              </h4>
-              <div style={{ fontSize: '0.85em', color: 'var(--color-text-secondary)' }}>
+              <h4 className="m-0 mb-3 text-[var(--color-text-primary)]">📈 Performance Metrics</h4>
+              <div className="text-[0.85em] text-[var(--color-text-secondary)]">
                 <div>World Size: {gameWorld?.grid?.[0]?.length || 0} x {gameWorld?.grid?.length || 0}</div>
                 <div>Active Entities: {(gameWorld?.players?.length || 0) + (gameWorld?.npcs?.length || 0) + (gameWorld?.items?.length || 0)}</div>
                 <div>Memory Usage: Check browser dev tools</div>
@@ -821,62 +721,31 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
   };
 
   return (
-    <div className={className} style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      fontFamily: 'Inter, Roboto, sans-serif',
-      overflow: 'hidden'
-    }}>
+    <div className={`${className || ''} h-full flex flex-col font-inter overflow-hidden`}>
       {/* Header */}
-      <div style={{
-        padding: '16px 20px',
-        borderBottom: '1px solid rgba(196, 167, 231, 0.2)',
-        background: 'rgba(25, 23, 36, 0.8)'
-      }}>
-        <h2 style={{
-          color: 'var(--color-text-primary)',
-          fontSize: '1.2em',
-          fontWeight: '600',
-          margin: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          🔧 Developer Mode
-        </h2>
-        <p style={{
-          color: 'var(--color-text-secondary)',
-          fontSize: '0.9em',
-          margin: '4px 0 0 0'
-        }}>
-          Complete configuration control
-        </p>
+      <div className="px-5 py-4 border-b border-[var(--color-outline)] bg-[var(--color-surface-variant)]/80">
+        <h2 className="text-text-primary text-lg font-semibold m-0 flex items-center gap-2">🔧 Developer Mode</h2>
+        <p className="text-text-secondary text-sm mt-1">Complete configuration control</p>
       </div>
 
       {/* Section Navigation */}
-      <div style={{
-        padding: '12px 20px',
-        borderBottom: '1px solid rgba(196, 167, 231, 0.1)',
-        display: 'flex',
-        gap: '4px',
-        overflowX: 'auto'
-      }}>
+      <div className="px-5 py-3 border-b flex gap-1 overflow-x-auto border-[var(--color-outline)]/60">
         {sections.map(section => (
           <MaterialButton
             key={section.id}
             size="small"
             onClick={() => setActiveSection(section.id)}
-            sx={{
+              sx={{
               minWidth: 'auto',
               px: 1.5,
               py: 0.5,
               fontSize: '0.75rem',
-              backgroundColor: activeSection === section.id ? 'rgba(196, 167, 231, 0.2)' : 'transparent',
+            
+              backgroundColor: activeSection === section.id ? 'rgba(196, 167, 231, 0.18)' : 'transparent',
               color: activeSection === section.id ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
               border: activeSection === section.id ? '1px solid rgba(196, 167, 231, 0.3)' : '1px solid transparent',
               '&:hover': {
-                backgroundColor: 'rgba(196, 167, 231, 0.1)'
+                backgroundColor: 'rgba(196, 167, 231, 0.08)'
               }
             }}
           >
@@ -886,11 +755,7 @@ const DevSidebar: React.FC<DevSidebarProps> = ({ className }) => {
       </div>
 
       {/* Content Area */}
-      <div style={{
-        flex: 1,
-        overflow: 'auto',
-        padding: '0 20px'
-      }}>
+      <div className="flex-1 overflow-auto px-5">
         {renderSectionContent()}
       </div>
     </div>

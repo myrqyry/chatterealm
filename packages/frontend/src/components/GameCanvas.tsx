@@ -178,16 +178,13 @@ const GameCanvas: React.FC = () => {
     triggerDrawEffect(pixelX, pixelY, 'circle');
   };
 
-  // Inner padding
-  const innerPadding = 8;
-
   return (
     <div ref={containerRef} className="w-full h-full flex flex-1 items-stretch justify-stretch overflow-hidden p-2 box-border relative min-w-0 min-h-0">
       <canvas 
         ref={canvasRef} 
-        className="border border-outline rounded-md block w-full h-full max-w-full max-h-full" 
+        className={`border border-outline rounded-md block w-full h-full max-w-full max-h-full ${canvasSetup.isReady ? '' : 'hidden'}`} 
         onPointerDown={handlePointerDown}
-        style={{ display: canvasSetup.isReady ? 'block' : 'none', imageRendering: 'pixelated' }}
+        style={{ imageRendering: 'pixelated' }}
       />
       {drawEffects.map(effect => (
         <CanvasDrawEffectComponent

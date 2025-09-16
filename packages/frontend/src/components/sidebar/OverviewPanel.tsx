@@ -13,42 +13,23 @@ const OverviewPanel: React.FC<OverviewPanelProps> = ({
   gameMessage
 }) => {
   return (
-    <div style={{ padding: '16px 0' }}>
+    <div className="py-4">
       {/* World Snapshot */}
-      <div style={{
-        background: 'rgba(25, 23, 36, 0.6)',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '12px',
-        border: '1px solid rgba(196, 167, 231, 0.2)'
-      }}>
-        <h4 style={{
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '600',
-          margin: '0 0 8px 0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px'
-        }}>
+  <div className="rounded-md p-3 mb-3 border bg-[var(--color-surface-variant)]/60 border-[var(--color-outline)]">
+        <h4 className="text-[var(--color-text-primary)] text-sm font-semibold m-0 flex items-center gap-1.5">
           🗺️ World Status
         </h4>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '6px',
-          fontSize: '0.8em'
-        }}>
-          <div style={{ color: 'var(--color-text-secondary)' }}>
+        <div className="grid grid-cols-2 gap-1.5 text-xs">
+          <div className="text-[var(--color-text-secondary)]">
             <strong>Players:</strong> {gameWorld ? gameWorld.players.length : 0}
           </div>
-          <div style={{ color: 'var(--color-text-secondary)' }}>
+          <div className="text-[var(--color-text-secondary)]">
             <strong>NPCs:</strong> {gameWorld ? gameWorld.npcs.length : 0}
           </div>
-          <div style={{ color: 'var(--color-text-secondary)' }}>
+          <div className="text-[var(--color-text-secondary)]">
             <strong>Items:</strong> {gameWorld ? gameWorld.items.length : 0}
           </div>
-          <div style={{ color: 'var(--color-text-secondary)' }}>
+          <div className="text-[var(--color-text-secondary)]">
             <strong>Age:</strong> {gameWorld?.worldAge || 0}
           </div>
         </div>
@@ -56,40 +37,21 @@ const OverviewPanel: React.FC<OverviewPanelProps> = ({
 
       {/* Player Info */}
       {currentPlayer && (
-        <div style={{
-          background: 'rgba(25, 23, 36, 0.6)',
-          borderRadius: '8px',
-          padding: '12px',
-          marginBottom: '12px',
-          border: '1px solid rgba(196, 167, 231, 0.2)'
-        }}>
-          <h4 style={{
-            color: 'var(--color-text-primary)',
-            fontSize: '0.9em',
-            fontWeight: '600',
-            margin: '0 0 8px 0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}>
+  <div className="rounded-md p-3 mb-3 border bg-[var(--color-surface-variant)]/60 border-[var(--color-outline)]">
+          <h4 className="text-[var(--color-text-primary)] text-sm font-semibold m-0 flex items-center gap-1.5">
             🧑 Player
           </h4>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '6px',
-            fontSize: '0.8em'
-          }}>
-            <div style={{ color: 'var(--color-text-secondary)' }}>
+          <div className="grid grid-cols-2 gap-1.5 text-xs">
+            <div className="text-[var(--color-text-secondary)]">
               <strong>HP:</strong> {currentPlayer.stats.hp}/{currentPlayer.stats.maxHp}
             </div>
-            <div style={{ color: 'var(--color-text-secondary)' }}>
+            <div className="text-[var(--color-text-secondary)]">
               <strong>Level:</strong> {currentPlayer.level}
             </div>
-            <div style={{ color: 'var(--color-text-secondary)' }}>
+            <div className="text-[var(--color-text-secondary)]">
               <strong>Pos:</strong> {currentPlayer.position.x},{currentPlayer.position.y}
             </div>
-            <div style={{ color: 'var(--color-text-secondary)' }}>
+            <div className="text-[var(--color-text-secondary)]">
               <strong>XP:</strong> {currentPlayer.experience}
             </div>
           </div>
@@ -98,14 +60,7 @@ const OverviewPanel: React.FC<OverviewPanelProps> = ({
 
       {/* Game Message */}
       {gameMessage && (
-        <div style={{
-          background: 'rgba(196, 167, 231, 0.1)',
-          color: 'var(--color-text-primary)',
-          borderRadius: '8px',
-          padding: '12px',
-          border: '1px solid rgba(196, 167, 231, 0.3)',
-          fontSize: '0.85em'
-        }}>
+        <div className="rounded-md p-3 text-[var(--color-text-primary)] text-sm bg-[var(--color-primary-container)]/8 border border-[var(--color-primary)]/20">
           {gameMessage}
         </div>
       )}

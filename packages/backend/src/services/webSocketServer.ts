@@ -65,6 +65,34 @@ export class WebSocketServer {
         this.handlePlayerJoin(socket, playerData);
       });
 
+      // Handle explicit leave requests from clients
+      socket.on('leave_game', (data: { playerId?: string } | undefined) => {
+        try {
+          const pid = data?.playerId || this.connectedClients.get(socket.id)?.playerId;
+          if (!pid) {
+            console.warn(`[LEAVE_GAME] No playerId provided and no mapping found for socket ${socket.id}`);
+            return;
+          }
+
+          console.log(`[LEAVE_GAME] Received leave request for player ${pid} from socket ${socket.id}`);
+
+          // Remove player from game state
+          const result = this.gameStateManager.removePlayer(pid);
+          if (!result.success) {
+            console.warn(`[LEAVE_GAME] Failed to remove player ${pid}: ${result.message}`);
+          } else {
+            // Broadcast player left to all clients
+            this.io.to('game_room').emit('player_left', { playerId: pid, player: result.data.player });
+          }
+
+          // Clean up client tracking maps
+          this.connectedClients.delete(socket.id);
+          if (this.playerSockets.get(pid) === socket.id) this.playerSockets.delete(pid);
+        } catch (err) {
+          console.error('[LEAVE_GAME] Error handling leave_game:', err);
+        }
+      });
+
       // Handle player commands
       socket.on(SocketEvents.PLAYER_COMMAND, (command: PlayerCommand) => {
         console.log(`[COMMAND_RECEIVED] Socket ${socket.id} sent command:`, command.type);

@@ -4,7 +4,7 @@ import NotificationSystem from './NotificationSystem';
 import UnifiedSettingsMenuModal from './UnifiedSettingsMenuModal';
 import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from './index';
 import { useGameStore } from '../stores/gameStore';
-import { COLORS } from '../constants/colors';
+import { COLORS } from '../utils/tokens';
 
 interface GameLayoutProps {
   handleRegenerateWorld: () => void;
@@ -24,43 +24,14 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   const { gameWorld, currentPlayer, gameMessage } = useGameStore();
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      width: '100vw',
-      padding: '0',
-      margin: '0',
-      background: 'var(--color-background-primary)',
-      fontFamily: 'Inter, Roboto, sans-serif',
-      overflow: 'hidden',
-      boxSizing: 'border-box'
-    }}>
+    <div className="flex flex-col h-screen w-screen m-0 p-0 overflow-hidden box-border bg-[var(--color-background-primary)] font-inter">
       <NotificationSystem />
 
       {/* Main Content Area - Two Column Layout */}
-      <div style={{
-        display: 'flex',
-        flex: 1,
-        overflow: 'hidden'
-      }}>
+      <div className="flex flex-1 overflow-hidden">
         {/* Game Canvas - Left Side, Scales to Fit */}
-        <div style={{
-          flex: 1,
-          background: 'var(--color-surface)',
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative'
-        }}>
-          <div style={{
-            width: '100%',
-            height: '100%',
-            maxWidth: 'calc(100vw - 320px)', // Leave space for sidebar
-            maxHeight: '100vh', // Full viewport height now
-            overflow: 'hidden'
-          }}>
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-[var(--color-surface)]">
+          <div className="w-full h-full max-w-[calc(100vw-320px)] max-h-screen overflow-hidden">
             <GameCanvas />
           </div>
 
@@ -78,57 +49,13 @@ const GameLayout: React.FC<GameLayoutProps> = ({
               backgroundColor: 'rgba(25, 23, 36, 0.95)',
               backdropFilter: 'blur(10px)',
             }}
+            className="rounded-md"
           >
-            <MaterialChip
-              label="Knight"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-knight)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="Rogue"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-rogue)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="Mage"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-mage)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="NPC"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-npc)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
-            <MaterialChip
-              label="Item"
-              size="small"
-              sx={{
-                backgroundColor: 'var(--color-legend-item)',
-                color: 'white',
-                fontSize: '0.7rem',
-                height: '20px'
-              }}
-            />
+            <MaterialChip label="Knight" size="small" sx={{ backgroundColor: 'var(--color-legend-knight)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="Rogue" size="small" sx={{ backgroundColor: 'var(--color-legend-rogue)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="Mage" size="small" sx={{ backgroundColor: 'var(--color-legend-mage)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="NPC" size="small" sx={{ backgroundColor: 'var(--color-legend-npc)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="Item" size="small" sx={{ backgroundColor: 'var(--color-legend-item)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
           </MaterialPaper>
         </div>
 

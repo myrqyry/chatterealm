@@ -25,90 +25,31 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleRegenerate = () => regenerateWorld();
 
   return (
-    <div style={{
-      padding: '24px',
-      height: '100%',
-      overflow: 'auto',
-      fontFamily: 'JetBrains Mono',
-      background: 'linear-gradient(145deg, rgba(25, 23, 36, 0.95) 0%, rgba(31, 29, 46, 0.9) 100%)'
-    }}>
+    <div className="p-6 h-full overflow-auto font-mono bg-gradient-to-br from-background-primary/95 to-surface/90">
       {/* Modal Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '32px',
-        paddingBottom: '16px',
-        borderBottom: '2px solid rgba(244, 67, 54, 0.3)'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(244, 67, 54, 0.3)'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>⚔️</span>
+      <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-primary/30">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/30">
+            <span className="text-2xl">⚔️</span>
           </div>
           <div>
-            <h1 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.8rem',
-              fontWeight: 700,
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-            }}>
+            <h1 className="m-0 text-text-primary text-2xl font-bold text-shadow">
               Actions
             </h1>
-            <p style={{
-              margin: '4px 0 0 0',
-              color: 'var(--color-text-secondary)',
-              fontSize: '0.9rem',
-              fontWeight: 400
-            }}>
+            <p className="mt-1 mb-0 text-text-secondary text-sm font-normal">
               Player controls and world events
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          style={{
-            minWidth: '40px',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            color: 'var(--color-text-primary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.2rem',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="w-10 h-10 rounded-full bg-white/10 border-none text-text-primary cursor-pointer flex items-center justify-center text-lg transition-all duration-200 hover:bg-white/20 hover:scale-105"
         >
           ✕
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex flex-col gap-6">
         <MaterialCard
           sx={{
             backgroundColor: 'rgba(25, 23, 36, 0.8)',
@@ -124,37 +65,15 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🕹️</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+              <span className="text-lg">🕹️</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               Player Actions
             </h3>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-            gap: '12px'
-          }}>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
             <MaterialButton
               onClick={handleJoin}
               sx={{
@@ -299,37 +218,15 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🌩️</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+              <span className="text-lg">🌩️</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               World Events
             </h3>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '12px'
-          }}>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3">
             <MaterialButton
               onClick={handleRegenerate}
               sx={{
@@ -375,45 +272,16 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           </div>
 
           {gameWorld && (
-            <div style={{
-              marginTop: '20px',
-              padding: '16px',
-              background: 'rgba(25, 23, 36, 0.6)',
-              borderRadius: '12px',
-              border: '1px solid rgba(244, 67, 54, 0.2)'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '12px'
-              }}>
-                <div style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '6px',
-                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  <span style={{ fontSize: '0.9rem' }}>📊</span>
+            <div className="mt-5 p-4 bg-surface/60 rounded-xl border border-red-500/20">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+                  <span className="text-sm">📊</span>
                 </div>
-                <h4 style={{
-                  margin: 0,
-                  color: 'var(--color-text-primary)',
-                  fontSize: '1rem',
-                  fontWeight: 600
-                }}>
+                <h4 className="m-0 text-text-primary text-base font-semibold">
                   World Properties
                 </h4>
               </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                fontSize: '0.85rem'
-              }}>
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <div style={{ color: 'var(--color-text-secondary)' }}>
                   <strong>Cataclysm:</strong> {gameWorld.cataclysmCircle.isActive ? 'Active' : 'Inactive'}
                 </div>
@@ -422,10 +290,7 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <strong>Radius:</strong> {gameWorld.cataclysmCircle.radius.toFixed(1)}
                   </div>
                 )}
-                <div style={{
-                  color: 'var(--color-text-secondary)',
-                  gridColumn: gameWorld.cataclysmCircle.isActive ? '1 / -1' : '2 / -1'
-                }}>
+                <div className="text-text-secondary col-span-full">
                   <strong>Last Reset:</strong> {new Date(gameWorld.lastResetTime).toLocaleTimeString()}
                 </div>
               </div>

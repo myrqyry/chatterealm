@@ -9,90 +9,31 @@ const OverviewModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { gameWorld, currentPlayer, gameMessage } = useGameStore();
 
   return (
-    <div style={{
-      padding: '24px',
-      height: '100%',
-      overflow: 'auto',
-      fontFamily: 'JetBrains Mono',
-      background: 'linear-gradient(145deg, rgba(25, 23, 36, 0.95) 0%, rgba(31, 29, 46, 0.9) 100%)'
-    }}>
+    <div className="p-6 h-full overflow-auto font-mono bg-gradient-to-br from-background-primary/95 to-surface/90">
       {/* Modal Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '32px',
-        paddingBottom: '16px',
-        borderBottom: '2px solid rgba(196, 167, 231, 0.3)'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-          }}>
-            <span style={{ fontSize: '1.5rem' }}>🧭</span>
+      <div className="flex items-center justify-between mb-8 pb-4 border-b-2 border-primary/30">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+            <span className="text-2xl">🧭</span>
           </div>
           <div>
-            <h1 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.8rem',
-              fontWeight: 700,
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
-            }}>
+            <h1 className="m-0 text-text-primary text-2xl font-bold text-shadow">
               Overview
             </h1>
-            <p style={{
-              margin: '4px 0 0 0',
-              color: 'var(--color-text-secondary)',
-              fontSize: '0.9rem',
-              fontWeight: 400
-            }}>
+            <p className="mt-1 mb-0 text-text-secondary text-sm font-normal">
               World status and player information
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          style={{
-            minWidth: '40px',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            color: 'var(--color-text-primary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.2rem',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
+          className="w-10 h-10 rounded-full bg-white/10 border-none text-text-primary cursor-pointer flex items-center justify-center text-lg transition-all duration-200 hover:bg-white/20 hover:scale-105"
         >
           ✕
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex flex-col gap-6">
         {/* World Snapshot */}
         <MaterialCard
           sx={{
@@ -109,155 +50,52 @@ const OverviewModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             }
           }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '20px'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span style={{ fontSize: '1.1rem' }}>🗺️</span>
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+              <span className="text-lg">🗺️</span>
             </div>
-            <h3 style={{
-              margin: 0,
-              color: 'var(--color-text-primary)',
-              fontSize: '1.2rem',
-              fontWeight: 600
-            }}>
+            <h3 className="m-0 text-text-primary text-lg font-semibold">
               World Snapshot
             </h3>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '16px'
-          }}>
-            <div style={{
-              padding: '12px',
-              background: 'rgba(33, 150, 243, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(33, 150, 243, 0.2)'
-            }}>
-              <div style={{
-                fontSize: '0.8rem',
-                color: 'var(--color-text-secondary)',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontWeight: 500
-              }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                 Phase
               </div>
-              <div style={{
-                fontSize: '1.1rem',
-                color: 'var(--color-text-primary)',
-                fontWeight: 600
-              }}>
+              <div className="text-lg text-text-primary font-semibold">
                 {gameWorld?.phase || 'N/A'}
               </div>
             </div>
-            <div style={{
-              padding: '12px',
-              background: 'rgba(76, 175, 80, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(76, 175, 80, 0.2)'
-            }}>
-              <div style={{
-                fontSize: '0.8rem',
-                color: 'var(--color-text-secondary)',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontWeight: 500
-              }}>
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                 Players
               </div>
-              <div style={{
-                fontSize: '1.1rem',
-                color: 'var(--color-text-primary)',
-                fontWeight: 600
-              }}>
+              <div className="text-lg text-text-primary font-semibold">
                 {gameWorld ? gameWorld.players.length : 0}
               </div>
             </div>
-            <div style={{
-              padding: '12px',
-              background: 'rgba(255, 152, 0, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(255, 152, 0, 0.2)'
-            }}>
-              <div style={{
-                fontSize: '0.8rem',
-                color: 'var(--color-text-secondary)',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontWeight: 500
-              }}>
+            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+              <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                 NPCs
               </div>
-              <div style={{
-                fontSize: '1.1rem',
-                color: 'var(--color-text-primary)',
-                fontWeight: 600
-              }}>
+              <div className="text-lg text-text-primary font-semibold">
                 {gameWorld ? gameWorld.npcs.length : 0}
               </div>
             </div>
-            <div style={{
-              padding: '12px',
-              background: 'rgba(156, 39, 176, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(156, 39, 176, 0.2)'
-            }}>
-              <div style={{
-                fontSize: '0.8rem',
-                color: 'var(--color-text-secondary)',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontWeight: 500
-              }}>
+            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+              <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                 Items
               </div>
-              <div style={{
-                fontSize: '1.1rem',
-                color: 'var(--color-text-primary)',
-                fontWeight: 600
-              }}>
+              <div className="text-lg text-text-primary font-semibold">
                 {gameWorld ? gameWorld.items.length : 0}
               </div>
             </div>
-            <div style={{
-              padding: '12px',
-              background: 'rgba(0, 188, 212, 0.1)',
-              borderRadius: '8px',
-              border: '1px solid rgba(0, 188, 212, 0.2)',
-              gridColumn: '1 / -1'
-            }}>
-              <div style={{
-                fontSize: '0.8rem',
-                color: 'var(--color-text-secondary)',
-                marginBottom: '4px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontWeight: 500
-              }}>
+            <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg col-span-full">
+              <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                 World Age
               </div>
-              <div style={{
-                fontSize: '1.1rem',
-                color: 'var(--color-text-primary)',
-                fontWeight: 600
-              }}>
+              <div className="text-lg text-text-primary font-semibold">
                 {gameWorld?.worldAge || 0} cycles
               </div>
             </div>
@@ -281,132 +119,44 @@ const OverviewModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               }
             }}
           >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginBottom: '20px'
-            }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <span style={{ fontSize: '1.1rem' }}>🧑</span>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                <span className="text-lg">🧑</span>
               </div>
-              <h3 style={{
-                margin: 0,
-                color: 'var(--color-text-primary)',
-                fontSize: '1.2rem',
-                fontWeight: 600
-              }}>
+              <h3 className="m-0 text-text-primary text-lg font-semibold">
                 Current Player
               </h3>
             </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-              gap: '12px'
-            }}>
-              <div style={{
-                padding: '12px',
-                background: 'rgba(76, 175, 80, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(76, 175, 80, 0.2)'
-              }}>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500
-                }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                   Name
                 </div>
-                <div style={{
-                  fontSize: '1rem',
-                  color: 'var(--color-text-primary)',
-                  fontWeight: 600
-                }}>
+                <div className="text-base text-text-primary font-semibold">
                   {currentPlayer.name}
                 </div>
               </div>
-              <div style={{
-                padding: '12px',
-                background: 'rgba(244, 67, 54, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(244, 67, 54, 0.2)'
-              }}>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500
-                }}>
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                   Health
                 </div>
-                <div style={{
-                  fontSize: '1rem',
-                  color: 'var(--color-text-primary)',
-                  fontWeight: 600
-                }}>
+                <div className="text-base text-text-primary font-semibold">
                   {currentPlayer.health}
                 </div>
               </div>
-              <div style={{
-                padding: '12px',
-                background: 'rgba(255, 152, 0, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 152, 0, 0.2)'
-              }}>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500
-                }}>
+              <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                   Level
                 </div>
-                <div style={{
-                  fontSize: '1rem',
-                  color: 'var(--color-text-primary)',
-                  fontWeight: 600
-                }}>
+                <div className="text-base text-text-primary font-semibold">
                   {currentPlayer.level}
                 </div>
               </div>
-              <div style={{
-                padding: '12px',
-                background: 'rgba(156, 39, 176, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(156, 39, 176, 0.2)',
-                gridColumn: '1 / -1'
-              }}>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500
-                }}>
+              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg col-span-full">
+                <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                   Position
                 </div>
-                <div style={{
-                  fontSize: '1rem',
-                  color: 'var(--color-text-primary)',
-                  fontWeight: 600,
-                  fontFamily: 'JetBrains Mono'
-                }}>
+                <div className="text-base text-text-primary font-semibold font-mono">
                   {currentPlayer.position.x}, {currentPlayer.position.y}
                 </div>
               </div>
@@ -423,40 +173,23 @@ const OverviewModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               border: '1px solid rgba(245, 158, 11, 0.3)',
               borderRadius: '16px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(245, 158, 11, 0.1)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(245, 158, 11, 0.15)',
+                borderColor: 'rgba(245, 158, 11, 0.4)'
+              }
             }}
           >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px'
-            }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <span style={{ fontSize: '1.1rem' }}>💬</span>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
+                <span className="text-lg">💬</span>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{
-                  fontSize: '0.8rem',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: '4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500
-                }}>
+              <div className="flex-1">
+                <div className="text-xs text-text-secondary mb-1 uppercase tracking-wider font-medium">
                   Game Message
                 </div>
-                <div style={{
-                  color: 'var(--color-text-primary)',
-                  fontSize: '0.95rem',
-                  lineHeight: 1.4
-                }}>
+                <div className="text-text-primary text-sm leading-relaxed">
                   {gameMessage}
                 </div>
               </div>

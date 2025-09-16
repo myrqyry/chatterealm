@@ -200,6 +200,28 @@ export class WebSocketClient {
     this.joinGameInternal(playerData);
   }
 
+  // Allow client to explicitly leave the game (remove player from server world)
+  public leaveGame(playerId?: string): void {
+    if (!this.socket || !this.isConnected) {
+      throttledWarn('CLIENT_LEAVE', 'Cannot leave game - not connected');
+      return;
+    }
+
+    try {
+      const pid = playerId || useGameStore.getState().currentPlayer?.id;
+      if (!pid) {
+        throttledWarn('CLIENT_LEAVE', 'No player id available to leave');
+        return;
+      }
+      this.socket.emit('leave_game', { playerId: pid });
+      // Optionally disconnect socket to fully clear client state
+      // this.disconnect();
+      throttledLog('CLIENT_LEAVE', `Requested leave for player ${pid}`);
+    } catch (err) {
+      throttledError('CLIENT_LEAVE_ERROR', `Failed to send leave_game: ${err}`);
+    }
+  }
+
   private joinGameInternal(playerData: Partial<Player>): void {
     if (!this.socket) return;
 

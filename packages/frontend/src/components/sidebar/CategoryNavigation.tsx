@@ -18,57 +18,15 @@ const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
   onCategoryChange
 }) => {
   return (
-    <div style={{
-      padding: '12px 20px',
-      borderBottom: '1px solid rgba(196, 167, 231, 0.2)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: '4px'
-    }}>
+  <div className="px-5 py-3 flex justify-between items-center gap-1 border-b border-[var(--color-outline)]">
       {categories.map(category => (
         <button
           key={category.id}
           onClick={() => onCategoryChange(category.id)}
-          style={{
-            flex: 1,
-            background: activeCategory === category.id ? 'rgba(196, 167, 231, 0.2)' : 'transparent',
-            border: activeCategory === category.id ? '1px solid rgba(196, 167, 231, 0.4)' : '1px solid transparent',
-            borderRadius: '8px',
-            padding: '8px 4px',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '2px',
-            transition: 'all 0.2s ease',
-            minHeight: '50px'
-          }}
-          onMouseEnter={(e) => {
-            if (activeCategory !== category.id) {
-              e.currentTarget.style.background = 'rgba(196, 167, 231, 0.1)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (activeCategory !== category.id) {
-              e.currentTarget.style.background = 'transparent';
-            }
-          }}
+          className={`flex-1 rounded-md p-2 flex flex-col items-center gap-0.5 min-h-[50px] transition duration-150 border ${activeCategory === category.id ? 'bg-[var(--color-primary-container)] border-[var(--color-outline)]' : 'bg-transparent hover:bg-[var(--color-primary-container)]/10 border-transparent'}`}
         >
-          <span style={{
-            fontSize: '1.2em',
-            display: 'block',
-            marginBottom: '2px'
-          }}>
-            {category.icon}
-          </span>
-          <span style={{
-            fontSize: '0.7em',
-            color: activeCategory === category.id ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-            fontWeight: activeCategory === category.id ? '600' : '400',
-            textAlign: 'center',
-            lineHeight: '1'
-          }}>
+          <span className="text-[1.2em] block mb-0.5">{category.icon}</span>
+          <span className={`text-[0.7em] text-center leading-none ${activeCategory === category.id ? 'text-[var(--color-primary)] font-semibold' : 'text-[var(--color-text-secondary)] font-normal'}`}>
             {category.label}
           </span>
         </button>

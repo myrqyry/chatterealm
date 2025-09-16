@@ -22,51 +22,33 @@ const VisualSettings: React.FC<VisualSettingsProps> = ({
   updateAnimationSettings
 }) => {
   return (
-    <div style={{ padding: '16px 0' }}>
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+    <div className="py-4">
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Show Grid
         </label>
         <input
           type="checkbox"
           checked={unifiedSettings.visual.showGrid}
           onChange={(e) => updateVisualSettings({ showGrid: e.target.checked })}
-          style={{ marginRight: '8px' }}
+          className="mr-2"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Show Particles
         </label>
         <input
           type="checkbox"
           checked={unifiedSettings.visual.showParticles}
           onChange={(e) => updateVisualSettings({ showParticles: e.target.checked })}
-          style={{ marginRight: '8px' }}
+          className="mr-2"
         />
       </div>
 
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{
-          display: 'block',
-          marginBottom: '8px',
-          color: 'var(--color-text-primary)',
-          fontSize: '0.9em',
-          fontWeight: '500'
-        }}>
+      <div className="mb-4">
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
           Animation Speed: {unifiedSettings.animations.animationSpeed}x
         </label>
         <input
@@ -76,7 +58,7 @@ const VisualSettings: React.FC<VisualSettingsProps> = ({
           step="0.1"
           value={unifiedSettings.animations.animationSpeed}
           onChange={(e) => updateAnimationSettings({ animationSpeed: parseFloat(e.target.value) })}
-          style={{ width: '100%' }}
+          className="w-full"
         />
       </div>
     </div>

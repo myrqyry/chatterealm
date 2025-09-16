@@ -12,8 +12,28 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Ensure emojis are centered and scale predictably across browsers */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom utility classes for gradients and effects */
+.header-gradient {
+  background: linear-gradient(135deg, var(--color-text-primary) 0%, rgba(196, 167, 231, 0.7) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(196, 167, 231, 0.3);
+}
+
+/* Font family utility */
+.font-inter {
+  font-family: 'Inter', 'Roboto', sans-serif;
+}

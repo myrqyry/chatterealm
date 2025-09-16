@@ -281,11 +281,7 @@ const SVGAssetDemo: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-background-primary)',
-      padding: '20px'
-    }}>
+    <div className="min-h-screen bg-background-primary p-5">
       {/* Header */}
       <MaterialAppBar
         sx={{
@@ -295,13 +291,8 @@ const SVGAssetDemo: React.FC = () => {
           marginBottom: '20px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h1 style={{
-            margin: 0,
-            color: 'var(--color-text-primary)',
-            fontSize: '2rem',
-            fontWeight: '700'
-          }}>
+        <div className="flex items-center gap-3">
+          <h1 className="m-0 text-text-primary text-2xl font-bold">
             🎨 SVG Asset Converter
           </h1>
           <MaterialChip
@@ -315,15 +306,9 @@ const SVGAssetDemo: React.FC = () => {
         </div>
       </MaterialAppBar>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '20px',
-        maxWidth: '1400px',
-        margin: '0 auto'
-      }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-7xl mx-auto">
         {/* Left Column - Input */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="flex flex-col gap-5">
           <MaterialCard
             sx={{
               background: 'rgba(49, 46, 56, 0.8)',
@@ -331,16 +316,16 @@ const SVGAssetDemo: React.FC = () => {
               borderRadius: '12px'
             }}
           >
-            <div style={{ padding: '20px' }}>
-              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '15px' }}>
+            <div className="p-5">
+              <h3 className="text-text-primary mb-4">
                 📚 Sample Assets, GitHub & Noto Emoji
               </h3>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>
+              <p className="text-text-secondary text-sm mb-4">
                 Load SVGs from GitHub repositories and convert them with svg2roughjs! 🎨
                 <br />
                 <em>Perfect for game assets, icons, and custom illustrations.</em>
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              <div className="flex flex-wrap gap-2.5">
                 {Object.keys(sampleSvgs).map((key) => (
                   <MaterialButton
                     key={key}
@@ -370,8 +355,8 @@ const SVGAssetDemo: React.FC = () => {
               borderRadius: '12px'
             }}
           >
-            <div style={{ padding: '20px' }}>
-              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '15px' }}>
+            <div className="p-5">
+              <h3 className="text-text-primary mb-4">
                 📁 Upload SVG
               </h3>
               <input
@@ -379,7 +364,7 @@ const SVGAssetDemo: React.FC = () => {
                 type="file"
                 accept=".svg"
                 onChange={handleFileUpload}
-                style={{ display: 'none' }}
+                className="hidden"
               />
               <MaterialButton
                 onClick={() => fileInputRef.current?.click()}
@@ -406,37 +391,34 @@ const SVGAssetDemo: React.FC = () => {
               borderRadius: '12px'
             }}
           >
-            <div style={{ padding: '20px' }}>
-              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '15px' }}>
+            <div className="p-5">
+              <h3 className="text-text-primary mb-4">
                 🐙 Load from GitHub Repositories
               </h3>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>
+              <p className="text-text-secondary text-sm mb-4">
                 Load SVG files from any GitHub repository and convert them with svg2roughjs! 🎨
               </p>
 
               {/* Preset Repositories */}
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+              <div className="mb-5">
+                <h4 className="text-text-secondary mb-2.5">
                   Popular SVG Repositories:
                 </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="flex flex-col gap-2">
                   {presetRepos.map((preset) => (
                     <div
                       key={preset.url}
                       onClick={() => setGithubRepo(preset.url)}
+                      className="p-2.5 cursor-pointer transition-all duration-200 rounded-lg border"
                       style={{
-                        padding: '10px',
                         backgroundColor: githubRepo === preset.url ? 'rgba(196, 167, 231, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-                        border: githubRepo === preset.url ? '1px solid rgba(196, 167, 231, 0.5)' : '1px solid rgba(196, 167, 231, 0.1)',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        border: githubRepo === preset.url ? '1px solid rgba(196, 167, 231, 0.5)' : '1px solid rgba(196, 167, 231, 0.1)'
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', fontSize: '0.9rem' }}>
+                      <div className="font-bold text-text-primary text-sm">
                         {preset.name}
                       </div>
-                      <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>
+                      <div className="text-text-secondary text-xs">
                         {preset.description}
                       </div>
                     </div>
@@ -444,21 +426,13 @@ const SVGAssetDemo: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+              <div className="flex gap-2.5 mb-4">
                 <input
                   type="text"
                   value={githubRepo}
                   onChange={(e) => setGithubRepo(e.target.value)}
                   placeholder="https://github.com/owner/repo or /tree/main/path"
-                  style={{
-                    flex: 1,
-                    padding: '10px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    border: '1px solid rgba(196, 167, 231, 0.3)',
-                    borderRadius: '8px',
-                    color: 'var(--color-text-primary)',
-                    fontSize: '0.9rem'
-                  }}
+                  className="flex-1 p-2.5 bg-black/30 border border-purple-400/30 rounded-lg text-text-primary text-sm"
                 />
                 <MaterialButton
                   onClick={fetchGithubSvgs}
@@ -484,16 +458,10 @@ const SVGAssetDemo: React.FC = () => {
 
               {githubSvgs.length > 0 && (
                 <div>
-                  <h4 style={{ color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+                  <h4 className="text-text-secondary mb-2.5">
                     Found {githubSvgs.length} SVG files:
                   </h4>
-                  <div style={{
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                    gap: '8px'
-                  }}>
+                  <div className="max-h-50 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                     {githubSvgs.slice(0, 50).map((svg) => (
                       <MaterialChip
                         key={svg.path}
@@ -512,13 +480,7 @@ const SVGAssetDemo: React.FC = () => {
                       />
                     ))}
                     {githubSvgs.length > 50 && (
-                      <div style={{
-                        gridColumn: '1 / -1',
-                        textAlign: 'center',
-                        color: 'var(--color-text-secondary)',
-                        fontSize: '0.8rem',
-                        padding: '8px'
-                      }}>
+                      <div className="col-span-full text-center text-text-secondary text-xs p-2">
                         ... and {githubSvgs.length - 50} more SVGs
                       </div>
                     )}
@@ -536,17 +498,17 @@ const SVGAssetDemo: React.FC = () => {
               borderRadius: '12px'
             }}
           >
-            <div style={{ padding: '20px' }}>
-              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '15px' }}>
+            <div className="p-5">
+              <h3 className="text-text-primary mb-4">
                 ⚙️ Conversion Options
               </h3>
 
               {/* Presets */}
-              <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ color: 'var(--color-text-secondary)', marginBottom: '10px' }}>
+              <div className="mb-5">
+                <h4 className="text-text-secondary mb-2.5">
                   Presets
                 </h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                <div className="flex flex-wrap gap-2">
                   {(['sketch', 'cartoon', 'technical', 'wild'] as const).map((preset) => (
                     <MaterialChip
                       key={preset}
@@ -566,9 +528,9 @@ const SVGAssetDemo: React.FC = () => {
               </div>
 
               {/* Manual Controls */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label style={{ color: 'var(--color-text-secondary)', display: 'block', marginBottom: '5px' }}>
+                  <label className="block text-text-secondary mb-1.5">
                     Roughness: {conversionOptions.roughness}
                   </label>
                   <input
@@ -581,12 +543,12 @@ const SVGAssetDemo: React.FC = () => {
                       ...prev,
                       roughness: parseFloat(e.target.value)
                     }))}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label style={{ color: 'var(--color-text-secondary)', display: 'block', marginBottom: '5px' }}>
+                  <label className="block text-text-secondary mb-1.5">
                     Bowing: {conversionOptions.bowing}
                   </label>
                   <input
@@ -599,13 +561,13 @@ const SVGAssetDemo: React.FC = () => {
                       ...prev,
                       bowing: parseFloat(e.target.value)
                     }))}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   />
                 </div>
               </div>
 
-              <div style={{ marginTop: '15px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
+              <div className="mt-4">
+                <label className="flex items-center gap-2 text-text-secondary">
                   <input
                     type="checkbox"
                     checked={conversionOptions.randomize || false}
@@ -618,8 +580,8 @@ const SVGAssetDemo: React.FC = () => {
                 </label>
               </div>
 
-              <div style={{ marginTop: '10px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
+              <div className="mt-2.5">
+                <label className="flex items-center gap-2 text-text-secondary">
                   <input
                     type="checkbox"
                     checked={conversionOptions.pencilFilter || false}
@@ -657,20 +619,14 @@ const SVGAssetDemo: React.FC = () => {
           </MaterialButton>
 
           {error && (
-            <div style={{
-              color: '#ff6b6b',
-              backgroundColor: 'rgba(255, 107, 107, 0.1)',
-              padding: '10px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255, 107, 107, 0.3)'
-            }}>
+            <div className="text-red-400 bg-red-400/10 p-2.5 rounded-lg border border-red-400/30">
               ❌ {error}
             </div>
           )}
         </div>
 
         {/* Right Column - Output */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="flex flex-col gap-5">
           {/* Original SVG */}
           <MaterialCard
             sx={{
@@ -679,23 +635,15 @@ const SVGAssetDemo: React.FC = () => {
               borderRadius: '12px'
             }}
           >
-            <div style={{ padding: '20px' }}>
-              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '15px' }}>
+            <div className="p-5">
+              <h3 className="text-text-primary mb-4">
                 📄 Original SVG
               </h3>
-              <div style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px',
-                padding: '15px',
-                minHeight: '200px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+              <div className="bg-black/30 rounded-lg p-4 min-h-50 flex items-center justify-center">
                 {inputSvg ? (
                   <div dangerouslySetInnerHTML={{ __html: inputSvg }} />
                 ) : (
-                  <p style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-text-secondary">
                     Load a sample or upload an SVG to see the original
                   </p>
                 )}
@@ -711,23 +659,15 @@ const SVGAssetDemo: React.FC = () => {
               borderRadius: '12px'
             }}
           >
-            <div style={{ padding: '20px' }}>
-              <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '15px' }}>
+            <div className="p-5">
+              <h3 className="text-text-primary mb-4">
                 🎨 Rough Conversion
               </h3>
-              <div style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px',
-                padding: '15px',
-                minHeight: '200px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
+              <div className="bg-black/30 rounded-lg p-4 min-h-50 flex items-center justify-center">
                 {convertedSvg ? (
                   <div dangerouslySetInnerHTML={{ __html: convertedSvg }} />
                 ) : (
-                  <p style={{ color: 'var(--color-text-secondary)' }}>
+                  <p className="text-text-secondary">
                     {isConverting ? 'Converting...' : 'Convert an SVG to see the rough version'}
                   </p>
                 )}
