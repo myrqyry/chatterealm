@@ -168,18 +168,48 @@ async function resolveEmojiSvg(emoji: string): Promise<string> {
         return nested;
       }
     }
+
+    // If we couldn't resolve via package, fall through to fetch fallback
   } catch (err) {
-    // svgmoji not available or failed, fall back to fetching Noto raw
-    console.warn('svgmoji resolution failed or not installed; falling back to Noto raw fetch', err);
+    // continue to fetch from remote as a fallback
   }
 
-  // Fetch Noto raw SVG from GitHub
-  const url = `https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/${filename}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch Noto SVG: ${res.status}`);
-  const svgText = await res.text();
-  emojiCache.set(cacheKey, { svg: svgText, fetchedAt: Date.now() });
-  return svgText;
+  // Try fetching raw Noto Emoji SVGs from the GoogleFonts noto-emoji repo
+  try {
+    // Build a few candidate filenames based on codepoints
+    const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
+    const candidates = [
+      `emoji_u${codepoints.join('_')}.svg`,
+      `emoji_u${codepoints.join('-')}.svg`,
+      `emoji_${codepoints.join('_')}.svg`,
+    ];
+
+    for (const candidate of candidates) {
+      const url = `https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/${candidate}`;
+      try {
+        const resp = await fetch(url);
+        if (resp.ok) {
+          const svgText = await resp.text();
+          emojiCache.set(cacheKey, { svg: svgText, fetchedAt: Date.now() });
+          return svgText;
+        }
+      } catch (e) {
+        // try next candidate
+      }
+    }
+  } catch (err) {
+    // network fetch failed or not available; continue to fallback
+  }
+
+  // Last-resort fallback: return a minimal SVG that renders the emoji character as text.
+  // This guarantees the API never fails and provides a visible avatar.
+  try {
+    const safeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">${emoji}</text></svg>`;
+    emojiCache.set(cacheKey, { svg: safeSvg, fetchedAt: Date.now() });
+    return safeSvg;
+  } catch (err) {
+    throw new Error(`Failed to resolve emoji SVG (and fallback failed): ${emoji}`);
+  }
 }
 
 // Endpoint to fetch emoji SVG (query param: char)
@@ -225,6 +255,14 @@ app.get('/api/emoji', async (req, res) => {
     // Convert to rough SVG on the server using jsdom + svg2roughjs
     try {
       const dom = new JSDOM(`<!doctype html><html><body></body></html>`);
+      // Provide necessary globals for svg2roughjs which expects browser-like globals
+      (global as any).window = dom.window;
+      (global as any).document = dom.window.document;
+      (global as any).DOMParser = dom.window.DOMParser;
+      (global as any).XMLSerializer = dom.window.XMLSerializer;
+      (global as any).SVGElement = (dom.window as any).SVGElement;
+      (global as any).SVGSVGElement = (dom.window as any).SVGSVGElement;
+
       const document = dom.window.document as unknown as Document;
       const parser = new dom.window.DOMParser();
       const svgDoc = parser.parseFromString(svg, 'image/svg+xml');

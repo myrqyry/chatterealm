@@ -41,34 +41,39 @@ const MaterialDialog: React.FC<MaterialDialogProps> = ({
           backgroundImage: 'none',
           border: '1px solid',
           borderColor: 'divider',
+          maxHeight: '92vh',
+          overflow: 'hidden',
+          margin: '8vh auto'
         }
       }}
     >
       {title && (
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            pb: 1
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              fontFamily: 'JetBrains Mono',
-              fontWeight: 600,
-              color: 'text.primary'
-            }}
-          >
-            {title}
-          </Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+            <DialogTitle
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                pb: 1
+              }}
+            >
+              <Typography
+                variant="h6"
+                className="title-font"
+                sx={{
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase'
+                }}
+              >
+                {title}
+              </Typography>
+              <IconButton onClick={onClose} size="small">
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
       )}
-      <DialogContent sx={{ pt: title ? 0 : 2 }}>
+      <DialogContent sx={{ pt: title ? 0 : 2, overflow: 'auto', maxHeight: 'calc(90vh - 120px)' }}>
         {children}
       </DialogContent>
       {actions && (

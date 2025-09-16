@@ -89,7 +89,7 @@ export class AssetConverterService {
    * Fetch an emoji SVG from a collection (default: Noto Emoji raw GitHub)
    * Currently supports 'noto' collection via raw.githubusercontent URLs.
    */
-  async fetchEmojiSvg(emoji: string, collection: 'noto' | 'svgmoji' = 'noto', opts?: { rough?: boolean; preset?: 'sketch' | 'cartoon' | 'technical' | 'wild'; options?: AssetConversionOptions }): Promise<string> {
+  async fetchEmojiSvg(emoji: string, collection: 'svgmoji' = 'svgmoji', opts?: { rough?: boolean; preset?: 'sketch' | 'cartoon' | 'technical' | 'wild'; options?: AssetConversionOptions }): Promise<string> {
     try {
       // First, try the backend API if available (helps centralize fetching + caching)
       try {
@@ -121,90 +121,83 @@ export class AssetConverterService {
       const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
       const filename = `emoji_u${codepoints.join('_')}.svg`;
 
-      // Prefer the installed @svgmoji/noto package when requesting svgmoji collection
-      if (collection === 'svgmoji') {
-        try {
-          // dynamic import so build doesn't require the package at top-level if absent
-          const mod = await import('@svgmoji/noto');
+      // Always use @svgmoji/noto package for SVG format
+      try {
+        // dynamic import so build doesn't require the package at top-level if absent
+        const mod = await import('@svgmoji/noto');
 
-          // Build a set of candidate keys to try against the svgmoji map
-          const buildCandidates = (emojiStr: string) => {
-            const cps = Array.from(emojiStr).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
-            const candidates: string[] = [];
+        // Build a set of candidate keys to try against the svgmoji map
+        const buildCandidates = (emojiStr: string) => {
+          const cps = Array.from(emojiStr).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
+          const candidates: string[] = [];
 
-            // Common svgmoji key format: 'u1f600' or 'u1f1fa_1f1f8' etc.
-            candidates.push(`u${cps.join('_')}`);
+          // Common svgmoji key format: 'u1f600' or 'u1f1fa_1f1f8' etc.
+          candidates.push(`u${cps.join('_')}`);
 
-            // Also try without 'u' prefix
-            candidates.push(cps.join('_'));
+          // Also try without 'u' prefix
+          candidates.push(cps.join('_'));
 
-            // Also try the short form (first codepoint) as a fallback
-            if (cps.length > 1) candidates.push(`u${cps[0]}`);
+          // Also try the short form (first codepoint) as a fallback
+          if (cps.length > 1) candidates.push(`u${cps[0]}`);
 
-            // Also try lowercase hex with hyphens (some collections use this)
-            candidates.push(cps.join('-'));
+          // Also try lowercase hex with hyphens (some collections use this)
+          candidates.push(cps.join('-'));
 
-            // Try a normalized sequence collapsing zero-width joiners (ZWJ)
-            const collapsed = cps.filter(cp => cp !== '200d').join('_');
-            if (collapsed) candidates.push(`u${collapsed}`);
+          // Try a normalized sequence collapsing zero-width joiners (ZWJ)
+          const collapsed = cps.filter(cp => cp !== '200d').join('_');
+          if (collapsed) candidates.push(`u${collapsed}`);
 
-            return Array.from(new Set(candidates));
-          };
+          return Array.from(new Set(candidates));
+        };
 
-          const tryResolveFromModule = (moduleAny: any, emojiStr: string): string | null => {
-            const candidates = buildCandidates(emojiStr);
+        const tryResolveFromModule = (moduleAny: any, emojiStr: string): string | null => {
+          const candidates = buildCandidates(emojiStr);
 
-            // Try function-style APIs first
-            if (typeof moduleAny.get === 'function') {
-              try {
-                const out = moduleAny.get(emojiStr);
-                if (out) return out;
-              } catch {}
-            }
-            if (typeof moduleAny.toSvg === 'function') {
-              try {
-                const out = moduleAny.toSvg(emojiStr);
-                if (out) return out;
-              } catch {}
-            }
-
-            // Try common export maps
-            const def = moduleAny.default || moduleAny;
-            if (def && typeof def === 'object') {
-              for (const k of candidates) {
-                if (def[k]) return def[k];
-              }
-            }
-
-            // Try direct export by candidate keys
-            for (const k of candidates) {
-              if (moduleAny[k]) return moduleAny[k];
-            }
-
-            return null;
-          };
-
-          const resolved = tryResolveFromModule(mod, emoji);
-          if (resolved) return resolved;
-
-          // If module looks like an object containing a nested 'svgmoji' map
-          if (mod && (mod as any).svgmoji) {
-            const nested = tryResolveFromModule((mod as any).svgmoji, emoji);
-            if (nested) return nested;
+          // Try function-style APIs first
+          if (typeof moduleAny.get === 'function') {
+            try {
+              const out = moduleAny.get(emojiStr);
+              if (out) return out;
+            } catch {}
+          }
+          if (typeof moduleAny.toSvg === 'function') {
+            try {
+              const out = moduleAny.toSvg(emojiStr);
+              if (out) return out;
+            } catch {}
           }
 
-          // If we couldn't resolve via package, fall back to raw fetch below
-        } catch (err) {
-          // dynamic import failed or package didn't provide usable API; fallback
-          console.warn('svgmoji dynamic import failed or no usable API, falling back to raw fetch', err);
-        }
-      }
+          // Try common export maps
+          const def = moduleAny.default || moduleAny;
+          if (def && typeof def === 'object') {
+            for (const k of candidates) {
+              if (def[k]) return def[k];
+            }
+          }
 
-      // Default: fetch from Noto raw GitHub (covers many emojis)
-      const url = `https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/${filename}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Failed to fetch Noto SVG: ${res.status}`);
-      return await res.text();
+          // Try direct export by candidate keys
+          for (const k of candidates) {
+            if (moduleAny[k]) return moduleAny[k];
+          }
+
+          return null;
+        };
+
+        const resolved = tryResolveFromModule(mod, emoji);
+        if (resolved) return resolved;
+
+        // If module looks like an object containing a nested 'svgmoji' map
+        if (mod && (mod as any).svgmoji) {
+          const nested = tryResolveFromModule((mod as any).svgmoji, emoji);
+          if (nested) return nested;
+        }
+
+        // If we couldn't resolve via package, throw error (no fallback)
+        throw new Error(`Emoji not found in @svgmoji/noto package: ${emoji}`);
+      } catch (err) {
+        // dynamic import failed or package didn't provide usable API; throw error
+        throw new Error(`Failed to load @svgmoji/noto package or emoji not found: ${emoji}`);
+      }
     } catch (err) {
       console.error('fetchEmojiSvg error:', err);
       throw err;
