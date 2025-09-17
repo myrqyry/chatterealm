@@ -193,7 +193,12 @@ const createMockItems = (): Item[] => [
     rarity: ItemRarity.UNCOMMON,
     description: 'A well-balanced iron sword',
     stats: { attack: 5 },
-    position: { x: 7, y: 6 }
+    position: { x: 7, y: 6 },
+    // Tarkov-style looting properties
+    isHidden: true,
+    revealDuration: 4000, // 4 seconds for uncommon
+    revealProgress: 0.0,
+    canBeLooted: false
   },
   {
     id: 'potion_1',
@@ -202,7 +207,12 @@ const createMockItems = (): Item[] => [
     rarity: ItemRarity.COMMON,
     description: 'Restores 50 HP',
     stats: { hp: 50 },
-    position: { x: 10, y: 9 }
+    position: { x: 10, y: 9 },
+    // Tarkov-style looting properties
+    isHidden: false, // This one is already revealed for demo
+    revealDuration: 2000,
+    revealProgress: 1.0,
+    canBeLooted: true
   },
   {
     id: 'shield_1',
@@ -211,7 +221,12 @@ const createMockItems = (): Item[] => [
     rarity: ItemRarity.COMMON,
     description: 'Basic wooden protection',
     stats: { defense: 3 },
-    position: { x: 14, y: 11 }
+    position: { x: 14, y: 11 },
+    // Tarkov-style looting properties
+    isHidden: true,
+    revealDuration: 2000,
+    revealProgress: 0.0,
+    canBeLooted: false
   },
   {
     id: 'boots_1',
@@ -221,7 +236,12 @@ const createMockItems = (): Item[] => [
     description: 'Increases movement speed',
     stats: { speed: 2 },
     specialEffect: 'increases movement speed',
-    position: { x: 2, y: 8 }
+    position: { x: 2, y: 8 },
+    // Tarkov-style looting properties
+    isHidden: true,
+    revealDuration: 8000, // 8 seconds for rare
+    revealProgress: 0.0,
+    canBeLooted: false
   }
 ];
 
@@ -233,6 +253,7 @@ export const createMockGameWorld = (): GameWorld => {
     players: createMockPlayers(),
     npcs: createMockNPCs(),
     items: createMockItems(),
+    buildings: [], // Mock buildings array
     cataclysmCircle: {
       center: { x: 20, y: 15 },
       radius: 40,

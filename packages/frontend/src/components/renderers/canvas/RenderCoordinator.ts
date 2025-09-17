@@ -5,6 +5,7 @@ import { drawAnimatedTerrainTile } from '../terrain/TerrainRenderer';
 import { drawAnimatedItem } from '../entities/ItemRenderer';
 import { drawAnimatedNPC } from '../entities/NPCRenderer';
 import { drawAnimatedPlayer } from '../entities/PlayerRenderer';
+import { drawAnimatedBuilding } from '../entities/BuildingRenderer';
 import { drawEffects } from '../effects/EffectRenderer';
 import { drawAnimatedGridLines } from './GridRenderer';
 import { Particle } from '../effects/ParticleSystem';
@@ -20,6 +21,7 @@ export const renderGame = (
   players: Player[],
   npcs: any[],
   items: Item[],
+  buildings: any[],
   showGrid: boolean,
   time: number,
   animationSettings: AnimationSettings,
@@ -49,6 +51,15 @@ export const renderGame = (
     }
   }
 
+  // Draw animated buildings
+  buildings.forEach(async building => {
+    try {
+      await drawAnimatedBuilding(rc, building.position.x, building.position.y, gridSize, building, time, animationSettings.seed);
+    } catch (error) {
+      console.warn('Failed to render building:', error);
+    }
+  });
+
   // Draw animated items with floating effect
   items.forEach(item => {
     if (item.position) {
@@ -64,9 +75,23 @@ export const renderGame = (
   });
 
   // Draw animated players with special effects
-  players.forEach(player => {
+  players.forEach(async player => {
     if (player.isAlive) {
-      drawAnimatedPlayer(rc, player.position.x, player.position.y, gridSize, player, time, addParticlesFn, animationSettings.seed);
+      try {
+        await drawAnimatedPlayer(rc, player.position.x, player.position.y, gridSize, player, time, addParticlesFn, animationSettings.seed);
+      } catch (error) {
+        console.warn('Failed to render player:', error);
+        // Fallback to basic rendering if emoji fails
+        const centerX = player.position.x * gridSize + gridSize / 2;
+        const centerY = player.position.y * gridSize + gridSize / 2;
+        rc.circle(centerX, centerY, 12, {
+          fill: '#FFD700',
+          fillStyle: 'solid',
+          stroke: '#FFF',
+          strokeWidth: 2,
+          roughness: 1
+        });
+      }
     }
   });
 

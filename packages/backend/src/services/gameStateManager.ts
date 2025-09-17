@@ -55,6 +55,7 @@ export class GameStateManager {
       players: [],
       npcs: [],
       items: [],
+      buildings: [], // Initialize empty buildings array
       cataclysmCircle: {
         center: { x: Math.floor(GAME_CONFIG.gridWidth / 2), y: Math.floor(GAME_CONFIG.gridHeight / 2) },
         radius: Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight),
@@ -509,7 +510,7 @@ export class GameStateManager {
     return this.gameWorld.players.find(p => p.id === playerId);
   }
 
-  // Item pickup - player picks up item from world
+  // Item pickup - player picks up item from world (Tarkov-style looting)
   public pickupItem(playerId: string, itemId: string): ItemResult {
     const player = this.getPlayer(playerId);
     const itemIndex = this.gameWorld.items.findIndex(i => i.id === itemId);
@@ -517,9 +518,25 @@ export class GameStateManager {
     if (itemIndex === -1) return { success: false, message: 'Item not found' };
 
     const item = this.gameWorld.items[itemIndex];
-    // Ensure item is adjacent or at the same position
-    if (!item.position || (Math.abs(player.position.x - item.position.x) + Math.abs(player.position.y - item.position.y) > 1)) {
+
+    // Check if player is close enough to interact with the item
+    if (!item.position || this.getDistance(player.position, item.position) > GAME_CONFIG.lootInteractionRadius) {
       return { success: false, message: 'Item out of reach' };
+    }
+
+    // If item is hidden, player must inspect it first
+    if (item.isHidden) {
+      return { success: false, message: 'Item is hidden. Use inspect_item first.' };
+    }
+
+    // If item is still revealing, can't pick it up yet
+    if (item.revealProgress < 1.0) {
+      return { success: false, message: 'Item is still being revealed.' };
+    }
+
+    // Item is fully revealed and can be picked up
+    if (!item.canBeLooted) {
+      return { success: false, message: 'This item cannot be looted.' };
     }
 
     // Add to inventory and remove from world
@@ -531,6 +548,103 @@ export class GameStateManager {
     this.recordEvent({ type: 'item_picked', data: { playerId, itemId } } as any);
 
     return { success: true, message: `Picked up ${item.name}`, item };
+  }
+
+  // Inspect item - starts the reveal process for hidden items
+  public inspectItem(playerId: string, itemId: string): ItemResult {
+    const player = this.getPlayer(playerId);
+    const itemIndex = this.gameWorld.items.findIndex(i => i.id === itemId);
+    if (!player) return { success: false, message: 'Player not found' };
+    if (itemIndex === -1) return { success: false, message: 'Item not found' };
+
+    const item = this.gameWorld.items[itemIndex];
+
+    // Check if player is close enough
+    if (!item.position || this.getDistance(player.position, item.position) > GAME_CONFIG.lootInteractionRadius) {
+      return { success: false, message: 'Item out of reach' };
+    }
+
+    // If item is not hidden, no need to inspect
+    if (!item.isHidden) {
+      return { success: false, message: 'Item is already visible.' };
+    }
+
+    // Start the reveal process
+    const now = Date.now();
+    item.isHidden = false;
+    item.revealStartTime = now;
+    item.lastInteractionTime = now;
+    item.revealProgress = 0.0;
+
+    this.recordEvent({ type: 'item_inspected', data: { playerId, itemId, revealStartTime: now } } as any);
+
+    return { success: true, message: `Started revealing ${item.name}`, item };
+  }
+
+  // Loot item - attempts to pick up a revealing item (Tarkov-style)
+  public lootItem(playerId: string, itemId: string): ItemResult {
+    const player = this.getPlayer(playerId);
+    const itemIndex = this.gameWorld.items.findIndex(i => i.id === itemId);
+    if (!player) return { success: false, message: 'Player not found' };
+    if (itemIndex === -1) return { success: false, message: 'Item not found' };
+
+    const item = this.gameWorld.items[itemIndex];
+
+    // Check if player is close enough
+    if (!item.position || this.getDistance(player.position, item.position) > GAME_CONFIG.lootInteractionRadius) {
+      return { success: false, message: 'Item out of reach' };
+    }
+
+    // If item is hidden, must inspect first
+    if (item.isHidden) {
+      return { success: false, message: 'Item is hidden. Use inspect_item first.' };
+    }
+
+    // If item is still revealing, can't loot yet
+    if (item.revealProgress < 1.0) {
+      return { success: false, message: 'Item is still being revealed.' };
+    }
+
+    // Try to loot the item (with potential failure chance for tension)
+    const lootSuccess = Math.random() > 0.05; // 95% success rate
+    if (!lootSuccess) {
+      // Failed loot attempt - item becomes temporarily unavailable
+      item.canBeLooted = false;
+      setTimeout(() => {
+        item.canBeLooted = true;
+      }, 5000); // 5 seconds cooldown
+
+      this.recordEvent({ type: 'loot_failed', data: { playerId, itemId } } as any);
+      return { success: false, message: 'Failed to loot item! Try again later.' };
+    }
+
+    // Successful loot
+    player.inventory.push(item);
+    item.ownerId = player.id;
+    item.position = undefined;
+    this.gameWorld.items.splice(itemIndex, 1);
+
+    this.recordEvent({ type: 'item_looted', data: { playerId, itemId } } as any);
+
+    return { success: true, message: `Successfully looted ${item.name}!`, item };
+  }
+
+  // Update item reveal progress over time
+  public updateItemReveals(): void {
+    const now = Date.now();
+
+    this.gameWorld.items.forEach(item => {
+      if (!item.isHidden && item.revealStartTime && item.revealProgress < 1.0) {
+        const elapsed = now - item.revealStartTime;
+        const revealDuration = GAME_CONFIG.itemRevealTimes[item.rarity];
+        item.revealProgress = Math.min(1.0, elapsed / revealDuration);
+
+        // If fully revealed, mark as lootable
+        if (item.revealProgress >= 1.0) {
+          item.canBeLooted = true;
+        }
+      }
+    });
   }
 
   // Use an item from player's inventory
@@ -725,7 +839,12 @@ export class GameStateManager {
         rarity: rarity as ItemRarity,
         description: `A ${rarity} ${itemType} dropped by ${defeated.name}`,
         position: { ...defeated.position },
-        stats: this.generateItemStats(itemType as string, rarity as string)
+        stats: this.generateItemStats(itemType as string, rarity as string),
+        // Tarkov-style looting properties
+        isHidden: true, // Items start hidden
+        revealDuration: GAME_CONFIG.itemRevealTimes[rarity as ItemRarity],
+        revealProgress: 0.0,
+        canBeLooted: false
       };
       loot.push(item);
       this.gameWorld.items.push(item);
@@ -756,6 +875,7 @@ export class GameStateManager {
   public update(): void {
     this.updateNPCs();
     this.updateCataclysm();
+    this.updateItemReveals(); // Update item reveal progress
     this.processPlayerMovementQueues();
   }
 
@@ -785,6 +905,7 @@ export class GameStateManager {
     if (!this.gameWorld.cataclysmCircle.isActive) return;
     const now = Date.now();
     if (now >= this.gameWorld.cataclysmCircle.nextShrinkTime) {
+      const oldRadius = this.gameWorld.cataclysmCircle.radius;
       this.gameWorld.cataclysmCircle.radius = Math.max(0, this.gameWorld.cataclysmCircle.radius - 1);
 
       // Calculate roughness multiplier based on cataclysm progress
@@ -792,6 +913,11 @@ export class GameStateManager {
       const initialRadius = Math.max(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight);
       const progress = 1 - (this.gameWorld.cataclysmCircle.radius / initialRadius);
       this.gameWorld.cataclysmRoughnessMultiplier = 1.0 + (progress * 3.0); // 1.0 to 4.0
+
+      // Regenerate terrain in the newly affected area (between old and new radius)
+      if (oldRadius > this.gameWorld.cataclysmCircle.radius) {
+        this.regenerateTerrainInCataclysmZone(oldRadius, this.gameWorld.cataclysmCircle.radius);
+      }
 
       if (this.gameWorld.cataclysmCircle.radius <= 0) {
         this.resetWorld();
@@ -806,10 +932,107 @@ export class GameStateManager {
     }
   }
 
+  private regenerateTerrainInCataclysmZone(oldRadius: number, newRadius: number): void {
+    const center = this.gameWorld.cataclysmCircle.center;
+
+    // Regenerate terrain in the ring between oldRadius and newRadius
+    for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
+      for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
+        const distance = Math.sqrt(Math.pow(x - center.x, 2) + Math.pow(y - center.y, 2));
+
+        // If this tile is in the affected zone (between old and new radius)
+        if (distance <= oldRadius && distance > newRadius) {
+          // Regenerate terrain with some cataclysm effects
+          const terrainType = this.generateTerrainType();
+          const config = GAME_CONFIG.terrainConfig[terrainType];
+
+          // Apply cataclysm transformation - make terrain more chaotic
+          let transformedType = terrainType;
+          if (Math.random() < 0.3) { // 30% chance of transformation
+            // Transform some terrain types to more dangerous/chaotic versions
+            switch (terrainType) {
+              case TerrainType.FOREST:
+                transformedType = Math.random() < 0.5 ? TerrainType.DENSE_FOREST : TerrainType.ANCIENT_RUINS;
+                break;
+              case TerrainType.PLAIN:
+                transformedType = Math.random() < 0.4 ? TerrainType.ROUGH_TERRAIN : TerrainType.ANCIENT_RUINS;
+                break;
+              case TerrainType.GRASSLAND:
+                transformedType = Math.random() < 0.3 ? TerrainType.SWAMP : TerrainType.FLOWER_FIELD;
+                break;
+              case TerrainType.MOUNTAIN:
+                transformedType = Math.random() < 0.5 ? TerrainType.MOUNTAIN_PEAK : TerrainType.ROUGH_TERRAIN;
+                break;
+            }
+          }
+
+          const transformedConfig = GAME_CONFIG.terrainConfig[transformedType];
+          this.gameWorld.grid[y][x] = {
+            type: transformedType,
+            position: { x, y },
+            movementCost: transformedConfig.movementCost,
+            defenseBonus: transformedConfig.defenseBonus,
+            visibilityModifier: transformedConfig.visibilityModifier
+          } as any;
+        }
+      }
+    }
+
+    // Generate new NPCs in the regenerated area
+    this.generateNPCsInZone(newRadius, oldRadius);
+  }
+
   private isInCataclysmCircle(position: Position): boolean {
     const center = this.gameWorld.cataclysmCircle.center;
     const distance = Math.sqrt(Math.pow(position.x - center.x,2) + Math.pow(position.y - center.y,2));
     return distance >= this.gameWorld.cataclysmCircle.radius;
+  }
+
+  private generateNPCsInZone(innerRadius: number, outerRadius: number): void {
+    const center = this.gameWorld.cataclysmCircle.center;
+    const npcCount = Math.floor((Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius)) * WORLD_CONSTANTS.NPC_SPAWN_CHANCE * 0.5);
+
+    for (let i = 0; i < npcCount; i++) {
+      // Find a position in the affected zone
+      let attempts = 0;
+      let position: Position | null = null;
+
+      while (attempts < 50 && !position) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = innerRadius + Math.random() * (outerRadius - innerRadius);
+        const x = Math.round(center.x + Math.cos(angle) * distance);
+        const y = Math.round(center.y + Math.sin(angle) * distance);
+
+        if (x >= 0 && x < GAME_CONFIG.gridWidth && y >= 0 && y < GAME_CONFIG.gridHeight &&
+            !this.occupiedPositions.has(`${x},${y}`) &&
+            this.gameWorld.grid[y][x].type !== TerrainType.MOUNTAIN) {
+          position = { x, y };
+        }
+        attempts++;
+      }
+
+      if (position) {
+        const npc: NPC = {
+          id: `npc_cataclysm_${i}_${Date.now()}`,
+          name: this.generateNPCName(),
+          type: 'monster',
+          position,
+          stats: {
+            hp: 40 + Math.floor(Math.random()*30),
+            maxHp: 40 + Math.floor(Math.random()*30),
+            attack: 5 + Math.floor(Math.random()*6),
+            defense: 2 + Math.floor(Math.random()*4),
+            speed: 1 + Math.floor(Math.random()*2)
+          },
+          behavior: 'wandering',
+          lootTable: [],
+          isAlive: true,
+          lastMoveTime: Date.now()
+        };
+        this.gameWorld.npcs.push(npc);
+        this.occupiedPositions.add(`${position.x},${position.y}`);
+      }
+    }
   }
 
   private resetWorld(): void {
@@ -875,6 +1098,11 @@ export class GameStateManager {
     const prefixes = ['Wild','Fierce','Ancient','Shadow','Blood'];
     const types = ['Wolf','Bear','Goblin','Orc','Troll','Spider','Snake'];
     return `${prefixes[Math.floor(Math.random()*prefixes.length)]} ${types[Math.floor(Math.random()*types.length)]}`;
+  }
+
+  // Helper: Calculate distance between two positions
+  private getDistance(pos1: Position, pos2: Position): number {
+    return Math.sqrt(Math.pow(pos2.x - pos1.x, 2) + Math.pow(pos2.y - pos1.y, 2));
   }
 
   // Helper: Find an empty spawn position

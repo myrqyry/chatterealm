@@ -7,6 +7,7 @@ interface CanvasSetup {
   tileSizePx: number;
   offset: { x: number; y: number };
   dpr: number;
+  renderScale: number;
   isReady: boolean;
 }
 
@@ -14,7 +15,8 @@ export const useCanvasSetup = (
   canvasRef: React.RefObject<HTMLCanvasElement>,
   containerSize: { width: number; height: number },
   grid: { length: number } | null,
-  innerPadding: number = 8
+  innerPadding: number = 8,
+  renderScale: number = 0.75 // Default to 75% resolution for better performance
 ): CanvasSetup => {
   const [isReady, setIsReady] = useState(false);
   const setupRef = useRef<CanvasSetup>({
@@ -23,6 +25,7 @@ export const useCanvasSetup = (
     tileSizePx: 0,
     offset: { x: 0, y: 0 },
     dpr: 1,
+    renderScale: renderScale,
     isReady: false,
   });
 
@@ -56,15 +59,20 @@ export const useCanvasSetup = (
     const renderedWidth = numTilesX * tileSizePx;
     const renderedHeight = numTilesY * tileSizePx;
 
-    // Set canvas dimensions
+    // Apply render scaling for performance optimization
+    const scaledWidth = Math.floor(containerSize.width * renderScale);
+    const scaledHeight = Math.floor(containerSize.height * renderScale);
+
+    // Set canvas dimensions with scaling
     canvas.style.width = `${containerSize.width}px`;
     canvas.style.height = `${containerSize.height}px`;
-    canvas.width = Math.floor(containerSize.width * dpr);
-    canvas.height = Math.floor(containerSize.height * dpr);
+    canvas.width = Math.floor(scaledWidth * dpr);
+    canvas.height = Math.floor(scaledHeight * dpr);
 
-    // Apply DPR scaling
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.imageSmoothingEnabled = false;
+    // Apply DPR and render scaling
+    ctx.setTransform(dpr * renderScale, 0, 0, dpr * renderScale, 0, 0);
+    ctx.imageSmoothingEnabled = true; // Enable smoothing for scaled rendering
+    ctx.imageSmoothingQuality = 'high';
 
     // Center the game world
     const offsetX = innerPadding + (effectiveCssWidth - renderedWidth) / 2;
@@ -78,6 +86,7 @@ export const useCanvasSetup = (
       tileSizePx,
       offset: { x: offsetX, y: offsetY },
       dpr,
+      renderScale,
       isReady: true,
     };
 
@@ -87,7 +96,7 @@ export const useCanvasSetup = (
     return () => {
       ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     };
-  }, [canvasRef, containerSize, grid, innerPadding]);
+  }, [canvasRef, containerSize, grid, innerPadding, renderScale]);
 
   return setupRef.current;
 };

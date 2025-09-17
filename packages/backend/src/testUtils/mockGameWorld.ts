@@ -21,6 +21,7 @@ export const createMockGameWorld = (gridWidth: number, gridHeight: number): Game
     players: [],
     npcs: [],
     items: [],
+    buildings: [], // Mock buildings array
     cataclysmCircle: {
       center: { x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2) },
       radius: Math.max(gridWidth, gridHeight),

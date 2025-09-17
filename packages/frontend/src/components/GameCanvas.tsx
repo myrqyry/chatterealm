@@ -16,6 +16,7 @@ import { useCanvasSetup } from './GameCanvas/hooks/useCanvasSetup';
 import { useParticleManager } from './GameCanvas/managers/ParticleManager';
 import { useEffectManager } from './GameCanvas/managers/EffectManager';
 import { useRegenerationManager } from './GameCanvas/managers/RegenerationManager';
+import { webSocketClient } from '../services/webSocketClient';
 
 const GameCanvas: React.FC = () => {
   const gameWorld = useGameStore(state => state.gameWorld);
@@ -26,7 +27,13 @@ const GameCanvas: React.FC = () => {
 
   // Use the new hooks and managers
   const containerSize = useContainerResize(containerRef);
-  const canvasSetup = useCanvasSetup(canvasRef, containerSize, gameWorld?.grid, 8);
+  const canvasSetup = useCanvasSetup(
+    canvasRef, 
+    containerSize, 
+    gameWorld?.grid, 
+    8,
+    unifiedSettings.visual.renderScale || 0.75 // Use setting or default to 75%
+  );
   const { particles, addParticles, updateParticles } = useParticleManager({ 
     animationSettings: unifiedSettings.animations, 
     onAddParticles: undefined 
@@ -41,6 +48,7 @@ const GameCanvas: React.FC = () => {
   const grid = gameWorld?.grid || [];
   const players = gameWorld?.players || [];
   const npcs = gameWorld?.npcs || [];
+  const buildings = gameWorld?.buildings || [];
   const items = gameWorld?.items || [];
   const showGrid = unifiedSettings.animations?.showGrid ?? true;
   const animationSettings = unifiedSettings.animations;
@@ -126,6 +134,7 @@ const GameCanvas: React.FC = () => {
           playersRef.current,
           npcsRef.current,
           itemsRef.current,
+          buildings,
           showGridRef.current,
           time,
           animationSettingsRef.current,
@@ -171,11 +180,49 @@ const GameCanvas: React.FC = () => {
     const currentPlayer = useGameStore.getState().currentPlayer;
     if (!currentPlayer) return;
 
+    // Check if clicked on an item for looting interaction
+    const clickedItem = gameWorld.items.find(item => 
+      item.position && item.position.x === tx && item.position.y === ty
+    );
+
+    if (clickedItem) {
+      handleItemInteraction(clickedItem, currentPlayer);
+      return;
+    }
+
+    // Default: move to clicked location
     useGameStore.getState().moveTo({ x: tx, y: ty });
 
     const pixelX = tx * canvasSetup.tileSizePx + canvasSetup.tileSizePx / 2;
     const pixelY = ty * canvasSetup.tileSizePx + canvasSetup.tileSizePx / 2;
     triggerDrawEffect(pixelX, pixelY, 'circle');
+  };
+
+  const handleItemInteraction = (item: Item, player: Player) => {
+    // Check distance to item
+    const distance = Math.sqrt(
+      Math.pow(item.position!.x - player.position.x, 2) + 
+      Math.pow(item.position!.y - player.position.y, 2)
+    );
+
+    if (distance > GAME_CONFIG.lootInteractionRadius) {
+      useGameStore.getState().setGameMessage('Item is too far away');
+      return;
+    }
+
+    if (item.isHidden) {
+      // Inspect hidden item
+      webSocketClient.inspectItem(item.id);
+    } else if (item.revealProgress >= 1.0 && item.canBeLooted) {
+      // Loot revealed item
+      webSocketClient.lootItem(item.id);
+    } else if (item.revealProgress < 1.0) {
+      // Item is still revealing
+      useGameStore.getState().setGameMessage('Item is still being revealed...');
+    } else {
+      // Item not lootable
+      useGameStore.getState().setGameMessage('Cannot loot this item right now');
+    }
   };
 
   return (

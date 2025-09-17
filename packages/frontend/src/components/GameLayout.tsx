@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GameCanvas from './GameCanvas';
 import NotificationSystem from './NotificationSystem';
-import UnifiedSettingsMenuModal from './UnifiedSettingsMenuModal';
+import PlayerSidebar from './sidebars/PlayerSidebar';
 import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from './index';
 import { useGameStore } from '../stores/gameStore';
 import { COLORS } from '../utils/tokens';
+import { PlayerClass } from 'shared';
 
 interface GameLayoutProps {
   handleRegenerateWorld: () => void;
@@ -23,9 +24,44 @@ const GameLayout: React.FC<GameLayoutProps> = ({
 }) => {
   const { gameWorld, currentPlayer, gameMessage } = useGameStore();
 
+  const handleJoin = () => {
+    handleJoinGame();
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen m-0 p-0 overflow-hidden box-border bg-[var(--color-background-primary)] font-inter">
       <NotificationSystem />
+
+      {/* Header */}
+      <div className="p-4 border-b border-[var(--color-outline)] bg-[var(--color-surface-variant)]">
+        <div className="flex items-center justify-between">
+          <h1 className="font-serif text-xl font-extrabold text-text-primary m-0 uppercase tracking-widest text-center header-gradient">chatterealm</h1>
+          <div className="flex items-center gap-4">
+            <MaterialChip
+              label={`Phase: ${gameWorld?.phase || 'Unknown'}`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(76, 175, 80, 0.2)' }}
+            />
+            <MaterialChip
+              label={`${gameWorld?.players?.length || 0} Players`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(33, 150, 243, 0.2)' }}
+            />
+            <MaterialChip
+              label={`${gameWorld?.npcs?.length || 0} NPCs`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(156, 39, 176, 0.2)' }}
+            />
+          </div>
+        </div>
+
+        {/* Game Message */}
+        {gameMessage && (
+          <MaterialCard sx={{ mt: 2, p: 2, backgroundColor: 'var(--color-primary-container)', border: '1px solid var(--color-primary)' }}>
+            <p className="text-sm text-[var(--color-on-primary-container)] m-0">{gameMessage}</p>
+          </MaterialCard>
+        )}
+      </div>
 
       {/* Main Content Area - Two Column Layout */}
       <div className="flex flex-1 overflow-hidden">
@@ -59,8 +95,8 @@ const GameLayout: React.FC<GameLayoutProps> = ({
           </MaterialPaper>
         </div>
 
-        {/* Right Sidebar - Comprehensive Settings Modal Interface */}
-        <UnifiedSettingsMenuModal />
+        {/* Right Sidebar - Player Controls and Settings */}
+        <PlayerSidebar />
       </div>
     </div>
   );

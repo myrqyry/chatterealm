@@ -10,6 +10,18 @@ export const GAME_CONFIG: GameSettings = {
   spawnCost: 100, // channel points to spawn
   autoWanderCost: 50, // channel points for auto-wander
   nightMode: false, // Default to day mode
+  // Tarkov-style looting settings
+  lootingEnabled: true,
+  itemRevealTimes: {
+    common: 2000, // 2 seconds
+    uncommon: 4000, // 4 seconds
+    rare: 8000, // 8 seconds
+    epic: 15000, // 15 seconds
+    legendary: 30000 // 30 seconds
+  },
+  maxItemsPerTile: 3,
+  itemSpawnRate: 0.15, // 15% chance when terrain regenerates
+  lootInteractionRadius: 1, // Adjacent tiles
   baseStats: {
     [PlayerClass.KNIGHT]: {
       hp: 120,

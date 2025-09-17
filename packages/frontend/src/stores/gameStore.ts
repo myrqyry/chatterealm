@@ -138,6 +138,9 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     showParticles: true,
     showHealthBars: true,
     backgroundColor: '#191724',
+
+    // Performance Settings
+    renderScale: 0.75,
   },
 
   world: {
@@ -488,6 +491,7 @@ export const useGameStore = create<GameState>()(
                     showParticles: legacySettings.showParticles ?? legacyAnimationSettings.showParticles ?? true,
                     showHealthBars: legacySettings.showHealthBars ?? legacyAnimationSettings.showHealthBars ?? true,
                     backgroundColor: legacySettings.backgroundColor ?? legacyAnimationSettings.backgroundColor ?? '#191724',
+                    renderScale: 0.75, // Default render scale for performance
                   },
                   world: {
                     worldWidth: legacyAnimationSettings.worldWidth ?? 40,

@@ -1,7 +1,7 @@
-import type { GameWorld } from 'shared';
-import { ItemType, ItemRarity } from 'shared';
+import { GameWorld, ItemType, ItemRarity } from '../../../../shared/src/types/game';
 import { WORLD_WIDTH, WORLD_HEIGHT } from './WorldTypes';
 import { generateTerrain } from './TerrainGenerator';
+import { generateBuildings } from './BuildingGenerator';
 
 export const createMockGameWorld = (): GameWorld => {
   const grid: any[][] = [];
@@ -12,6 +12,8 @@ export const createMockGameWorld = (): GameWorld => {
       grid[y][x] = generateTerrain(x, y);
     }
   }
+
+  const buildings = generateBuildings(grid, WORLD_WIDTH, WORLD_HEIGHT);
 
   return {
     id: 'mock_world_1',
@@ -59,8 +61,13 @@ export const createMockGameWorld = (): GameWorld => {
       rarity: ItemRarity.UNCOMMON,
       description: 'A well-balanced iron sword',
       stats: { attack: 5 },
-      position: { x: 8, y: 6 }
+      position: { x: 8, y: 6 },
+      isHidden: false,
+      revealDuration: 0,
+      revealProgress: 1.0,
+      canBeLooted: true
     }],
+    buildings,
     cataclysmCircle: {
   center: { x: 20, y: 15 },
   radius: 40,

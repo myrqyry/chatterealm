@@ -100,6 +100,17 @@ export class WebSocketServer {
         this.handlePlayerCommand(socket, command);
       });
 
+      // Tarkov-style looting commands
+      socket.on('inspect_item', (itemId: string) => {
+        console.log(`[INSPECT_ITEM] Socket ${socket.id} inspecting item:`, itemId);
+        this.handleInspectItem(socket, itemId);
+      });
+
+      socket.on('loot_item', (itemId: string) => {
+        console.log(`[LOOT_ITEM] Socket ${socket.id} looting item:`, itemId);
+        this.handleLootItem(socket, itemId);
+      });
+
       // Handle client disconnect
       socket.on('disconnect', () => {
         this.handlePlayerDisconnect(socket);
@@ -349,6 +360,64 @@ export class WebSocketServer {
     }
 
     return result;
+  }
+
+  private handleInspectItem(socket: Socket, itemId: string): void {
+    try {
+      const clientData = this.connectedClients.get(socket.id);
+      if (!clientData) {
+        socket.emit('error', { message: 'Not authenticated' });
+        return;
+      }
+
+      const result = this.gameStateManager.inspectItem(clientData.playerId, itemId);
+
+      socket.emit('command_result', {
+        command: 'inspect_item',
+        success: result.success,
+        message: result.message,
+        data: result.data
+      });
+
+      if (result.success) {
+        this.broadcastGameDeltas();
+      }
+    } catch (error) {
+      console.error('Error handling inspect item:', error);
+      socket.emit('error', { message: 'Inspect item failed' });
+    }
+  }
+
+  private handleLootItem(socket: Socket, itemId: string): void {
+    try {
+      const clientData = this.connectedClients.get(socket.id);
+      if (!clientData) {
+        socket.emit('error', { message: 'Not authenticated' });
+        return;
+      }
+
+      const result = this.gameStateManager.lootItem(clientData.playerId, itemId);
+
+      if (result.success) {
+        socket.emit('loot_success', { item: result.item });
+      } else {
+        socket.emit('loot_failure', { reason: result.message });
+      }
+
+      socket.emit('command_result', {
+        command: 'loot_item',
+        success: result.success,
+        message: result.message,
+        data: result.data
+      });
+
+      if (result.success) {
+        this.broadcastGameDeltas();
+      }
+    } catch (error) {
+      console.error('Error handling loot item:', error);
+      socket.emit('error', { message: 'Loot item failed' });
+    }
   }
 
   private handlePlayerDisconnect(socket: Socket): void {

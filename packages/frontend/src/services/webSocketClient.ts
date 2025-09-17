@@ -155,6 +155,30 @@ export class WebSocketClient {
       throttledError('SERVER_ERROR', `Server error: ${error.message}`);
       useGameStore.getState().setGameMessage(`Server error: ${error.message}`);
     });
+
+    // Tarkov-style looting events
+    this.socket.on('item_reveal_update', (data: { itemId: string; revealProgress: number }) => {
+      throttledLog('ITEM_REVEAL_UPDATE', `Item ${data.itemId} reveal progress: ${data.revealProgress}`);
+      // Update item reveal progress in the game world
+      const currentWorld = useGameStore.getState().gameWorld;
+      if (currentWorld) {
+        const item = currentWorld.items.find(i => i.id === data.itemId);
+        if (item) {
+          item.revealProgress = data.revealProgress;
+          useGameStore.getState().setGameWorld({ ...currentWorld });
+        }
+      }
+    });
+
+    this.socket.on('loot_success', (data: { item: any }) => {
+      throttledLog('LOOT_SUCCESS', `Successfully looted ${data.item.name}`);
+      useGameStore.getState().setGameMessage(`Successfully looted ${data.item.name}!`);
+    });
+
+    this.socket.on('loot_failure', (data: { reason: string }) => {
+      throttledWarn('LOOT_FAILURE', `Loot failed: ${data.reason}`);
+      useGameStore.getState().setGameMessage(`Loot failed: ${data.reason}`);
+    });
   }
 
   private handleDisconnect(reason: string): void {
@@ -292,6 +316,41 @@ export class WebSocketClient {
     this.sendPlayerCommand({
       type: 'start_cataclysm'
     });
+  }
+
+  // Tarkov-style looting commands
+  public inspectItem(itemId: string): void {
+    if (!this.socket || !this.isConnected) {
+      throttledError('CLIENT_ERROR', 'Cannot inspect item - not connected');
+      useGameStore.getState().setGameMessage('Not connected to game server');
+      return;
+    }
+
+    const currentPlayer = useGameStore.getState().currentPlayer;
+    if (!currentPlayer) {
+      throttledError('CLIENT_ERROR', 'No current player found when inspecting item');
+      useGameStore.getState().setGameMessage('No current player found');
+      return;
+    }
+
+    this.socket.emit('inspect_item', itemId);
+  }
+
+  public lootItem(itemId: string): void {
+    if (!this.socket || !this.isConnected) {
+      throttledError('CLIENT_ERROR', 'Cannot loot item - not connected');
+      useGameStore.getState().setGameMessage('Not connected to game server');
+      return;
+    }
+
+    const currentPlayer = useGameStore.getState().currentPlayer;
+    if (!currentPlayer) {
+      throttledError('CLIENT_ERROR', 'No current player found when looting item');
+      useGameStore.getState().setGameMessage('No current player found');
+      return;
+    }
+
+    this.socket.emit('loot_item', itemId);
   }
 
   // Connection status

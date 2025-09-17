@@ -1,16 +1,20 @@
 import type { Player } from 'shared';
+import { assetConverter } from '../../../services/assetConverter';
 
 interface ParticleEmitter {
   (x: number, y: number, color: string, count?: number): void;
 }
 
+// Cache for emoji SVGs to avoid repeated fetches
+const emojiCache = new Map<string, { svg: string; lastUsed: number }>();
+
 // Accept optional `seed` parameter for deterministic/randomized particle effects.
-export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: number, player: Player, time: number, addParticles: ParticleEmitter, seed?: number) => {
+export const drawAnimatedPlayer = async (rc: any, x: number, y: number, gridSize: number, player: Player, time: number, addParticles: ParticleEmitter, seed?: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
   const ctx = (rc as any).ctx;
 
-  // Class-specific colors and effects
+  // Class-specific colors and effects (kept for compatibility)
   const classData = {
     knight: { color: '#FFD700', secondary: '#B8860B', particleColor: '#FFD700' },
     rogue: { color: '#8B0000', secondary: '#DC143C', particleColor: '#FF4500' },
@@ -19,74 +23,131 @@ export const drawAnimatedPlayer = (rc: any, x: number, y: number, gridSize: numb
 
   const currentClass = classData[player.class as keyof typeof classData] || classData.knight;
 
-  // Magical aura for all players
-  const auraRadius = 24 + Math.sin(time * 0.02) * 2; // Much slower, gentler aura pulsing
-  rc.circle(centerX, centerY, auraRadius, {
-    fill: currentClass.color,
-    fillStyle: 'solid',
-    stroke: currentClass.secondary,
-    strokeWidth: 4, // Thicker stroke
-    roughness: 2
-  });
+  // Try to render emoji avatar
+  let emojiRendered = false;
+  if (player.avatar && player.avatar.trim()) {
+    try {
+      // Check cache first
+      const cacheKey = player.avatar;
+      let emojiSvg = emojiCache.get(cacheKey);
 
-  // Main player body with subtle pulsing
-  const pulseScale = 1 + Math.sin(time * 0.025) * 0.05; // Much slower, gentler pulsing
-  rc.circle(centerX, centerY, 14 * pulseScale, { // Larger base size
-    fill: currentClass.color,
-    fillStyle: 'solid',
-    stroke: '#FFF',
-    strokeWidth: 6, // Thicker stroke
-    roughness: 1
-  });
+      // If not in cache or older than 5 minutes, fetch it
+      if (!emojiSvg || (Date.now() - emojiSvg.lastUsed) > 300000) {
+        const fetchedSvg = await assetConverter.fetchEmojiSvg(player.avatar, 'svgmoji', {
+          rough: true,
+          preset: 'sketch',
+          options: {
+            roughness: 1.2,
+            bowing: 1.5,
+            randomize: true,
+            seed: seed || Math.floor(time * 1000) % 1000 // Use time-based seed for animation
+          }
+        });
+        emojiSvg = { svg: fetchedSvg, lastUsed: Date.now() };
+        emojiCache.set(cacheKey, emojiSvg);
+      }
 
-  // Class-specific visual effects
-  if (player.class === 'knight') {
-    // Knight: Shield effect
-    rc.rectangle(centerX - 10, centerY - 10, 6, 16, { // Larger shield
-      fill: '#C0C0C0',
+      if (emojiSvg.svg) {
+        // Convert SVG to rough.js canvas and draw it
+        const converted = await assetConverter.convertSvgToCanvas(emojiSvg.svg, {
+          roughness: 1.2 + Math.sin(time * 0.01) * 0.3, // Animate roughness
+          bowing: 1.5 + Math.sin(time * 0.015) * 0.5,   // Animate bowing
+          randomize: true,
+          seed: seed || Math.floor(time * 1000) % 1000
+        });
+
+        if (converted.canvas) {
+          // Scale and position the emoji canvas
+          const scale = (gridSize * 0.6) / 32; // Assuming 32px emoji, scale to 60% of grid size
+          const emojiSize = 32 * scale;
+          const emojiX = centerX - emojiSize / 2;
+          const emojiY = centerY - emojiSize / 2;
+
+          // Draw the rough canvas onto the main canvas
+          ctx.save();
+          ctx.drawImage(converted.canvas, emojiX, emojiY, emojiSize, emojiSize);
+          ctx.restore();
+        }
+
+        emojiRendered = true;
+      }
+    } catch (error) {
+      console.warn('Failed to render emoji avatar:', error);
+      // Fall back to default rendering
+    }
+  }
+
+  // Fallback to class-specific rendering if emoji failed
+  if (!emojiRendered) {
+    // Magical aura for all players
+    const auraRadius = 24 + Math.sin(time * 0.02) * 2; // Much slower, gentler aura pulsing
+    rc.circle(centerX, centerY, auraRadius, {
+      fill: currentClass.color,
       fillStyle: 'solid',
-      stroke: '#808080',
-      strokeWidth: 4, // Thicker
+      stroke: currentClass.secondary,
+      strokeWidth: 4, // Thicker stroke
+      roughness: 2
+    });
+
+    // Main player body with subtle pulsing
+    const pulseScale = 1 + Math.sin(time * 0.025) * 0.05; // Much slower, gentler pulsing
+    rc.circle(centerX, centerY, 14 * pulseScale, { // Larger base size
+      fill: currentClass.color,
+      fillStyle: 'solid',
+      stroke: '#FFF',
+      strokeWidth: 6, // Thicker stroke
       roughness: 1
     });
-    // Cross on shield
-    rc.line(centerX - 7, centerY - 8, centerX - 7, centerY + 8, { // Larger cross
-      stroke: '#FFD700',
-      strokeWidth: 6 // Thicker
-    });
-    rc.line(centerX - 10, centerY, centerX - 4, centerY, {
-      stroke: '#FFD700',
-      strokeWidth: 6
-    });
-  } else if (player.class === 'rogue') {
-    // Rogue: Daggers/stealth effect
-    for (let d = 0; d < 2; d++) {
-      const daggerX = centerX + (d === 0 ? -8 : 8); // Further apart
-      const daggerY = centerY - 3;
-      rc.polygon([
-        [daggerX - 2, daggerY - 6], // Larger daggers
-        [daggerX + 2, daggerY - 6],
-        [daggerX, daggerY + 3]
-      ], {
+
+    // Class-specific visual effects
+    if (player.class === 'knight') {
+      // Knight: Shield effect
+      rc.rectangle(centerX - 10, centerY - 10, 6, 16, { // Larger shield
         fill: '#C0C0C0',
         fillStyle: 'solid',
         stroke: '#808080',
-        strokeWidth: 4 // Thicker
+        strokeWidth: 4, // Thicker
+        roughness: 1
       });
-    }
-  } else if (player.class === 'mage') {
-    // Mage: Magical runes
-    const runeOffset = Math.sin(time * 0.015) * 3; // Much slower rune movement
-    for (let r = 0; r < 3; r++) {
-      const angle = (r * Math.PI * 2) / 3;
-      const runeX = centerX + Math.cos(angle) * (16 + runeOffset); // Larger radius
-      const runeY = centerY + Math.sin(angle) * (16 + runeOffset);
-      rc.circle(runeX, runeY, 3, { // Larger runes
-        fill: '#9370DB',
-        fillStyle: 'solid',
-        stroke: '#8A2BE2',
-        strokeWidth: 4 // Thicker
+      // Cross on shield
+      rc.line(centerX - 7, centerY - 8, centerX - 7, centerY + 8, { // Larger cross
+        stroke: '#FFD700',
+        strokeWidth: 6 // Thicker
       });
+      rc.line(centerX - 10, centerY, centerX - 4, centerY, {
+        stroke: '#FFD700',
+        strokeWidth: 6
+      });
+    } else if (player.class === 'rogue') {
+      // Rogue: Daggers/stealth effect
+      for (let d = 0; d < 2; d++) {
+        const daggerX = centerX + (d === 0 ? -8 : 8); // Further apart
+        const daggerY = centerY - 3;
+        rc.polygon([
+          [daggerX - 2, daggerY - 6], // Larger daggers
+          [daggerX + 2, daggerY - 6],
+          [daggerX, daggerY + 3]
+        ], {
+          fill: '#C0C0C0',
+          fillStyle: 'solid',
+          stroke: '#808080',
+          strokeWidth: 4 // Thicker
+        });
+      }
+    } else if (player.class === 'mage') {
+      // Mage: Magical runes
+      const runeOffset = Math.sin(time * 0.015) * 3; // Much slower rune movement
+      for (let r = 0; r < 3; r++) {
+        const angle = (r * Math.PI * 2) / 3;
+        const runeX = centerX + Math.cos(angle) * (16 + runeOffset); // Larger radius
+        const runeY = centerY + Math.sin(angle) * (16 + runeOffset);
+        rc.circle(runeX, runeY, 3, { // Larger runes
+          fill: '#9370DB',
+          fillStyle: 'solid',
+          stroke: '#8A2BE2',
+          strokeWidth: 4 // Thicker
+        });
+      }
     }
   }
 
