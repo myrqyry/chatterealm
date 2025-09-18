@@ -62,7 +62,7 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
 
   const toggleSound = () => {
     updateAudioSettings({
-      masterVolume: unifiedSettings.audio.masterVolume > 0 ? 0 : 0.7
+      audioMasterVolume: unifiedSettings.audio.audioMasterVolume > 0 ? 0 : 0.7
     });
   };
 
@@ -229,7 +229,7 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
                     <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-2">Quick Settings</h4>
                     <div className="flex flex-wrap gap-2">
                       <MaterialChip
-                        label={unifiedSettings.audio.masterVolume > 0 ? "🔊 Sound On" : "🔇 Sound Off"}
+                        label={unifiedSettings.audio.audioMasterVolume > 0 ? "🔊 Sound On" : "🔇 Sound Off"}
                         onClick={toggleSound}
                         size="small"
                         sx={{ cursor: 'pointer' }}
@@ -274,8 +274,8 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
                     min="0"
                     max="1"
                     step="0.1"
-                    value={unifiedSettings.audio.masterVolume}
-                    onChange={(e) => updateAudioSettings({ masterVolume: parseFloat(e.target.value) })}
+                    value={unifiedSettings.audio.audioMasterVolume}
+                    onChange={(e) => updateAudioSettings({ audioMasterVolume: parseFloat(e.target.value) })}
                     className="w-full"
                   />
                 </div>
@@ -317,13 +317,22 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
                     onChange={(e) => updateAnimationSettings({ showParticles: e.target.checked })}
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[var(--color-text-primary)]">Smooth Animations</span>
+                <div>
+                  <label className="block text-xs text-[var(--color-text-secondary)] mb-1">Render Scale ({Math.round(unifiedSettings.visual.renderScale * 100)}%)</label>
                   <input
-                    type="checkbox"
-                    checked={unifiedSettings.animations.smoothAnimations}
-                    onChange={(e) => updateAnimationSettings({ smoothAnimations: e.target.checked })}
+                    type="range"
+                    min="0.25"
+                    max="1.0"
+                    step="0.05"
+                    value={unifiedSettings.visual.renderScale}
+                    onChange={(e) => updateVisualSettings({ renderScale: parseFloat(e.target.value) })}
+                    className="w-full"
                   />
+                  <div className="flex justify-between text-xs text-[var(--color-text-secondary)] mt-1">
+                    <span>25%</span>
+                    <span>75%</span>
+                    <span>100%</span>
+                  </div>
                 </div>
               </div>
             </MaterialCard>
@@ -339,16 +348,8 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
                   <span className="text-sm text-[var(--color-text-primary)]">Auto-save</span>
                   <input
                     type="checkbox"
-                    checked={unifiedSettings.game.autoSave}
-                    onChange={(e) => useGameStore.getState().updateGameSettings({ autoSave: e.target.checked })}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-[var(--color-text-primary)]">Show Tooltips</span>
-                  <input
-                    type="checkbox"
-                    checked={unifiedSettings.game.showTooltips}
-                    onChange={(e) => useGameStore.getState().updateGameSettings({ showTooltips: e.target.checked })}
+                    checked={unifiedSettings.game.autoSaveEnabled}
+                    onChange={(e) => useGameStore.getState().updateGameSettings({ autoSaveEnabled: e.target.checked })}
                   />
                 </div>
               </div>

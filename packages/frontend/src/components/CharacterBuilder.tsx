@@ -236,7 +236,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
             <div className="flex flex-col items-center gap-3">
               <div
                 ref={avatarRef}
-                className={`w-44 h-44 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/50 emoji-font transition-all duration-200 ${isAnimating ? 'scale-105' : ''}`}
+                className={`w-64 h-64 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-blue-500/20 border-2 border-purple-400/50 emoji-font transition-all duration-200 ${isAnimating ? 'scale-105' : ''}`}
               >
                 {selectedAvatar === 'custom' && customAvatar ? (
                   <div className="w-full h-full flex items-center justify-center" dangerouslySetInnerHTML={{ __html: (useHandDrawn && customAvatar.rough) ? customAvatar.rough : customAvatar.original }} />

@@ -53,21 +53,16 @@ const MaterialDialog: React.FC<MaterialDialogProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                pb: 1
+                pb: 1,
+                fontWeight: 700,
+                color: 'text.primary',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                fontSize: '1.25rem',
+                lineHeight: 1.6
               }}
             >
-              <Typography
-                variant="h6"
-                className="title-font"
-                sx={{
-                  fontWeight: 700,
-                  color: 'text.primary',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase'
-                }}
-              >
-                {title}
-              </Typography>
+              <span className="title-font">{title}</span>
               <IconButton onClick={onClose} size="small">
                 <CloseIcon />
               </IconButton>

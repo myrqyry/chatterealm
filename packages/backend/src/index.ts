@@ -102,76 +102,24 @@ async function resolveEmojiSvg(emoji: string): Promise<string> {
   const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
   const filename = `emoji_u${codepoints.join('_')}.svg`;
 
-  // Try svgmoji if available
+  // Try @svgmoji/noto CDN URLs
   try {
-    // Load @svgmoji/noto at runtime only to avoid static TypeScript
-    // resolution errors in environments where types aren't available.
-    let mod: any = null;
-    try {
-      // Use eval('require') to avoid static analysis by TypeScript.
-      // eslint-disable-next-line no-eval
-      const runtimeRequire: any = eval('require');
-      mod = runtimeRequire('@svgmoji/noto');
-    } catch (e) {
-      try {
-        // If require failed (e.g., ESM-only), try dynamic import as a last resort
-        // wrapped in a try/catch to avoid compile-time module checks.
-        // eslint-disable-next-line @typescript-eslint/no-implied-eval
-        // @ts-ignore
-        mod = await (globalThis as any).import?.('@svgmoji/noto');
-      } catch (err) {
-        mod = null;
-      }
+    const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).padStart(4, '0').toLowerCase());
+    const hexCode = codepoints.join('-');
+    const cdnUrl = `https://cdn.jsdelivr.net/npm/@svgmoji/noto@latest/svg/${hexCode}.svg`;
+    
+    console.log(`Backend: Trying CDN URL for ${emoji}: ${cdnUrl}`);
+    const response = await fetch(cdnUrl);
+    if (response.ok) {
+      const svgText = await response.text();
+      console.log(`Backend: Successfully fetched emoji ${emoji} from CDN`);
+      emojiCache.set(cacheKey, { svg: svgText, fetchedAt: Date.now() });
+      return svgText;
+    } else {
+      console.warn(`Backend: CDN fetch failed for ${emoji}: ${response.status} ${response.statusText}`);
     }
-
-    const buildCandidates = (emojiStr: string) => {
-      const cps = Array.from(emojiStr).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
-      const candidates: string[] = [];
-      candidates.push(`u${cps.join('_')}`);
-      candidates.push(cps.join('_'));
-      if (cps.length > 1) candidates.push(`u${cps[0]}`);
-      candidates.push(cps.join('-'));
-      const collapsed = cps.filter(cp => cp !== '200d').join('_');
-      if (collapsed) candidates.push(`u${collapsed}`);
-      return Array.from(new Set(candidates));
-    };
-
-    const tryResolveFromModule = (moduleAny: any, emojiStr: string): string | null => {
-      const candidates = buildCandidates(emojiStr);
-      if (typeof moduleAny.get === 'function') {
-        try { const out = moduleAny.get(emojiStr); if (out) return out; } catch {}
-      }
-      if (typeof moduleAny.toSvg === 'function') {
-        try { const out = moduleAny.toSvg(emojiStr); if (out) return out; } catch {}
-      }
-      const def = moduleAny.default || moduleAny;
-      if (def && typeof def === 'object') {
-        for (const k of candidates) {
-          if (def[k]) return def[k];
-        }
-      }
-      for (const k of candidates) {
-        if (moduleAny[k]) return moduleAny[k];
-      }
-      return null;
-    };
-
-    const resolved = tryResolveFromModule(mod, emoji);
-    if (resolved) {
-      emojiCache.set(cacheKey, { svg: resolved, fetchedAt: Date.now() });
-      return resolved;
-    }
-    if (mod && (mod as any).svgmoji) {
-      const nested = tryResolveFromModule((mod as any).svgmoji, emoji);
-      if (nested) {
-        emojiCache.set(cacheKey, { svg: nested, fetchedAt: Date.now() });
-        return nested;
-      }
-    }
-
-    // If we couldn't resolve via package, fall through to fetch fallback
-  } catch (err) {
-    // continue to fetch from remote as a fallback
+  } catch (cdnError) {
+    console.warn('Backend: CDN fetch error:', cdnError);
   }
 
   // Try fetching raw Noto Emoji SVGs from the GoogleFonts noto-emoji repo
@@ -204,11 +152,16 @@ async function resolveEmojiSvg(emoji: string): Promise<string> {
   // Last-resort fallback: return a minimal SVG that renders the emoji character as text.
   // This guarantees the API never fails and provides a visible avatar.
   try {
+    console.log(`All fetch methods failed for ${emoji}, using fallback SVG`);
     const safeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">${emoji}</text></svg>`;
     emojiCache.set(cacheKey, { svg: safeSvg, fetchedAt: Date.now() });
     return safeSvg;
   } catch (err) {
-    throw new Error(`Failed to resolve emoji SVG (and fallback failed): ${emoji}`);
+    console.error(`Failed to create fallback SVG for ${emoji}:`, err);
+    // Emergency fallback
+    const emergencyFallback = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">❓</text></svg>`;
+    emojiCache.set(cacheKey, { svg: emergencyFallback, fetchedAt: Date.now() });
+    return emergencyFallback;
   }
 }
 
@@ -270,8 +223,20 @@ app.get('/api/emoji', async (req, res) => {
 
       const container = document.createElement('div');
       // svg2roughjs expects a container target (we'll use SVG output)
-      const converter = new Svg2Roughjs(container, OutputType.SVG);
-      converter.svg = svgElement;
+      // Try to create converter, but if it fails, just return original SVG
+      let converter: any;
+      try {
+        const Svg2Roughjs = require('svg2roughjs').Svg2Roughjs || require('svg2roughjs').default;
+        if (!Svg2Roughjs) {
+          throw new Error('Svg2Roughjs not found in library');
+        }
+        converter = new Svg2Roughjs(container);
+        converter.svg = svgElement;
+      } catch (converterError) {
+        console.log('SVG converter not available, using original SVG:', (converterError as Error).message);
+        res.type('image/svg+xml').send(svg);
+        return;
+      }
 
       // Apply options if provided
       if (roughness !== undefined) converter.roughConfig.roughness = roughness as any;
