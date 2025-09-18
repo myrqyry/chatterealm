@@ -68,7 +68,7 @@ describe('WebSocketServer', () => {
             const gameWorld = { players: [player] } as GameWorld;
             // @ts-ignore
             gameStateManager.getGameWorld.mockReturnValue(gameWorld);
-            return { success: true, message: 'Player added', data: { player } };
+            return { success: true, message: 'Player added' };
         });
         gameStateManager.getPlayer.mockImplementation((playerId: string) => {
             return createMockPlayer(playerId, 'test');
@@ -121,10 +121,10 @@ describe('WebSocketServer', () => {
             clientSocket.on('game_joined', () => {
                 clientSocket.on('command_result', (result) => {
                     expect(result.success).toBe(true);
-                    expect(gameStateManager.movePlayer).toHaveBeenCalledWith('player1', 'up');
+                    expect(gameStateManager.movePlayer).toHaveBeenCalledWith('player1', { x: 0, y: -1 });
                     done();
                 });
-                clientSocket.emit('player_command', { type: 'move', playerId: 'player1', data: { direction: 'up' } });
+                clientSocket.emit('player_command', { type: 'move', playerId: 'player1', data: { direction: { x: 0, y: -1 } } });
             });
 
             clientSocket.emit('join_game', playerData);

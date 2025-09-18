@@ -46,7 +46,7 @@ describe('WebSocketServer Race Conditions', () => {
                 return { success: false, message: 'Player already exists' };
             }
             playersInGame.push(player);
-            return { success: true, message: 'Player added', data: { player } };
+            return { success: true, message: 'Player added' };
         });
 
         const connectionPromises = [];

@@ -211,13 +211,13 @@ export class WebSocketServer {
 
       // Send success response with initial game state
       socket.emit(SocketEvents.GAME_JOINED, {
-        player: result.data.player,
+        player: player,
         gameWorld: this.gameStateManager.getGameWorld()
       });
 
       // Broadcast player joined to all other clients
       socket.to('game_room').emit(SocketEvents.PLAYER_JOINED, {
-        player: result.data.player
+        player: player
       });
 
       // Join the main game room
@@ -284,8 +284,7 @@ export class WebSocketServer {
       socket.emit('command_result', {
         command: command.type,
         success: result.success,
-        message: result.message,
-        data: result.data
+        message: result.message
       });
 
       // If command was successful and affects game state, broadcast update
@@ -334,7 +333,9 @@ export class WebSocketServer {
           throw new Error('Target not found');
         }
 
-        result = this.gameStateManager.attackEnemy(attacker, targetPlayer || targetNPC!);
+        // Attack enemy using the new API which takes playerId and targetPosition
+        const targetPosition = (targetPlayer || targetNPC)!.position;
+        result = this.gameStateManager.attackEnemy(clientData.playerId, targetPosition);
         break;
 
       case 'pickup':
@@ -376,7 +377,7 @@ export class WebSocketServer {
         command: 'inspect_item',
         success: result.success,
         message: result.message,
-        data: result.data
+        item: result.item
       });
 
       if (result.success) {
@@ -408,7 +409,7 @@ export class WebSocketServer {
         command: 'loot_item',
         success: result.success,
         message: result.message,
-        data: result.data
+        item: result.item
       });
 
       if (result.success) {

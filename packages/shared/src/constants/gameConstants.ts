@@ -19,8 +19,8 @@ export const GAME_CONFIG: GameSettings = {
     epic: 15000, // 15 seconds
     legendary: 30000 // 30 seconds
   },
-  maxItemsPerTile: 3,
-  itemSpawnRate: 0.15, // 15% chance when terrain regenerates
+  maxItemsPerTile: 4, // Increased from 3
+  itemSpawnRate: 0.20, // Increased from 0.15 (20% chance when terrain regenerates)
   lootInteractionRadius: 1, // Adjacent tiles
   baseStats: {
     [PlayerClass.KNIGHT]: {
@@ -56,7 +56,7 @@ export const GAME_CONFIG: GameSettings = {
       movementCost: 2,
       defenseBonus: 5,
       visibilityModifier: -2,
-      spawnChance: 0.15
+      spawnChance: 0.18 // Increased from 0.15
     },
     [TerrainType.MOUNTAIN]: {
       movementCost: 3,
@@ -201,7 +201,7 @@ export const GAME_CONFIG: GameSettings = {
       movementCost: 1.5,
       defenseBonus: 8,
       visibilityModifier: 1,
-      spawnChance: 0.005
+      spawnChance: 0.008 // Increased from 0.005 for better loot distribution
     }
   }
 };
@@ -225,11 +225,15 @@ export const MOVEMENT_CONSTANTS = {
 };
 
 export const WORLD_CONSTANTS = {
-  NPC_SPAWN_CHANCE: 0.02,
-  ITEM_DROP_CHANCE: 0.15,
+  NPC_SPAWN_CHANCE: 0.025, // Increased from 0.02
+  ITEM_DROP_CHANCE: 0.18, // Increased from 0.15
   WORLD_RESET_DURATION: 30000, // 30 seconds
-  MAX_ITEMS_PER_TILE: 3,
+  MAX_ITEMS_PER_TILE: 4, // Increased from 3
   CATACLYSM_SHRINK_RATE: 0.5, // tiles per minute
+  BUILDING_LOOT_BONUS: 1.5, // Multiplier for loot found in buildings
+  TERRAIN_LOOT_QUALITY_ZONES: true, // Enable quality zone system
+  HOTSPOT_LOOT_MULTIPLIER: 2.5, // Multiplier for loot hotspots
+  CATACLYSM_LOOT_BONUS: 2.0, // Enhanced loot in cataclysm zones
   EXTREMELY_MOUNTAIN_THRESHOLD: 70 // Threshold (percentage) above which map is considered extremely mountainous for spawn fallback
 };
 

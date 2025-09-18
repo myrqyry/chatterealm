@@ -5,6 +5,9 @@ import { devtools, persist } from 'zustand/middleware';
 import type { GameWorld, Player, UnifiedSettings } from 'shared';
 import { MovementStyle, Theme, NotificationType } from 'shared';
 
+// Import notification types
+import type { NotificationData } from '../types/notification';
+
 // Import WebSocket client
 import { webSocketClient } from '../services/webSocketClient';
 
@@ -21,6 +24,9 @@ interface GameState {
   isLoading: boolean;
   error: string | null;
   lastUpdate: number;
+
+  // Notifications state
+  notifications: NotificationData[];
 
   // Performance and caching
   cache: Map<string, any>;
@@ -49,6 +55,11 @@ interface GameState {
   updateWorldSettings: (settings: Partial<UnifiedSettings['world']>) => void;
   updateAnimationSettings: (settings: Partial<UnifiedSettings['animations']>) => void;
   updateUnifiedSettings: (settings: Partial<UnifiedSettings>) => void;
+
+  // Notification actions
+  addNotification: (notification: Omit<NotificationData, 'id'>) => void;
+  removeNotification: (id: string) => void;
+  clearNotifications: () => void;
 
   // Settings resets
   resetGameSettings: () => void;
@@ -212,6 +223,9 @@ export const useGameStore = create<GameState>()(
         error: null,
         lastUpdate: Date.now(),
 
+        // Notifications state
+        notifications: [],
+
         // Performance and caching
         cache: new Map(),
         performanceMetrics: {
@@ -270,6 +284,20 @@ export const useGameStore = create<GameState>()(
         setShowDevPanel: (show) => set({ showDevPanel: show }),
         setLoading: (loading) => set({ isLoading: loading }),
         setError: (error) => set({ error, lastUpdate: Date.now() }),
+
+        // Notification actions
+        addNotification: (notification) => set((state) => ({
+          notifications: [...state.notifications, {
+            ...notification,
+            id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+          }]
+        })),
+
+        removeNotification: (id) => set((state) => ({
+          notifications: state.notifications.filter(n => n.id !== id)
+        })),
+
+        clearNotifications: () => set({ notifications: [] }),
 
         // Utility functions
         getPlayerById: (id) => {

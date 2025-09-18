@@ -188,8 +188,29 @@ export class TwitchService {
         return `@${cmd.displayName} You haven't spawned yet! Use !spawn first.`;
       }
 
+      // Calculate new position based on direction
+      const currentPos = player.position;
+      let newPosition: { x: number; y: number };
+      
+      switch (direction) {
+        case 'up':
+          newPosition = { x: currentPos.x, y: currentPos.y - 1 };
+          break;
+        case 'down':
+          newPosition = { x: currentPos.x, y: currentPos.y + 1 };
+          break;
+        case 'left':
+          newPosition = { x: currentPos.x - 1, y: currentPos.y };
+          break;
+        case 'right':
+          newPosition = { x: currentPos.x + 1, y: currentPos.y };
+          break;
+        default:
+          return `@${cmd.displayName} Invalid direction! Use: up, down, left, or right`;
+      }
+
       // Execute move using GameStateManager
-      const result = this.gameStateManager.movePlayer(cmd.username, direction as any);
+      const result = this.gameStateManager.movePlayer(cmd.username, newPosition);
 
       if (result.success) {
         return `@${cmd.displayName} Moved ${direction}!`;
@@ -234,7 +255,7 @@ export class TwitchService {
       }
 
       // Execute attack using GameStateManager
-      const result = this.gameStateManager.attackEnemy(player, enemy);
+      const result = this.gameStateManager.attackEnemy(cmd.username, enemy.position);
 
       if (result.success) {
         return `@${cmd.displayName} ${result.message}`;
@@ -456,7 +477,26 @@ export class TwitchService {
       return `@${cmd.displayName} You haven't spawned yet! Use !spawn first.`;
     }
 
-    const result = this.gameStateManager.movePlayer(cmd.username, direction);
+    // Calculate new position based on direction
+    const currentPos = player.position;
+    let newPosition: { x: number; y: number };
+    
+    switch (direction) {
+      case 'up':
+        newPosition = { x: currentPos.x, y: currentPos.y - 1 };
+        break;
+      case 'down':
+        newPosition = { x: currentPos.x, y: currentPos.y + 1 };
+        break;
+      case 'left':
+        newPosition = { x: currentPos.x - 1, y: currentPos.y };
+        break;
+      case 'right':
+        newPosition = { x: currentPos.x + 1, y: currentPos.y };
+        break;
+    }
+
+    const result = this.gameStateManager.movePlayer(cmd.username, newPosition);
 
     if (result.success) {
       return `@${cmd.displayName} Moved ${direction}!`;
@@ -783,7 +823,7 @@ export class TwitchService {
       const result = this.gameStateManager.addPlayer(player);
 
       if (result.success) {
-        return { success: true, player: result.data.player };
+        return { success: true, player: player };
       } else {
         return { success: false, message: result.message };
       }

@@ -20,6 +20,28 @@ interface UseChatHook {
   setInputMessageAndFocus: (message: string) => void;
 }
 
+/**
+ * Custom hook for managing chat functionality in the game.
+ *
+ * This hook provides a complete chat interface including message handling,
+ * user input management, connection status, and player list updates.
+ *
+ * @param onWorldUpdate - Callback function called when the player list is updated
+ * @returns Object containing chat state and control functions
+ *
+ * @example
+ * ```tsx
+ * const {
+ *   messages,
+ *   inputMessage,
+ *   setInputMessage,
+ *   sendChatCommand,
+ *   isConnected
+ * } = useChat((players) => {
+ *   console.log('Players updated:', players);
+ * });
+ * ```
+ */
 export const useChat = (onWorldUpdate: (players: Player[]) => void): UseChatHook => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');

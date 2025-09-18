@@ -18,6 +18,28 @@ import { useEffectManager } from './GameCanvas/managers/EffectManager';
 import { useRegenerationManager } from './GameCanvas/managers/RegenerationManager';
 import { webSocketClient } from '../services/webSocketClient';
 
+/**
+ * Main game canvas component that renders the game world and handles user interactions.
+ *
+ * This component is responsible for:
+ * - Rendering the game world using HTML5 Canvas and Rough.js for hand-drawn styling
+ * - Managing particle effects, draw effects, and regeneration animations
+ * - Handling user input (pointer clicks) for movement and item interactions
+ * - Coordinating multiple rendering systems and animation loops
+ *
+ * The component uses several custom hooks and managers to handle different aspects:
+ * - Container resizing and canvas setup
+ * - Particle system management
+ * - Draw effect animations
+ * - Regeneration effect rendering
+ *
+ * @returns The rendered game canvas with interactive elements and animations
+ *
+ * @example
+ * ```tsx
+ * <GameCanvas />
+ * ```
+ */
 const GameCanvas: React.FC = () => {
   const gameWorld = useGameStore(state => state.gameWorld);
   const unifiedSettings = useGameStore(state => state.unifiedSettings);

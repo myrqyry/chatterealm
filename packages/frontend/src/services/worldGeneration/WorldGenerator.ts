@@ -2,6 +2,7 @@ import { GameWorld, ItemType, ItemRarity } from '../../../../shared/src/types/ga
 import { WORLD_WIDTH, WORLD_HEIGHT } from './WorldTypes';
 import { generateTerrain } from './TerrainGenerator';
 import { generateBuildings } from './BuildingGenerator';
+import { generateTerrainLoot, generateLootHotspots } from './LootSpawnSystem';
 
 export const createMockGameWorld = (): GameWorld => {
   const grid: any[][] = [];
@@ -13,7 +14,13 @@ export const createMockGameWorld = (): GameWorld => {
     }
   }
 
-  const buildings = generateBuildings(grid, WORLD_WIDTH, WORLD_HEIGHT);
+  const { buildings, items: buildingItems } = generateBuildings(grid, WORLD_WIDTH, WORLD_HEIGHT);
+
+  // Generate loot hotspots for enhanced loot areas
+  const lootHotspots = generateLootHotspots(WORLD_WIDTH, WORLD_HEIGHT);
+  
+  // Generate terrain-based loot
+  const terrainItems = generateTerrainLoot(grid, WORLD_WIDTH, WORLD_HEIGHT, lootHotspots);
 
   return {
     id: 'mock_world_1',
@@ -66,7 +73,7 @@ export const createMockGameWorld = (): GameWorld => {
       revealDuration: 0,
       revealProgress: 1.0,
       canBeLooted: true
-    }],
+    }, ...buildingItems, ...terrainItems], // Merge all loot sources
     buildings,
     cataclysmCircle: {
   center: { x: 20, y: 15 },

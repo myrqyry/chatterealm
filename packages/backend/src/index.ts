@@ -42,18 +42,45 @@ app.get('/', (req, res) => {
 // API Routes
 app.get('/api/world', (req, res) => {
   try {
-    res.json(gameStateManager.getGameWorld());
+    const world = gameStateManager.getGameWorld();
+    if (!world) {
+      return res.status(404).json({ error: 'Game world not initialized' });
+    }
+    res.json(world);
   } catch (error) {
+    console.error('Error fetching world data:', error);
     res.status(500).json({ error: 'Failed to fetch world data' });
   }
 });
 
 app.get('/api/players', (req, res) => {
   try {
-    res.json(gameStateManager.getGameWorld().players);
+    const world = gameStateManager.getGameWorld();
+    if (!world) {
+      return res.status(404).json({ error: 'Game world not initialized' });
+    }
+    res.json(world.players || []);
   } catch (error) {
+    console.error('Error fetching players:', error);
     res.status(500).json({ error: 'Failed to fetch players' });
   }
+});
+
+// Global error handling middleware
+app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: 'An unexpected error occurred'
+  });
+});
+
+// 404 handler for undefined routes
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not found',
+    message: `Route ${req.method} ${req.path} not found`
+  });
 });
 
 // Graceful shutdown
@@ -169,9 +196,69 @@ async function resolveEmojiSvg(emoji: string): Promise<string> {
 app.get('/api/emoji', async (req, res) => {
   try {
     const q = req.query.char as string | undefined;
-    if (!q) return res.status(400).json({ error: 'Missing `char` query parameter' });
-    const emoji = decodeURIComponent(q);
+
+    // Input validation
+    if (!q) {
+      return res.status(400).json({
+        error: 'Missing required parameter: char',
+        message: 'Please provide an emoji character via the "char" query parameter'
+      });
+    }
+
+    if (typeof q !== 'string' || q.length === 0) {
+      return res.status(400).json({
+        error: 'Invalid parameter: char',
+        message: 'The "char" parameter must be a non-empty string'
+      });
+    }
+
+    let emoji: string;
+    try {
+      emoji = decodeURIComponent(q);
+    } catch (decodeError) {
+      return res.status(400).json({
+        error: 'Invalid parameter: char',
+        message: 'The "char" parameter contains invalid URL encoding'
+      });
+    }
+
+    // Validate emoji is a single character or valid emoji sequence
+    if (emoji.length > 10) {
+      return res.status(400).json({
+        error: 'Invalid parameter: char',
+        message: 'Emoji character is too long (max 10 characters)'
+      });
+    }
+
     const wantRough = String(req.query.rough || '').toLowerCase() === 'true';
+
+    // Validate rough conversion parameters if rough=true
+    if (wantRough) {
+      const roughness = req.query.roughness !== undefined ? Number(req.query.roughness) : undefined;
+      const bowing = req.query.bowing !== undefined ? Number(req.query.bowing) : undefined;
+      const seed = req.query.seed !== undefined ? Number(req.query.seed) : undefined;
+
+      if (roughness !== undefined && (isNaN(roughness) || roughness < 0 || roughness > 10)) {
+        return res.status(400).json({
+          error: 'Invalid parameter: roughness',
+          message: 'Roughness must be a number between 0 and 10'
+        });
+      }
+
+      if (bowing !== undefined && (isNaN(bowing) || bowing < 0 || bowing > 10)) {
+        return res.status(400).json({
+          error: 'Invalid parameter: bowing',
+          message: 'Bowing must be a number between 0 and 10'
+        });
+      }
+
+      if (seed !== undefined && (isNaN(seed) || seed < 0 || seed > 1000000)) {
+        return res.status(400).json({
+          error: 'Invalid parameter: seed',
+          message: 'Seed must be a number between 0 and 1000000'
+        });
+      }
+    }
 
     const svg = await resolveEmojiSvg(emoji);
 
@@ -219,6 +306,13 @@ app.get('/api/emoji', async (req, res) => {
       const document = dom.window.document as unknown as Document;
       const parser = new dom.window.DOMParser();
       const svgDoc = parser.parseFromString(svg, 'image/svg+xml');
+
+      if (!svgDoc || svgDoc.getElementsByTagName('parsererror').length > 0) {
+        console.error('Failed to parse SVG document');
+        res.type('image/svg+xml').send(svg); // fallback to original
+        return;
+      }
+
       const svgElement = svgDoc.documentElement as unknown as SVGSVGElement;
 
       const container = document.createElement('div');
@@ -233,7 +327,7 @@ app.get('/api/emoji', async (req, res) => {
         converter = new Svg2Roughjs(container);
         converter.svg = svgElement;
       } catch (converterError) {
-        console.log('SVG converter not available, using original SVG:', (converterError as Error).message);
+        console.warn('SVG converter initialization failed, using original SVG:', (converterError as Error).message);
         res.type('image/svg+xml').send(svg);
         return;
       }
@@ -254,18 +348,27 @@ app.get('/api/emoji', async (req, res) => {
         resultSvg = container.innerHTML;
       }
 
+      if (!resultSvg) {
+        console.warn('SVG conversion produced no output, using original SVG');
+        res.type('image/svg+xml').send(svg);
+        return;
+      }
+
       convertedCache.set(convertedCacheKey, { svg: resultSvg, fetchedAt: Date.now() });
 
       res.type('image/svg+xml').send(resultSvg);
       return;
-    } catch (err) {
-      console.error('Server-side rough conversion failed:', err);
+    } catch (conversionError) {
+      console.error('Server-side rough conversion failed:', conversionError);
       // fall back to raw svg
       res.type('image/svg+xml').send(svg);
       return;
     }
   } catch (error) {
-    console.error('Error in /api/emoji:', error);
-    res.status(500).json({ error: 'Failed to resolve emoji SVG' });
+    console.error('Unexpected error in /api/emoji:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'Failed to process emoji request'
+    });
   }
 });

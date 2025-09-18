@@ -1,38 +1,52 @@
 import { NotificationData } from '../../types/notification';
+import { useGameStore } from '../../stores/gameStore';
 
 class NotificationQueue {
-  private notifications: NotificationData[] = [];
   private maxNotifications: number;
-  private subscribers: ((notifications: NotificationData[]) => void)[] = [];
 
   constructor(maxNotifications: number = 5) {
     this.maxNotifications = maxNotifications;
   }
 
-  addNotification(notification: NotificationData) {
-    this.notifications = [notification, ...this.notifications].slice(0, this.maxNotifications);
-    this.notifySubscribers();
+  addNotification(notification: Omit<NotificationData, 'id'>) {
+    const store = useGameStore.getState();
+    const currentNotifications = store.notifications;
+
+    // Create notification with ID
+    const newNotification: NotificationData = {
+      ...notification,
+      id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    // Add to beginning and limit
+    const updatedNotifications = [newNotification, ...currentNotifications].slice(0, this.maxNotifications);
+
+    // Update store
+    store.notifications = updatedNotifications;
+
+    // Auto-remove after duration if specified
+    if (newNotification.duration && !newNotification.persistent) {
+      setTimeout(() => {
+        this.removeNotification(newNotification.id);
+      }, newNotification.duration);
+    }
   }
 
   removeNotification(id: string) {
-    this.notifications = this.notifications.filter(n => n.id !== id);
-    this.notifySubscribers();
+    const store = useGameStore.getState();
+    store.removeNotification(id);
   }
 
   getNotifications(): NotificationData[] {
-    return this.notifications;
+    return useGameStore.getState().notifications;
   }
 
+  // Legacy subscribe method for backward compatibility - returns empty unsubscribe
   subscribe(callback: (notifications: NotificationData[]) => void) {
-    this.subscribers.push(callback);
-    callback(this.notifications); // Send current state to new subscriber
-    return () => {
-      this.subscribers = this.subscribers.filter(sub => sub !== callback);
-    };
-  }
-
-  private notifySubscribers() {
-    this.subscribers.forEach(callback => callback(this.notifications));
+    // Since we're using Zustand now, we don't need subscribers
+    // Components should use useGameStore directly
+    callback(this.getNotifications());
+    return () => {}; // No-op unsubscribe
   }
 }
 
