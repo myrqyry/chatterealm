@@ -1,4 +1,5 @@
-import { TerrainType, AnimationSettings } from 'shared/src/types/game';
+import type { AnimationSettings } from 'shared';
+import { TerrainType } from 'shared';
 
 export const drawMountain = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
@@ -8,10 +9,12 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       // Snow-capped mountain peaks
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#64748b',
-        fillStyle: 'solid',
-        stroke: '#475569',
-        strokeWidth: 1,
-        roughness: roughness * 1.5
+        fillStyle: 'cross-hatch',
+        stroke: '#5A6B7D', // Lighter slate stroke
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 0.8, // Smoother
+        bowing: 0.8 // More uniform
       });
       // Peak details
       rc.polygon([
@@ -20,8 +23,9 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         [startX + 18, startY + 15]
       ], {
         fill: '#f1f5f9',
-        fillStyle: 'solid',
-        roughness: roughness * 1.2
+        fillStyle: 'hachure',
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 0.9
       });
       break;
 
@@ -29,10 +33,12 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       // Rocky mountains with shadow
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#78716c',
-        fillStyle: 'solid',
-        stroke: '#57534e',
-        strokeWidth: 1,
-        roughness: roughness * 1.8
+        fillStyle: 'cross-hatch',
+        stroke: '#6B6763', // Lighter stone stroke
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 0.8,
+        bowing: 0.8
       });
       // Mountain silhouette
       rc.polygon([
@@ -42,8 +48,9 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
         [startX + gridSize, startY + 18]
       ], {
         fill: '#374151',
-        fillStyle: 'solid',
-        roughness: roughness * 1.3
+        fillStyle: 'hachure',
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 1.0
       });
       break;
 
@@ -51,16 +58,19 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       // Rolling hills
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#a3a3a3',
-        fillStyle: 'solid',
-        stroke: '#737373',
-        strokeWidth: 1,
-        roughness: roughness * 1.2
+        fillStyle: 'hachure',
+        stroke: '#858585', // Lighter gray stroke
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 0.8,
+        bowing: 0.8
       });
       // Hill contours
       rc.ellipse(startX + 8, startY + 12, 12, 6, {
         fill: '#d4d4d8',
-        fillStyle: 'solid',
-        roughness: roughness * 0.8
+        fillStyle: 'hachure',
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 0.6
       });
       break;
   }

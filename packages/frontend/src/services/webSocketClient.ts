@@ -1,9 +1,10 @@
 import { io, Socket } from 'socket.io-client';
-import { Player, GameWorld } from '../../../shared/src/types/game';
+import type { Player, GameWorld } from 'shared';
 import { useGameStore } from '../stores/gameStore';
+import { throttledLog, throttledError, throttledWarn } from '../utils/loggingUtils';
 
 export interface PlayerCommand {
-  type: 'move' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
+  type: 'move' | 'move_to' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
   playerId: string;
   data?: any;
 }
@@ -42,7 +43,7 @@ export class WebSocketClient {
 
       this.setupEventHandlers();
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
+      throttledError('WS_CONNECT', `Failed to create WebSocket connection: ${error}`);
       this.handleConnectionError();
     }
   }
@@ -52,16 +53,14 @@ export class WebSocketClient {
 
     // Connection events
     this.socket.on('connect', () => {
-      console.log('[CLIENT_CONNECTED] Connected to game server');
-      console.log('[CLIENT_CONNECTED] Socket ID:', this.socket?.id);
-      console.log('[CLIENT_CONNECTED] Connection status:', this.isConnected);
+      throttledLog('WS_CONNECTED', `Connected to game server - Socket ID: ${this.socket?.id}`);
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.reconnectDelay = 1000;
 
       // Automatically join the game once connected (if not already joined)
       if (!this.hasJoinedGame) {
-        console.log('[CLIENT_AUTO_JOIN] Automatically joining game after connection');
+        throttledLog('WS_AUTO_JOIN', 'Automatically joining game after connection');
         const playerData = {
           id: 'player_' + Date.now(),
           displayName: 'TestPlayer',
@@ -73,33 +72,56 @@ export class WebSocketClient {
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('[CLIENT_DISCONNECTED] Disconnected from game server:', reason);
+      throttledWarn('WS_DISCONNECTED', `Disconnected from game server: ${reason}`);
       this.isConnected = false;
       this.handleDisconnect(reason);
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('[CLIENT_CONNECT_ERROR] Connection error:', error);
+      throttledError('WS_CONNECT_ERROR', `Connection error: ${error.message}`);
       this.handleConnectionError();
     });
 
     // Game events
-    this.socket.on('game_joined', (data: { player: Player; gameWorld: GameWorld }) => {
-      console.log('Successfully joined game:', data.player.displayName);
-      useGameStore.getState().setCurrentPlayer(data.player);
-      useGameStore.getState().setGameWorld(data.gameWorld);
-      useGameStore.getState().setGameMessage(`Welcome to the game, ${data.player.displayName}!`);
-      this.hasJoinedGame = true;
-    });
+  this.socket.on('game_joined', (data: { player: Player; gameWorld: GameWorld }) => {
+    throttledLog('GAME_JOINED', `Successfully joined game: ${data.player.displayName}`, true);
+    useGameStore.getState().setCurrentPlayer(data.player);
+    useGameStore.getState().setGameWorld(data.gameWorld);
+    useGameStore.getState().setGameMessage(`Welcome to the game, ${data.player.displayName}!`);
+    this.hasJoinedGame = true;
+  });    this.socket.on('game_state_delta', (deltas: any[]) => {
+      // Handle delta updates by applying them to the current game world
+      const currentWorld = useGameStore.getState().gameWorld;
+      if (!currentWorld) return;
 
-    this.socket.on('game_state_update', (gameWorld: GameWorld) => {
-      // Update the game world state in real-time
-      useGameStore.getState().setGameWorld(gameWorld);
+      // Apply deltas to update the game world
+      for (const delta of deltas) {
+        switch (delta.type) {
+          case 'player_joined':
+            if (!currentWorld.players.find(p => p.id === delta.data.player.id)) {
+              currentWorld.players.push(delta.data.player);
+            }
+            break;
+          case 'player_left':
+            currentWorld.players = currentWorld.players.filter(p => p.id !== delta.data.playerId);
+            break;
+          case 'player_moved':
+            const player = currentWorld.players.find(p => p.id === delta.data.playerId);
+            if (player) {
+              player.position = delta.data.newPosition;
+            }
+            break;
+          // Add more delta types as needed
+        }
+      }
 
-      // Update current player data if it exists in the game world
+      // Update the store with the modified world
+      useGameStore.getState().setGameWorld({ ...currentWorld });
+
+      // Update current player if it was affected
       const currentPlayerId = useGameStore.getState().currentPlayer?.id;
       if (currentPlayerId) {
-        const updatedPlayer = gameWorld.players.find(p => p.id === currentPlayerId);
+        const updatedPlayer = currentWorld.players.find(p => p.id === currentPlayerId);
         if (updatedPlayer) {
           useGameStore.getState().setCurrentPlayer(updatedPlayer);
         }
@@ -107,18 +129,16 @@ export class WebSocketClient {
     });
 
     this.socket.on('player_joined', (data: { player: Player }) => {
-      console.log(`Player joined: ${data.player.displayName}`);
+      throttledLog('PLAYER_JOINED', `${data.player.displayName} joined the game`);
       // The game state update will handle adding the player to the world
     });
 
     this.socket.on('player_left', (data: { playerId: string; player: Player }) => {
-      console.log(`Player left: ${data.player.displayName}`);
+      throttledLog('PLAYER_LEFT', `${data.player.displayName} left the game`);
       // The game state update will handle removing the player from the world
     });
 
     this.socket.on('command_result', (result: CommandResult) => {
-      console.log('Command result:', result);
-
       if (result.success) {
         useGameStore.getState().setGameMessage(result.message);
       } else {
@@ -132,8 +152,32 @@ export class WebSocketClient {
     });
 
     this.socket.on('error', (error: { message: string }) => {
-      console.error('Server error:', error);
+      throttledError('SERVER_ERROR', `Server error: ${error.message}`);
       useGameStore.getState().setGameMessage(`Server error: ${error.message}`);
+    });
+
+    // Tarkov-style looting events
+    this.socket.on('item_reveal_update', (data: { itemId: string; revealProgress: number }) => {
+      throttledLog('ITEM_REVEAL_UPDATE', `Item ${data.itemId} reveal progress: ${data.revealProgress}`);
+      // Update item reveal progress in the game world
+      const currentWorld = useGameStore.getState().gameWorld;
+      if (currentWorld) {
+        const item = currentWorld.items.find(i => i.id === data.itemId);
+        if (item) {
+          item.revealProgress = data.revealProgress;
+          useGameStore.getState().setGameWorld({ ...currentWorld });
+        }
+      }
+    });
+
+    this.socket.on('loot_success', (data: { item: any }) => {
+      throttledLog('LOOT_SUCCESS', `Successfully looted ${data.item.name}`);
+      useGameStore.getState().setGameMessage(`Successfully looted ${data.item.name}!`);
+    });
+
+    this.socket.on('loot_failure', (data: { reason: string }) => {
+      throttledWarn('LOOT_FAILURE', `Loot failed: ${data.reason}`);
+      useGameStore.getState().setGameMessage(`Loot failed: ${data.reason}`);
     });
   }
 
@@ -151,13 +195,13 @@ export class WebSocketClient {
 
   private attemptReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error('Max reconnection attempts reached');
+      throttledError('WS_MAX_ATTEMPTS', 'Max reconnection attempts reached - giving up');
       useGameStore.getState().setGameMessage('Failed to connect to game server. Please refresh the page.');
       return;
     }
 
     this.reconnectAttempts++;
-    console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    throttledWarn('WS_ATTEMPT_RECONNECT', `Reconnecting to game server (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
     useGameStore.getState().setGameMessage(`Reconnecting to game server... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
@@ -172,7 +216,7 @@ export class WebSocketClient {
   // Public methods for game actions
   public joinGame(playerData: Partial<Player>): void {
     if (!this.socket || !this.isConnected) {
-      console.error(`[CLIENT_ERROR] Cannot join game - socket: ${!!this.socket}, connected: ${this.isConnected}`);
+      throttledError('CLIENT_ERROR', `Cannot join game - socket: ${!!this.socket}, connected: ${this.isConnected}`);
       useGameStore.getState().setGameMessage('Not connected to game server');
       return;
     }
@@ -180,25 +224,46 @@ export class WebSocketClient {
     this.joinGameInternal(playerData);
   }
 
+  // Allow client to explicitly leave the game (remove player from server world)
+  public leaveGame(playerId?: string): void {
+    if (!this.socket || !this.isConnected) {
+      throttledWarn('CLIENT_LEAVE', 'Cannot leave game - not connected');
+      return;
+    }
+
+    try {
+      const pid = playerId || useGameStore.getState().currentPlayer?.id;
+      if (!pid) {
+        throttledWarn('CLIENT_LEAVE', 'No player id available to leave');
+        return;
+      }
+      this.socket.emit('leave_game', { playerId: pid });
+      // Optionally disconnect socket to fully clear client state
+      // this.disconnect();
+      throttledLog('CLIENT_LEAVE', `Requested leave for player ${pid}`);
+    } catch (err) {
+      throttledError('CLIENT_LEAVE_ERROR', `Failed to send leave_game: ${err}`);
+    }
+  }
+
   private joinGameInternal(playerData: Partial<Player>): void {
     if (!this.socket) return;
 
-    console.log('[CLIENT_JOIN] Joining game with player data:', playerData);
-    console.log('[CLIENT_JOIN] Socket ID:', this.socket.id);
+    throttledLog('CLIENT_JOIN', `Joining game with player data`, true);
     this.socket.emit('join_game', playerData);
     this.hasJoinedGame = true;
   }
 
   public sendPlayerCommand(command: Omit<PlayerCommand, 'playerId'>): void {
     if (!this.socket || !this.isConnected) {
-      console.error(`[CLIENT_ERROR] Cannot send command - socket: ${!!this.socket}, connected: ${this.isConnected}`);
+      throttledError('CLIENT_ERROR', `Cannot send command - socket: ${!!this.socket}, connected: ${this.isConnected}`);
       useGameStore.getState().setGameMessage('Not connected to game server');
       return;
     }
 
     const currentPlayer = useGameStore.getState().currentPlayer;
     if (!currentPlayer) {
-      console.error(`[CLIENT_ERROR] No current player found when sending command:`, command);
+      throttledError('CLIENT_ERROR', `No current player found when sending command: ${JSON.stringify(command)}`);
       useGameStore.getState().setGameMessage('No current player found');
       return;
     }
@@ -208,7 +273,6 @@ export class WebSocketClient {
       playerId: currentPlayer.id
     };
 
-    console.log('[CLIENT_COMMAND] Sending player command:', fullCommand);
     this.socket.emit('player_command', fullCommand);
   }
 
@@ -217,6 +281,13 @@ export class WebSocketClient {
     this.sendPlayerCommand({
       type: 'move',
       data: { direction }
+    });
+  }
+
+  public moveTo(target: { x: number; y: number }): void {
+    this.sendPlayerCommand({
+      type: 'move_to',
+      data: { target }
     });
   }
 
@@ -245,6 +316,41 @@ export class WebSocketClient {
     this.sendPlayerCommand({
       type: 'start_cataclysm'
     });
+  }
+
+  // Tarkov-style looting commands
+  public inspectItem(itemId: string): void {
+    if (!this.socket || !this.isConnected) {
+      throttledError('CLIENT_ERROR', 'Cannot inspect item - not connected');
+      useGameStore.getState().setGameMessage('Not connected to game server');
+      return;
+    }
+
+    const currentPlayer = useGameStore.getState().currentPlayer;
+    if (!currentPlayer) {
+      throttledError('CLIENT_ERROR', 'No current player found when inspecting item');
+      useGameStore.getState().setGameMessage('No current player found');
+      return;
+    }
+
+    this.socket.emit('inspect_item', itemId);
+  }
+
+  public lootItem(itemId: string): void {
+    if (!this.socket || !this.isConnected) {
+      throttledError('CLIENT_ERROR', 'Cannot loot item - not connected');
+      useGameStore.getState().setGameMessage('Not connected to game server');
+      return;
+    }
+
+    const currentPlayer = useGameStore.getState().currentPlayer;
+    if (!currentPlayer) {
+      throttledError('CLIENT_ERROR', 'No current player found when looting item');
+      useGameStore.getState().setGameMessage('No current player found');
+      return;
+    }
+
+    this.socket.emit('loot_item', itemId);
   }
 
   // Connection status

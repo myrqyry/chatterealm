@@ -1,5 +1,6 @@
-import { GameWorld, Player, NPC, Item, Terrain, TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared/src/types/game';
-import { GAME_CONFIG } from 'shared/src/constants/gameConstants';
+import type { GameWorld, Player, NPC, Item, Terrain } from 'shared';
+import { TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared';
+import { GAME_CONFIG } from 'shared';
 
 // Mock terrain grid with varied terrain types
 const createMockGrid = (): Terrain[][] => {
@@ -40,6 +41,11 @@ const createMockPlayers = (): Player[] => [
     avatar: '🤠',
     position: { x: 5, y: 3 },
     class: PlayerClass.KNIGHT,
+    health: 110,
+    mana: 40,
+    stamina: 30,
+    hunger: 15,
+    thirst: 20,
     stats: {
       hp: 110,
       maxHp: 120,
@@ -55,7 +61,9 @@ const createMockPlayers = (): Player[] => [
     titles: ['[Warrior]'],
     isAlive: true,
     lastMoveTime: Date.now() - 2000,
-    spawnTime: Date.now() - 300000
+    spawnTime: Date.now() - 300000,
+    connected: true,
+    lastActive: Date.now() - 1000
   },
   {
     id: 'player_2',
@@ -64,6 +72,11 @@ const createMockPlayers = (): Player[] => [
     avatar: '🗡️',
     position: { x: 12, y: 8 },
     class: PlayerClass.ROGUE,
+    health: 85,
+    mana: 45,
+    stamina: 25,
+    hunger: 22,
+    thirst: 18,
     stats: {
       hp: 85,
       maxHp: 90,
@@ -79,7 +92,9 @@ const createMockPlayers = (): Player[] => [
     titles: ['[Gladiator]', '[Survivor]'],
     isAlive: true,
     lastMoveTime: Date.now() - 5000,
-    spawnTime: Date.now() - 450000
+    spawnTime: Date.now() - 450000,
+    connected: true,
+    lastActive: Date.now() - 3000
   },
   {
     id: 'player_3',
@@ -88,6 +103,11 @@ const createMockPlayers = (): Player[] => [
     avatar: '🔮',
     position: { x: 8, y: 10 },
     class: PlayerClass.MAGE,
+    health: 75,
+    mana: 55,
+    stamina: 20,
+    hunger: 8,
+    thirst: 12,
     stats: {
       hp: 75,
       maxHp: 80,
@@ -103,7 +123,9 @@ const createMockPlayers = (): Player[] => [
     titles: [],
     isAlive: true,
     lastMoveTime: Date.now() - 1000,
-    spawnTime: Date.now() - 120000
+    spawnTime: Date.now() - 120000,
+    connected: true,
+    lastActive: Date.now() - 500
   }
 ];
 
@@ -171,7 +193,12 @@ const createMockItems = (): Item[] => [
     rarity: ItemRarity.UNCOMMON,
     description: 'A well-balanced iron sword',
     stats: { attack: 5 },
-    position: { x: 7, y: 6 }
+    position: { x: 7, y: 6 },
+    // Tarkov-style looting properties
+    isHidden: true,
+    revealDuration: 4000, // 4 seconds for uncommon
+    revealProgress: 0.0,
+    canBeLooted: false
   },
   {
     id: 'potion_1',
@@ -180,7 +207,12 @@ const createMockItems = (): Item[] => [
     rarity: ItemRarity.COMMON,
     description: 'Restores 50 HP',
     stats: { hp: 50 },
-    position: { x: 10, y: 9 }
+    position: { x: 10, y: 9 },
+    // Tarkov-style looting properties
+    isHidden: false, // This one is already revealed for demo
+    revealDuration: 2000,
+    revealProgress: 1.0,
+    canBeLooted: true
   },
   {
     id: 'shield_1',
@@ -189,7 +221,12 @@ const createMockItems = (): Item[] => [
     rarity: ItemRarity.COMMON,
     description: 'Basic wooden protection',
     stats: { defense: 3 },
-    position: { x: 14, y: 11 }
+    position: { x: 14, y: 11 },
+    // Tarkov-style looting properties
+    isHidden: true,
+    revealDuration: 2000,
+    revealProgress: 0.0,
+    canBeLooted: false
   },
   {
     id: 'boots_1',
@@ -199,7 +236,12 @@ const createMockItems = (): Item[] => [
     description: 'Increases movement speed',
     stats: { speed: 2 },
     specialEffect: 'increases movement speed',
-    position: { x: 2, y: 8 }
+    position: { x: 2, y: 8 },
+    // Tarkov-style looting properties
+    isHidden: true,
+    revealDuration: 8000, // 8 seconds for rare
+    revealProgress: 0.0,
+    canBeLooted: false
   }
 ];
 
@@ -211,13 +253,15 @@ export const createMockGameWorld = (): GameWorld => {
     players: createMockPlayers(),
     npcs: createMockNPCs(),
     items: createMockItems(),
+    buildings: [], // Mock buildings array
     cataclysmCircle: {
-      center: { x: 10, y: 7 },
-      radius: 20,
+      center: { x: 20, y: 15 },
+      radius: 40,
       isActive: false,
       shrinkRate: 1,
       nextShrinkTime: Date.now() + 300000 // 5 minutes from now
     },
+    cataclysmRoughnessMultiplier: 1.0,
     worldAge: 0,
     lastResetTime: Date.now(),
     phase: 'exploration'

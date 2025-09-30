@@ -1,85 +1,295 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
 import rough from 'roughjs';
 import {
   Player,
   Item,
-  AnimationSettings, // Now imported from shared
-  TerrainType // Now imported from shared
-} from 'shared/src/types/game';
+  AnimationSettings,
+  TerrainType,
+  GameWorld
+} from 'shared';
+import { GAME_CONFIG } from 'shared';
 import { useGameStore } from '../stores/gameStore';
-import { setupCanvas } from './renderers/canvas/CanvasUtils';
-import { updateParticles, Particle, addParticles } from './renderers/effects/ParticleSystem';
 import { renderGame } from './renderers/canvas/RenderCoordinator';
+import { CanvasDrawEffectComponent, createCanvasCirclePath, createCanvasStarPath, createCanvasLightningPath } from './animations/CanvasDrawEffect';
+import { useContainerResize } from './GameCanvas/hooks/useContainerResize';
+import { useCanvasSetup } from './GameCanvas/hooks/useCanvasSetup';
+import { useParticleManager } from './GameCanvas/managers/ParticleManager';
+import { useEffectManager } from './GameCanvas/managers/EffectManager';
+import { useRegenerationManager } from './GameCanvas/managers/RegenerationManager';
+import { webSocketClient } from '../services/webSocketClient';
 
+/**
+ * Main game canvas component that renders the game world and handles user interactions.
+ *
+ * This component is responsible for:
+ * - Rendering the game world using HTML5 Canvas and Rough.js for hand-drawn styling
+ * - Managing particle effects, draw effects, and regeneration animations
+ * - Handling user input (pointer clicks) for movement and item interactions
+ * - Coordinating multiple rendering systems and animation loops
+ *
+ * The component uses several custom hooks and managers to handle different aspects:
+ * - Container resizing and canvas setup
+ * - Particle system management
+ * - Draw effect animations
+ * - Regeneration effect rendering
+ *
+ * @returns The rendered game canvas with interactive elements and animations
+ *
+ * @example
+ * ```tsx
+ * <GameCanvas />
+ * ```
+ */
 const GameCanvas: React.FC = () => {
   const gameWorld = useGameStore(state => state.gameWorld);
-  const animationSettings = useGameStore(state => state.animationSettings);
+  const unifiedSettings = useGameStore(state => state.unifiedSettings);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Use the new hooks and managers
+  const containerSize = useContainerResize(containerRef);
+  const canvasSetup = useCanvasSetup(
+    canvasRef, 
+    containerSize, 
+    gameWorld?.grid, 
+    8,
+    unifiedSettings.visual.renderScale || 0.75 // Use setting or default to 75%
+  );
+  const { particles, addParticles, updateParticles } = useParticleManager({ 
+    animationSettings: unifiedSettings.animations, 
+    onAddParticles: undefined 
+  });
+  const { drawEffects, triggerDrawEffect } = useEffectManager({ canvasRef });
+  const { regenerationEffects } = useRegenerationManager({ 
+    gameWorld, 
+    tileSizePx: canvasSetup.tileSizePx, 
+    grid: gameWorld?.grid 
+  });
 
   const grid = gameWorld?.grid || [];
   const players = gameWorld?.players || [];
   const npcs = gameWorld?.npcs || [];
+  const buildings = gameWorld?.buildings || [];
   const items = gameWorld?.items || [];
-  const showGrid = animationSettings?.showGrid ?? true;
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [time, setTime] = useState(0);
+  const showGrid = unifiedSettings.animations?.showGrid ?? true;
+  const animationSettings = unifiedSettings.animations;
+
+  // Use refs to avoid restarting the animation loop
+  const gameWorldRef = useRef(gameWorld);
+  const gridRef = useRef(grid);
+  const playersRef = useRef(players);
+  const npcsRef = useRef(npcs);
+  const itemsRef = useRef(items);
+  const showGridRef = useRef(showGrid);
+  const animationSettingsRef = useRef(animationSettings);
+  const particlesRef = useRef(particles);
+  const addParticlesRef = useRef(addParticles);
+  const tileSizePxRef = useRef(canvasSetup.tileSizePx);
+  const nightModeRef = useRef(unifiedSettings.world.nightMode);
+
+  // Update refs when values change
+  useEffect(() => {
+    gameWorldRef.current = gameWorld;
+  }, [gameWorld]);
 
   useEffect(() => {
-    const animate = () => {
-      const speedMultiplier = animationSettings?.animationSpeed || 1.0;
-      setTime(prev => prev + speedMultiplier);
+    gridRef.current = grid;
+  }, [grid]);
 
-      if (animationSettings?.showParticles !== false) {
-        setParticles(prev => updateParticles(prev));
+  useEffect(() => {
+    playersRef.current = players;
+  }, [players]);
+
+  useEffect(() => {
+    npcsRef.current = npcs;
+  }, [npcs]);
+
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
+    showGridRef.current = showGrid;
+  }, [showGrid]);
+
+  useEffect(() => {
+    animationSettingsRef.current = animationSettings;
+  }, [animationSettings]);
+
+  useEffect(() => {
+    particlesRef.current = particles;
+  }, [particles]);
+
+  useEffect(() => {
+    addParticlesRef.current = addParticles;
+  }, [addParticles]);
+
+  useEffect(() => {
+    tileSizePxRef.current = canvasSetup.tileSizePx;
+  }, [canvasSetup.tileSizePx]);
+
+  useEffect(() => {
+    nightModeRef.current = unifiedSettings.world.nightMode;
+  }, [unifiedSettings.world.nightMode]);
+
+  // Render the game when setup is ready
+  useEffect(() => {
+    if (!canvasSetup.isReady || !canvasSetup.ctx) return;
+
+    const rc = rough.canvas(canvasSetup.canvas!);
+    let animationId: number;
+    let startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const time = (currentTime - startTime) / 1000; // Convert to seconds
+
+      // Update particles in the main render loop
+      updateParticles();
+
+      // Only render if we have a game world
+      if (gameWorldRef.current) {
+        renderGame(
+          rc,
+          canvasSetup.ctx!,
+          gridRef.current as { type: TerrainType }[][],
+          playersRef.current,
+          npcsRef.current,
+          itemsRef.current,
+          buildings,
+          showGridRef.current,
+          time,
+          animationSettingsRef.current,
+          particlesRef.current,
+          addParticlesRef.current,
+          tileSizePxRef.current,
+          nightModeRef.current
+        );
       }
 
-      animationRef.current = requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
-    animationRef.current = requestAnimationFrame(animate);
+    // Start the animation loop
+    animationId = requestAnimationFrame(animate);
 
+    // Cleanup
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
       }
     };
-  }, [animationSettings?.animationSpeed, animationSettings?.showParticles]);
+  }, [canvasSetup.isReady, canvasSetup.ctx, updateParticles]); // Only depend on setup and updateParticles
 
-  const addParticlesToState = useCallback((x: number, y: number, color: string, count: number = 5) => {
-    setParticles(prev => [...prev, ...addParticles(x, y, color, count)]);
-  }, []);
+  const handlePointerDown = (ev: React.PointerEvent) => {
+    if (!canvasRef.current || !canvasSetup.isReady || !gameWorld) return;
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const clientX = ev.clientX;
+    const clientY = ev.clientY;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const cssX = clientX - rect.left;
+    const cssY = clientY - rect.top;
 
-    const rc = rough.canvas(canvas);
-    const gridSize = 20;
-    const numTilesX = grid[0]?.length || 20;
-    const numTilesY = grid.length || 15;
+    const localX = cssX - canvasSetup.offset.x;
+    const localY = cssY - canvasSetup.offset.y;
 
-    setupCanvas(canvas, ctx, numTilesX, numTilesY, gridSize);
+    const tx = Math.floor(localX / canvasSetup.tileSizePx);
+    const ty = Math.floor(localY / canvasSetup.tileSizePx);
 
-    renderGame(
-      rc,
-      ctx,
-      grid as { type: TerrainType }[][],
-      players,
-      npcs,
-      items,
-      showGrid,
-      time,
-      animationSettings as AnimationSettings,
-      particles,
-      addParticlesToState
+    if (tx < 0 || ty < 0 || ty >= gameWorld.grid.length || tx >= (gameWorld.grid[0]?.length || 0)) return;
+
+    const currentPlayer = useGameStore.getState().currentPlayer;
+    if (!currentPlayer) return;
+
+    // Check if clicked on an item for looting interaction
+    const clickedItem = gameWorld.items.find(item => 
+      item.position && item.position.x === tx && item.position.y === ty
     );
-  }, [grid, players, npcs, items, showGrid, time, particles, animationSettings, addParticlesToState]);
 
-  return <canvas ref={canvasRef} style={{ border: '1px solid #ccc' }} />;
+    if (clickedItem) {
+      handleItemInteraction(clickedItem, currentPlayer);
+      return;
+    }
+
+    // Default: move to clicked location
+    useGameStore.getState().moveTo({ x: tx, y: ty });
+
+    const pixelX = tx * canvasSetup.tileSizePx + canvasSetup.tileSizePx / 2;
+    const pixelY = ty * canvasSetup.tileSizePx + canvasSetup.tileSizePx / 2;
+    triggerDrawEffect(pixelX, pixelY, 'circle');
+  };
+
+  const handleItemInteraction = (item: Item, player: Player) => {
+    // Check distance to item
+    const distance = Math.sqrt(
+      Math.pow(item.position!.x - player.position.x, 2) + 
+      Math.pow(item.position!.y - player.position.y, 2)
+    );
+
+    if (distance > GAME_CONFIG.lootInteractionRadius) {
+      useGameStore.getState().setGameMessage('Item is too far away');
+      return;
+    }
+
+    if (item.isHidden) {
+      // Inspect hidden item
+      webSocketClient.inspectItem(item.id);
+    } else if (item.revealProgress >= 1.0 && item.canBeLooted) {
+      // Loot revealed item
+      webSocketClient.lootItem(item.id);
+    } else if (item.revealProgress < 1.0) {
+      // Item is still revealing
+      useGameStore.getState().setGameMessage('Item is still being revealed...');
+    } else {
+      // Item not lootable
+      useGameStore.getState().setGameMessage('Cannot loot this item right now');
+    }
+  };
+
+  return (
+    <div ref={containerRef} className="w-full h-full flex flex-1 items-stretch justify-stretch overflow-hidden p-2 box-border relative min-w-0 min-h-0">
+      <canvas 
+        ref={canvasRef} 
+        className={`border border-outline rounded-md block w-full h-full max-w-full max-h-full ${canvasSetup.isReady ? '' : 'hidden'}`} 
+        onPointerDown={handlePointerDown}
+        style={{ imageRendering: 'pixelated' }}
+      />
+      {drawEffects.map(effect => (
+        <CanvasDrawEffectComponent
+          key={effect.id}
+          canvasRef={canvasRef}
+          path={effect.path}
+          active={effect.active}
+          duration={effect.duration}
+          strokeColor={effect.strokeColor}
+          strokeWidth={effect.strokeWidth}
+          clearBeforeDraw={false}
+        />
+      ))}
+      {regenerationEffects.map(effect => (
+        <CanvasDrawEffectComponent
+          key={effect.id}
+          canvasRef={canvasRef}
+          path={
+            effect.type === 'circle'
+              ? createCanvasCirclePath(effect.x, effect.y, 15, 12)
+              : effect.type === 'star'
+              ? createCanvasStarPath(effect.x, effect.y, 12, 8, 5)
+              : createCanvasLightningPath(effect.x - 10, effect.y - 10, effect.x + 10, effect.y + 10, 4, 10)
+          }
+          active={effect.active}
+          duration={2}
+          strokeColor={
+            effect.type === 'circle' ? '#00ff88' :
+            effect.type === 'star' ? '#ff6b6b' : '#ffff00'
+          }
+          strokeWidth={2}
+          clearBeforeDraw={false}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default GameCanvas;

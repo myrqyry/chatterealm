@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import GameCanvas from './GameCanvas';
 import NotificationSystem from './NotificationSystem';
-import EnhancedPlayerStatus from './EnhancedPlayerStatus';
+import PlayerSidebar from './sidebars/PlayerSidebar';
+import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from './index';
 import { useGameStore } from '../stores/gameStore';
-import GameControls from './controls/GameControls';
-import WorldControls from './controls/WorldControls';
-import AnimationControls from './controls/AnimationControls';
+import { COLORS } from '../utils/tokens';
+import { PlayerClass } from 'shared';
 
 interface GameLayoutProps {
   handleRegenerateWorld: () => void;
@@ -22,108 +22,81 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   handleStartCataclysm,
   handlePickUpItem,
 }) => {
-  const { gameWorld, currentPlayer, selectedTab, setSelectedTab, gameMessage, animationSettings, updateAnimationSettings } = useGameStore();
+  const { gameWorld, currentPlayer, gameMessage } = useGameStore();
+
+  const handleJoin = () => {
+    handleJoinGame();
+  };
 
   return (
-    <div className="app-container">
+    <div className="flex flex-col h-screen w-screen m-0 p-0 overflow-hidden box-border bg-[var(--color-background-primary)] font-inter">
       <NotificationSystem />
-      <div className="main-display">
-        <div className="game-header">
-          <h1>🗺️ Chat Grid Chronicles - Full Game Test</h1>
-          <div className="world-info">
-            <span>Phase: {gameWorld?.phase || 'N/A'}</span>
-            <span>Players: {gameWorld ? gameWorld.players.length : 0}</span>
-            <span>NPCs: {gameWorld ? gameWorld.npcs.length : 0}</span>
-            <span>Items: {gameWorld ? gameWorld.items.length : 0}</span>
+
+      {/* Header */}
+      <div className="p-4 border-b border-[var(--color-outline)] bg-[var(--color-surface-variant)]">
+        <div className="flex items-center justify-between">
+          <h1 className="font-serif text-xl font-extrabold text-text-primary m-0 uppercase tracking-widest text-center header-gradient">chatterealm</h1>
+          <div className="flex items-center gap-4">
+            <MaterialChip
+              label={`Phase: ${gameWorld?.phase || 'Unknown'}`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(76, 175, 80, 0.2)' }}
+            />
+            <MaterialChip
+              label={`${gameWorld?.players?.length || 0} Players`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(33, 150, 243, 0.2)' }}
+            />
+            <MaterialChip
+              label={`${gameWorld?.npcs?.length || 0} NPCs`}
+              size="small"
+              sx={{ backgroundColor: 'rgba(156, 39, 176, 0.2)' }}
+            />
           </div>
         </div>
 
-        <GameCanvas />
-
-        <div className="game-legend">
-          <div className="legend-item">
-            <div className="legend-color" style={{background: '#FFD700', borderRadius: '50%'}}></div>
-            <span>Knight</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color" style={{background: '#8B0000', borderRadius: '50%'}}></div>
-            <span>Rogue</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color" style={{background: '#4B0082', borderRadius: '50%'}}></div>
-            <span>Mage</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color" style={{background: '#DC143C', borderRadius: '50%'}}></div>
-            <span>NPC</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color" style={{background: '#F59E0B', borderRadius: '0'}}></div>
-            <span>Item</span>
-          </div>
-        </div>
+        {/* Game Message */}
+        {gameMessage && (
+          <MaterialCard sx={{ mt: 2, p: 2, backgroundColor: 'var(--color-primary-container)', border: '1px solid var(--color-primary)' }}>
+            <p className="text-sm text-[var(--color-on-primary-container)] m-0">{gameMessage}</p>
+          </MaterialCard>
+        )}
       </div>
 
-      <div className="player-hub">
-        <div className="tabs">
-          <button
-            className={selectedTab === 'status' ? 'active' : ''}
-            onClick={() => setSelectedTab('status')}
+      {/* Main Content Area - Two Column Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Game Canvas - Left Side, Scales to Fit */}
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-[var(--color-surface)]">
+          <div className="w-full h-full max-w-[calc(100vw-320px)] max-h-screen overflow-hidden">
+            <GameCanvas />
+          </div>
+
+          {/* Material UI Legend - Positioned over game canvas */}
+          <MaterialPaper
+            sx={{
+              position: 'absolute',
+              bottom: '20px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: 1,
+              p: 1,
+              zIndex: 1000,
+              backgroundColor: 'rgba(25, 23, 36, 0.95)',
+              backdropFilter: 'blur(10px)',
+            }}
+            className="rounded-md"
           >
-            Status
-          </button>
-          <button
-            className={selectedTab === 'actions' ? 'active' : ''}
-            onClick={() => setSelectedTab('actions')}
-          >
-            Actions
-          </button>
-          <button
-            className={selectedTab === 'world' ? 'active' : ''}
-            onClick={() => setSelectedTab('world')}
-          >
-            World Info
-          </button>
-          <button
-            className={selectedTab === 'dev' ? 'active' : ''}
-            onClick={() => setSelectedTab('dev')}
-            style={{background: '#9b59b6', color: 'white'}}
-          >
-            ⚙️ Dev Panel
-          </button>
+            <MaterialChip label="Knight" size="small" sx={{ backgroundColor: 'var(--color-legend-knight)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="Rogue" size="small" sx={{ backgroundColor: 'var(--color-legend-rogue)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="Mage" size="small" sx={{ backgroundColor: 'var(--color-legend-mage)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="NPC" size="small" sx={{ backgroundColor: 'var(--color-legend-npc)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+            <MaterialChip label="Item" size="small" sx={{ backgroundColor: 'var(--color-legend-item)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
+          </MaterialPaper>
         </div>
 
-        <div className="tab-content">
-          {selectedTab === 'status' && currentPlayer && (
-            <EnhancedPlayerStatus player={currentPlayer} />
-          )}
-
-          {selectedTab === 'actions' && (
-            <GameControls
-              handleMove={handleMove}
-              handleJoinGame={handleJoinGame}
-              gameMessage={gameMessage}
-              handleStartCataclysm={handleStartCataclysm}
-              handlePickUpItem={handlePickUpItem}
-            />
-          )}
-
-          {selectedTab === 'world' && (
-            <WorldControls
-              gameWorld={gameWorld}
-              currentPlayer={currentPlayer}
-              handleRegenerateWorld={handleRegenerateWorld}
-              gameMessage={gameMessage}
-            />
-          )}
-
-          {selectedTab === 'dev' && animationSettings && (
-            <AnimationControls
-              {...animationSettings}
-              updateAnimationSettings={updateAnimationSettings}
-            />
-          )}
-        </div>
+        {/* Right Sidebar - Player Controls and Settings */}
+        <PlayerSidebar />
       </div>
     </div>
   );

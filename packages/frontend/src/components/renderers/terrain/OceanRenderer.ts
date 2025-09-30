@@ -1,4 +1,5 @@
-import { TerrainType, AnimationSettings } from 'shared/src/types/game'; // Import from shared
+import type { AnimationSettings } from 'shared';
+import { TerrainType } from 'shared'; // Import from shared
 
 export const drawOcean = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
@@ -10,19 +11,20 @@ export const drawOcean = (rc: any, startX: number, startY: number, gridSize: num
       // Ocean/deep water with wave animation
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#1e40af',
-        fillStyle: 'solid',
-        stroke: '#1e3a8a',
-        strokeWidth: 1,
-        roughness: roughness * 0.5
+        fillStyle: 'dots',
+        stroke: '#2A4A8A', // Lighter blue stroke for better cohesion
+        strokeWidth: 2, // Thicker
+        roughness: roughness * 0.8, // Smoother edges
+        bowing: 0.8 // More uniform shapes
       });
       // Animated waves
       for (let w = 0; w < 3; w++) {
-        const waveOffset = Math.sin(time * 0.08 + startX * 0.5 + w) * 2;
-        rc.line(startX, startY + 5 + w * 8 + waveOffset, startX + gridSize, startY + 5 + w * 8 + waveOffset, {
+        const waveOffset = Math.sin(time * 0.025 + startX * 0.5 + w) * 2; // Slightly faster waves
+        rc.line(startX, startY + 5 + w * 10 + waveOffset, startX + gridSize, startY + 5 + w * 10 + waveOffset, { // More spaced waves
           stroke: '#3b82f6',
-          strokeWidth: 1,
-          roughness: roughness * 0.8,
-          bowing: bowing * 0.5
+          strokeWidth: 3, // Thicker
+          roughness: roughness * 0.6,
+          bowing: bowing * 0.4
         });
       }
       break;
@@ -31,18 +33,20 @@ export const drawOcean = (rc: any, startX: number, startY: number, gridSize: num
       // Flowing river with current animation
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#3b82f6',
-        fillStyle: 'solid',
-        stroke: '#1d4ed8',
-        strokeWidth: 1,
-        roughness: roughness * 0.7
+        fillStyle: 'hachure',
+        stroke: '#2D5AA8', // Lighter blue stroke
+        strokeWidth: 2, // Thicker for cohesion
+        fillWeight: 2.0, // Thicker fill lines
+        roughness: roughness * 0.8,
+        bowing: 0.8
       });
       // Animated current
-      const currentOffset = Math.sin(time * 0.12 + startY) * 3;
-      rc.line(startX + 2, startY + 5 + currentOffset, startX + gridSize - 2, startY + 10 + currentOffset, {
+      const currentOffset = Math.sin(time * 0.03 + startY) * 3; // Slightly faster current
+      rc.line(startX + 2, startY + 5 + currentOffset, startX + gridSize - 2, startY + 12 + currentOffset, { // Longer current line
         stroke: '#60a5fa',
-        strokeWidth: 2,
-        roughness: roughness * 0.6,
-        bowing: bowing * 0.8
+        strokeWidth: 4, // Thicker current
+        roughness: roughness * 0.5,
+        bowing: bowing * 0.6
       });
       break;
   }

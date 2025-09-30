@@ -6,12 +6,9 @@ export const ExperienceBar: React.FC<ExperienceBarProps> = ({ currentExperience,
   const experiencePercentage = (currentExperience / 100) * 100;
 
   return (
-    <div className="experience-bar">
-      <div
-        className="experience-fill"
-        style={{ width: `${experiencePercentage}%` }}
-      ></div>
-      <span className="experience-text">LVL {level} - EXP {currentExperience}/100</span>
+    <div className="relative w-full h-3 rounded-md bg-[var(--color-surface-variant)] overflow-hidden">
+      <div className="absolute left-0 top-0 h-full bg-[var(--color-accent)]" style={{ width: `${experiencePercentage}%` }} />
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-[var(--color-text-secondary)]">LVL {level} - EXP {currentExperience}/100</span>
     </div>
   );
 };

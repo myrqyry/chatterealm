@@ -1,6 +1,8 @@
 import { GameWorld, ItemType, ItemRarity } from '../../../../shared/src/types/game';
 import { WORLD_WIDTH, WORLD_HEIGHT } from './WorldTypes';
 import { generateTerrain } from './TerrainGenerator';
+import { generateBuildings } from './BuildingGenerator';
+import { generateTerrainLoot, generateLootHotspots } from './LootSpawnSystem';
 
 export const createMockGameWorld = (): GameWorld => {
   const grid: any[][] = [];
@@ -12,6 +14,14 @@ export const createMockGameWorld = (): GameWorld => {
     }
   }
 
+  const { buildings, items: buildingItems } = generateBuildings(grid, WORLD_WIDTH, WORLD_HEIGHT);
+
+  // Generate loot hotspots for enhanced loot areas
+  const lootHotspots = generateLootHotspots(WORLD_WIDTH, WORLD_HEIGHT);
+  
+  // Generate terrain-based loot
+  const terrainItems = generateTerrainLoot(grid, WORLD_WIDTH, WORLD_HEIGHT, lootHotspots);
+
   return {
     id: 'mock_world_1',
     grid,
@@ -22,6 +32,11 @@ export const createMockGameWorld = (): GameWorld => {
       avatar: '🤠',
       position: { x: 5, y: 5 },
       class: 'knight' as any,
+      health: 100,
+      mana: 50,
+      stamina: 100,
+      hunger: 100,
+      thirst: 100,
       stats: { hp: 100, maxHp: 120, attack: 15, defense: 20, speed: 8 },
       level: 1,
       experience: 0,
@@ -53,15 +68,21 @@ export const createMockGameWorld = (): GameWorld => {
       rarity: ItemRarity.UNCOMMON,
       description: 'A well-balanced iron sword',
       stats: { attack: 5 },
-      position: { x: 8, y: 6 }
-    }],
+      position: { x: 8, y: 6 },
+      isHidden: false,
+      revealDuration: 0,
+      revealProgress: 1.0,
+      canBeLooted: true
+    }, ...buildingItems, ...terrainItems], // Merge all loot sources
+    buildings,
     cataclysmCircle: {
-      center: { x: 10, y: 7 },
-      radius: 20,
+  center: { x: 20, y: 15 },
+  radius: 40,
       isActive: false,
       shrinkRate: 1,
       nextShrinkTime: Date.now() + 300000
     },
+    cataclysmRoughnessMultiplier: 1.0,
     worldAge: 0,
     lastResetTime: Date.now(),
     phase: 'exploration'

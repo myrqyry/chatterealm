@@ -95,21 +95,18 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   return (
     <div
       ref={notificationRef}
-      className="notification-item"
-      style={{
-        background: style.background,
-        border: style.border
-      }}
+      className="notification-item rounded-md shadow-md overflow-hidden max-w-sm w-full mb-3"
+      style={{ background: style.background, border: style.border }}
     >
-      <div className="notification-content">
-        <div className="notification-header">
-          <div className="notification-icon">{displayIcon}</div>
-          <div className="notification-text">
-            <h4 className="notification-title">{notification.title}</h4>
-            <p className="notification-message">{notification.message}</p>
+      <div className="notification-content p-3">
+        <div className="notification-header flex items-start gap-3">
+          <div className="notification-icon text-xl">{displayIcon}</div>
+          <div className="notification-text flex-1">
+            <h4 className="notification-title text-text-primary font-semibold text-sm m-0">{notification.title}</h4>
+            <p className="notification-message text-text-secondary text-sm m-0">{notification.message}</p>
           </div>
           <button 
-            className="notification-close"
+            className="notification-close text-text-secondary text-lg p-1"
             onClick={handleDismiss}
             aria-label="Dismiss notification"
           >
@@ -118,11 +115,11 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
         </div>
         
         {notification.actions && notification.actions.length > 0 && (
-          <div className="notification-actions">
+          <div className="notification-actions mt-3 flex gap-2">
             {notification.actions.map((action: NotificationAction, index: number) => (
               <button
                 key={index}
-                className={`notification-action-btn ${action.style || 'secondary'}`}
+                className={`notification-action-btn px-3 py-1 rounded-md text-sm ${action.style === 'primary' ? 'bg-primary text-on-primary' : 'bg-transparent border border-divider text-text-primary'}`}
                 onClick={() => handleActionClick(action)}
               >
                 {action.label}
@@ -133,8 +130,8 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
       </div>
       
       {!notification.persistent && (
-        <div className="notification-progress">
-          <div ref={progressRef} className="notification-progress-bar"></div>
+        <div className="notification-progress h-1 bg-[rgba(0,0,0,0.08)]">
+          <div ref={progressRef} className="notification-progress-bar h-1 bg-primary w-full"></div>
         </div>
       )}
     </div>

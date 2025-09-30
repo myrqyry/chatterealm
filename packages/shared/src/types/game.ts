@@ -1,5 +1,18 @@
 // Core Game Types for Chat Grid Chronicles
 
+export enum SocketEvents {
+  CONNECT = 'connect',
+  DISCONNECT = 'disconnect',
+  JOIN_GAME = 'join_game',
+  GAME_JOINED = 'game_joined',
+  PLAYER_COMMAND = 'player_command',
+  COMMAND_RESULT = 'command_result',
+  GAME_STATE_UPDATE = 'game_state_update',
+  PLAYER_JOINED = 'player_joined',
+  PLAYER_DISCONNECTED = 'player_disconnected',
+  ERROR = 'error',
+}
+
 export interface Position {
   x: number;
   y: number;
@@ -42,6 +55,27 @@ export enum TerrainType {
   PLAIN = 'plain',
 }
 
+export enum BuildingType {
+  HOUSE = 'house',
+  CASTLE = 'castle',
+  TOWER = 'tower',
+  SHOP = 'shop',
+  TAVERN = 'tavern',
+  TEMPLE = 'temple',
+  FARM = 'farm',
+  MILL = 'mill',
+  BRIDGE = 'bridge',
+  WALL = 'wall',
+  GATE = 'gate',
+  RUINS = 'ruins',
+  SHRINE = 'shrine',
+  WATCHTOWER = 'watchtower',
+  STABLES = 'stables',
+  BLACKSMITH = 'blacksmith',
+  LIBRARY = 'library',
+  LABORATORY = 'laboratory'
+}
+
 export enum Buff {
   HealthRegen = 'HealthRegen',
   ManaRegen = 'ManaRegen',
@@ -70,6 +104,25 @@ export enum ItemRarity {
   LEGENDARY = 'legendary'
 }
 
+export enum MovementStyle {
+  GRID = 'grid',
+  FREE = 'free',
+  HYBRID = 'hybrid'
+}
+
+export enum Theme {
+  DARK = 'dark',
+  LIGHT = 'light',
+  NIGHT = 'night',
+  AUTO = 'auto'
+}
+
+export enum NotificationType {
+  DESKTOP = 'desktop',
+  SOUND = 'sound',
+  INGAME = 'ingame'
+}
+
 export interface Terrain {
   type: TerrainType;
   position: Position;
@@ -78,8 +131,23 @@ export interface Terrain {
   visibilityModifier: number;
 }
 
+export interface Building {
+  id: string;
+  type: BuildingType;
+  emoji: string;
+  position: Position;
+  name: string;
+  description: string;
+  size: { width: number; height: number }; // in grid tiles
+  isAccessible: boolean;
+  providesBuff?: Buff;
+  spawnChance: number;
+  terrainPreference: TerrainType[]; // Which terrain types this building prefers
+}
+
 export interface Player {
   id: string;
+  name?: string; // Made optional for backward compatibility
   twitchUsername: string;
   displayName: string;
   avatar: string; // emoji
@@ -109,6 +177,13 @@ export interface Player {
   buffs?: Buff[]; // Added to player
 }
 
+export interface JoinGameData {
+  id: string;
+  displayName: string;
+  class: PlayerClass;
+  avatar?: string;
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -121,6 +196,13 @@ export interface Item {
   ownerId?: string; // for items in inventory
   durability?: number;
   maxDurability?: number;
+  // Tarkov-style looting properties
+  isHidden: boolean; // Item starts hidden and must be revealed
+  revealStartTime?: number; // When the reveal process started
+  revealDuration: number; // How long it takes to fully reveal (based on rarity)
+  revealProgress: number; // 0-1, how much of the item is revealed
+  lastInteractionTime?: number; // Last time player interacted with this item
+  canBeLooted: boolean; // Whether the item can be picked up
 }
 
 export interface NPC {
@@ -141,6 +223,7 @@ export interface GameWorld {
   players: Player[];
   npcs: NPC[];
   items: Item[];
+  buildings: Building[];
   cataclysmCircle: {
     center: Position;
     radius: number;
@@ -148,6 +231,7 @@ export interface GameWorld {
     shrinkRate: number;
     nextShrinkTime: number;
   };
+  cataclysmRoughnessMultiplier: number; // Multiplier for terrain roughness during cataclysm (1.0 = normal, higher = more chaotic)
   worldAge: number;
   lastResetTime: number;
   phase: 'exploration' | 'cataclysm' | 'rebirth';
@@ -172,6 +256,7 @@ export interface ChatCommand {
 export interface GameSettings {
   gridWidth: number;
   gridHeight: number;
+  tileSize: number; // Standard tile size in pixels for UI rendering
   maxPlayers: number;
   cataclysmDuration: number;
   spawnCost: number; // channel points
@@ -183,6 +268,13 @@ export interface GameSettings {
     visibilityModifier: number;
     spawnChance: number;
   }>;
+  nightMode: boolean; // Toggle for night time rendering effects
+  // Tarkov-style looting settings
+  lootingEnabled: boolean;
+  itemRevealTimes: Record<ItemRarity, number>; // Reveal duration in milliseconds for each rarity
+  maxItemsPerTile: number; // Maximum items that can spawn in one tile
+  itemSpawnRate: number; // Chance of item spawning when terrain regenerates
+  lootInteractionRadius: number; // How close player needs to be to interact with loot
 }
 
 export interface BattleResult {
@@ -208,6 +300,10 @@ export interface ServerToClientEvents {
   battle_result: (result: BattleResult) => void;
   game_event: (event: GameEvent) => void;
   chat_response: (message: string) => void;
+  // Tarkov-style looting events
+  item_reveal_update: (itemId: string, revealProgress: number) => void;
+  loot_success: (item: Item) => void;
+  loot_failure: (reason: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -215,9 +311,136 @@ export interface ClientToServerEvents {
   move_player: (direction: 'up' | 'down' | 'left' | 'right') => void;
   use_item: (itemId: string) => void;
   chat_command: (command: string) => void;
+  // Tarkov-style looting events
+  loot_item: (itemId: string) => void;
+  inspect_item: (itemId: string) => void;
+}
+
+// Unified Settings Types
+export interface PlayerGameSettings {
+  // General Game Settings
+  autoSaveEnabled: boolean;
+  tutorialEnabled: boolean;
+  minimapEnabled: boolean;
+  showNPCNames: boolean;
+  showItemNames: boolean;
+  movementStyle: MovementStyle;
+
+  // Combat Settings
+  showDamageNumbers: boolean;
+  autoCombatEnabled: boolean;
+}
+
+export interface AudioSettings {
+  // Volume Controls
+  audioMasterVolume: number;
+  sfxVolume: number;
+  musicVolume: number;
+
+  // Toggle Controls
+  soundEnabled: boolean;
+  musicEnabled: boolean;
+}
+
+export interface NotificationSettings {
+  // General Notifications
+  desktopNotifications: boolean;
+  soundNotifications: boolean;
+  battleNotifications: boolean;
+  systemNotifications: boolean;
+
+  // Event-specific Notification Types
+  playerJoinNotifications: NotificationType[];
+  itemDropNotifications: NotificationType[];
+  levelUpNotifications: NotificationType[];
+  cataclysmNotifications: NotificationType[];
+}
+
+export interface VisualSettings {
+  // Theme & Appearance
+  theme: Theme;
+  language: string;
+  fontSize: number;
+
+  // Accessibility
+  highContrast: boolean;
+  reduceMotion: boolean;
+
+  // Visual Display
+  showGrid: boolean;
+  showParticles: boolean;
+  showHealthBars: boolean;
+  backgroundColor: string;
+
+  // Performance Settings
+  renderScale: number; // 0.25-1.0, lower values render at smaller resolution for better performance
+}
+
+export interface WorldSettings {
+  // World Dimensions
+  worldWidth: number;
+  worldHeight: number;
+
+  // Terrain Animation
+  grassWaveSpeed: number;
+  treeSwaySpeed: number;
+  flowerSpawnRate: number;
+  windSpeed: number;
+
+  // World Rendering
+  nightMode: boolean;
 }
 
 export interface AnimationSettings {
+  // Animation Controls
+  animationSpeed: number;
+  breathingRate: number;
+  particleCount: number;
+
+  // Visual Display Settings
+  showParticles: boolean;
+  showGrid: boolean;
+
+  // Terrain Animation
+  grassWaveSpeed: number;
+  treeSwaySpeed: number;
+  flowerSpawnRate: number;
+  windSpeed: number;
+
+  // Rough.js Settings
+  roughness: number;
+  bowing: number;
+  fillWeight: number;
+  hachureAngle: number;
+  hachureGap: number;
+  fillStyle?: string;
+  seed?: number;
+  strokeWidth: number;
+  simplification: number;
+  dashOffset: number;
+  dashGap: number;
+  zigzagOffset: number;
+  curveFitting: number;
+  curveTightness: number;
+  curveStepCount: number;
+  fillShapeRoughnessGain: number;
+  disableMultiStroke: boolean;
+  disableMultiStrokeFill: boolean;
+  preserveVertices: boolean;
+}
+
+// Combined Settings Type
+export interface UnifiedSettings {
+  game: PlayerGameSettings;
+  audio: AudioSettings;
+  notifications: NotificationSettings;
+  visual: VisualSettings;
+  world: WorldSettings;
+  animations: AnimationSettings;
+}
+
+// Legacy AnimationSettings interface (keeping for compatibility)
+export interface AnimationSettingsLegacy {
   animationSpeed: number;
   showGrid: boolean;
   roughness: number;
@@ -225,9 +448,11 @@ export interface AnimationSettings {
   fillWeight: number;
   hachureAngle: number;
   hachureGap: number;
-  windSpeed: number;
-  grassWaveSpeed: number;
-  treeSwaySpeed: number;
-  flowerSpawnRate: number;
-  showParticles: boolean;
+  windSpeed?: number;
+  grassWaveSpeed?: number;
+  treeSwaySpeed?: number;
+  flowerSpawnRate?: number;
+  showParticles?: boolean;
+  breathingRate?: number;
+  particleCount?: number;
 }

@@ -1,4 +1,5 @@
-export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number, time: number) => {
+// Accept optional `seed` parameter for deterministic animation variations.
+export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number, time: number, seed?: number) => {
   const centerX = x * gridSize + gridSize / 2;
   const centerY = y * gridSize + gridSize / 2;
 
@@ -6,12 +7,12 @@ export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number,
   const breathScale = 1 + Math.sin(time * 0.05) * 0.1;
 
   // Pulsing danger aura
-  const auraRadius = 14 + Math.sin(time * 0.1) * 2;
+  const auraRadius = 14 + Math.sin(time * 0.04) * 1.5; // Much slower, gentler aura
   rc.circle(centerX, centerY, auraRadius, {
     fill: '#DC143C',
     fillStyle: 'solid',
     stroke: '#8B0000',
-    strokeWidth: 1,
+    strokeWidth: 2,
     roughness: 2
   });
 
@@ -20,7 +21,7 @@ export const drawAnimatedNPC = (rc: any, x: number, y: number, gridSize: number,
     fill: '#DC143C',
     fillStyle: 'solid',
     stroke: '#8B0000',
-    strokeWidth: 2,
+    strokeWidth: 3,
     roughness: 1.5
   });
 

@@ -68,6 +68,10 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -96,6 +100,13 @@ typings/
 # Mac files
 .DS_Store
 
+# Windows files
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
 # Typescript
 *.tsbuildinfo
 
@@ -104,3 +115,8 @@ temp-frontend/
 packages/backend/dist/
 packages/frontend/dist/
 packages/shared/dist/
+
+# Compiled JavaScript and declaration files in src directories
+**/src/**/*.js
+**/src/**/*.js.map
+**/src/**/*.d.ts

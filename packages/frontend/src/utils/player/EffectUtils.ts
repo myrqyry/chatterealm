@@ -1,5 +1,5 @@
 import { PlayerEffect } from '../../types/playerStatus';
-import { Buff } from '@shared/types/game'; // Import Buff enum
+import { Buff } from 'shared'; // Import Buff enum
 
 export const getEffectDescription = (effect: PlayerEffect): string => {
   switch (effect.type) {

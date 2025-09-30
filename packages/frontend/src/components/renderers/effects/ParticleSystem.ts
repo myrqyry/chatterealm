@@ -40,7 +40,9 @@ export const updateParticles = (prevParticles: Particle[]): Particle[] => {
 
 export const drawParticles = (ctx: CanvasRenderingContext2D, particles: Particle[]) => {
   particles.forEach(particle => {
-    const alpha = particle.life / particle.maxLife;
+    // Use ease-out quadratic for smoother fade
+    const lifeRatio = particle.life / particle.maxLife;
+    const alpha = lifeRatio * lifeRatio; // quadratic ease-out
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.fillStyle = particle.color;

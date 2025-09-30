@@ -1,5 +1,5 @@
 import { PlayerStats, PlayerEffect } from '../../types/playerStatus';
-import { Player } from '@shared/types/game';
+import { Player } from 'shared';
 
 export const calculatePlayerStats = (player: Player): PlayerStats => {
   // Mock data for now, replace with actual game logic later

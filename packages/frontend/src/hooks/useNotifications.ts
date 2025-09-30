@@ -1,21 +1,42 @@
-import { useState, useEffect } from 'react';
-import { notificationQueue } from '../services/notification/NotificationQueue';
+import { useGameStore } from '../stores/gameStore';
 import { NotificationData } from '../types/notification';
 
+/**
+ * Custom hook for accessing notification state and actions from the global game store.
+ *
+ * This hook provides access to the current notifications list and functions to manage
+ * notifications (add, remove). It automatically limits the number of notifications
+ * displayed if maxNotifications is specified.
+ *
+ * @param maxNotifications - Optional maximum number of notifications to display
+ * @returns Object containing notifications array and management functions
+ *
+ * @example
+ * ```tsx
+ * const { notifications, addNotification, removeNotification } = useNotifications(5);
+ *
+ * // Add a new notification
+ * addNotification({
+ *   type: 'success',
+ *   title: 'Item Found!',
+ *   message: 'You found a health potion'
+ * });
+ *
+ * // Remove a notification
+ * removeNotification(notificationId);
+ * ```
+ */
 export const useNotifications = (maxNotifications?: number) => {
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const { notifications, addNotification, removeNotification } = useGameStore();
 
-  useEffect(() => {
-    // Optionally update maxNotifications if the queue is managed here
-    // Currently, maxNotifications is passed to the NotificationQueue constructor.
-    // If the hook is responsible for limiting, this logic should move here.
+  // If maxNotifications is specified, limit the notifications
+  const limitedNotifications = maxNotifications
+    ? notifications.slice(-maxNotifications)
+    : notifications;
 
-    const unsubscribe = notificationQueue.subscribe((currentNotifications) => {
-      setNotifications(currentNotifications);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  return { notifications, removeNotification: notificationQueue.removeNotification };
+  return {
+    notifications: limitedNotifications,
+    addNotification,
+    removeNotification
+  };
 };
