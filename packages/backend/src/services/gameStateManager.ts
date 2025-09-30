@@ -42,7 +42,7 @@ export class GameStateManager {
   private reservedPositions: Set<string> = new Set();
   private availableSpawnPoints: Set<string> = new Set();
 
-  constructor() {
+  constructor(options?: { generateNPCs?: boolean; worldType?: 'test' | 'default' }) {
     // Initialize modules
     this.npcManager = new NPCManager(this.occupiedPositions);
     this.gameWorldManager = new GameWorldManager(this.npcManager);
@@ -51,7 +51,7 @@ export class GameStateManager {
     this.cataclysmService = new CataclysmService(this.lootManager, this.npcManager, this.occupiedPositions);
     
     // Initialize world
-    this.gameWorld = this.gameWorldManager.initializeGameWorld();
+    this.gameWorld = this.gameWorldManager.initializeGameWorld(options);
     this.playerMovementService = new PlayerMovementService(this.gameWorld);
     
     // Update all modules with current state

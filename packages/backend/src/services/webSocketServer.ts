@@ -52,6 +52,10 @@ export class WebSocketServer {
     this.startCleanupInterval(); // Start periodic stale client cleanup
   }
 
+  public setGameStateManager(gameStateManager: GameStateManager): void {
+    this.gameStateManager = gameStateManager;
+  }
+
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket) => {
       console.log(`[CONNECTION] Client connected: ${socket.id}`);
@@ -139,7 +143,7 @@ export class WebSocketServer {
         displayName: playerData.displayName,
         twitchUsername: '', // Initialized to empty string as it's not part of JoinGameData
         avatar: playerData.avatar || '👤', // Default avatar emoji
-        position: { x: 0, y: 0 }, // Will be set by GameStateManager
+        position: (playerData as any).position || { x: 0, y: 0 }, // Will be set by GameStateManager
         class: playerData.class || PlayerClass.KNIGHT, // Default to knight
         health: 100, // Full health at spawn
         mana: 100, // Full mana at spawn
@@ -306,7 +310,15 @@ export class WebSocketServer {
         if (!command.data?.direction) {
           throw new Error('Missing direction for move command');
         }
-        result = this.gameStateManager.movePlayer(clientData.playerId, command.data.direction);
+        const player = this.gameStateManager.getPlayer(clientData.playerId);
+        if (!player) {
+            throw new Error('Player not found for move command');
+        }
+        const newPosition = {
+            x: player.position.x + command.data.direction.x,
+            y: player.position.y + command.data.direction.y,
+        };
+        result = this.gameStateManager.movePlayer(clientData.playerId, newPosition);
         break;
 
       case 'move_to':

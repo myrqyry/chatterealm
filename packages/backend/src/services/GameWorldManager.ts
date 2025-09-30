@@ -11,14 +11,15 @@ export class GameWorldManager {
   /**
    * Initialize a new game world
    */
-  public initializeGameWorld(): GameWorld {
+  public initializeGameWorld(options?: { generateNPCs?: boolean; worldType?: 'test' | 'default' }): GameWorld {
     const grid: any[][] = [];
+    const worldType = options?.worldType || 'default';
 
     // Initialize terrain grid
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
       grid[y] = [];
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-        const terrainType = this.generateTerrainType();
+        const terrainType = worldType === 'test' ? TerrainType.PLAIN : this.generateTerrainType();
         const config = GAME_CONFIG.terrainConfig[terrainType];
         
         grid[y][x] = {
@@ -32,7 +33,9 @@ export class GameWorldManager {
     }
 
     // Generate initial NPCs
-    const npcs = this.npcManager.generateNPCs(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight, grid);
+    const npcs = (options?.generateNPCs ?? true)
+        ? this.npcManager.generateNPCs(GAME_CONFIG.gridWidth, GAME_CONFIG.gridHeight, grid)
+        : [];
 
     // Create the game world
     const gameWorld: GameWorld = {
@@ -87,10 +90,14 @@ export class GameWorldManager {
       return false;
     }
 
-    // Find spawn position
-    const spawnPosition = this.findEmptySpawnPosition(gameWorld.grid, occupiedPositions);
+    // Use player's position if valid, otherwise find a new spawn point
+    let spawnPosition: Position | null = player.position;
+    if (!spawnPosition || !this.isValidSpawnPosition(spawnPosition.x, spawnPosition.y, gameWorld.grid, occupiedPositions)) {
+        spawnPosition = this.findEmptySpawnPosition(gameWorld.grid, occupiedPositions);
+    }
+
     if (!spawnPosition) {
-      return false;
+        return false; // Could not find a valid spawn position
     }
 
     // Set player position

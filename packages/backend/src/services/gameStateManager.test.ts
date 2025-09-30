@@ -6,7 +6,7 @@ describe('GameStateManager', () => {
   let gameStateManager: GameStateManager;
 
   beforeEach(() => {
-    gameStateManager = new GameStateManager();
+    gameStateManager = new GameStateManager({ generateNPCs: false, worldType: 'test' });
   });
 
   describe('addPlayer', () => {
