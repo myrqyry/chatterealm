@@ -16,6 +16,8 @@ export const useContainerResize = (containerRef: React.RefObject<HTMLDivElement>
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
+        // Debug logging to track container size changes
+        console.log('ContainerResize:', { width: Math.round(width), height: Math.round(height) });
         setContainerSize({ width, height });
       }
     });

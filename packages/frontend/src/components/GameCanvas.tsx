@@ -248,12 +248,12 @@ const GameCanvas: React.FC = () => {
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full flex flex-1 items-stretch justify-stretch overflow-hidden p-2 box-border relative min-w-0 min-h-0">
+    <div ref={containerRef} className="w-full h-full overflow-hidden p-2 box-border relative min-w-0 min-h-0" style={{ maxHeight: '100%', maxWidth: '100%' }}>
       <canvas 
         ref={canvasRef} 
         className={`border border-outline rounded-md block w-full h-full max-w-full max-h-full ${canvasSetup.isReady ? '' : 'hidden'}`} 
         onPointerDown={handlePointerDown}
-        style={{ imageRendering: 'pixelated' }}
+        style={{ imageRendering: 'pixelated', maxHeight: '100%', maxWidth: '100%' }}
       />
       {drawEffects.map(effect => (
         <CanvasDrawEffectComponent

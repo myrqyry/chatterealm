@@ -63,12 +63,29 @@ export const useCanvasSetup = (
     const scaledWidth = Math.floor(containerSize.width * renderScale);
     const scaledHeight = Math.floor(containerSize.height * renderScale);
 
+    // Ensure dimensions don't exceed reasonable bounds (prevent runaway growth)
+    const maxReasonableWidth = 4096; // 4K width max
+    const maxReasonableHeight = 2160; // 4K height max
+    const boundedScaledWidth = Math.min(scaledWidth, maxReasonableWidth);
+    const boundedScaledHeight = Math.min(scaledHeight, maxReasonableHeight);
+
+    // Debug logging
+    console.log('CanvasSetup:', {
+      container: { width: Math.round(containerSize.width), height: Math.round(containerSize.height) },
+      scaled: { width: boundedScaledWidth, height: boundedScaledHeight },
+      final: { width: Math.floor(boundedScaledWidth * dpr), height: Math.floor(boundedScaledHeight * dpr) },
+      dpr, renderScale
+    });
+
     // Set canvas dimensions with scaling
     canvas.style.width = `${containerSize.width}px`;
     canvas.style.height = `${containerSize.height}px`;
-    canvas.width = Math.floor(scaledWidth * dpr);
-    canvas.height = Math.floor(scaledHeight * dpr);
+    canvas.width = Math.floor(boundedScaledWidth * dpr);
+    canvas.height = Math.floor(boundedScaledHeight * dpr);
 
+    // Reset transform to identity first, then apply our transforms
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    
     // Apply DPR and render scaling
     ctx.setTransform(dpr * renderScale, 0, 0, dpr * renderScale, 0, 0);
     ctx.imageSmoothingEnabled = true; // Enable smoothing for scaled rendering

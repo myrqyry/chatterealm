@@ -67,7 +67,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
       <div className="flex flex-1 overflow-hidden">
         {/* Game Canvas - Left Side, Scales to Fit */}
         <div className="flex-1 relative flex items-center justify-center overflow-hidden bg-[var(--color-surface)]">
-          <div className="w-full h-full max-w-[calc(100vw-320px)] max-h-screen overflow-hidden">
+          <div className="w-full h-full max-w-[calc(100vw-320px)] overflow-hidden">
             <GameCanvas />
           </div>
 

@@ -1,0 +1,188 @@
+22:23:21.078 Global.ts:72  * Tone.js v14.7.77 * 
+22:23:21.080 AudioContext.ts:13 [Deprecation] The ScriptProcessorNode is deprecated. Use AudioWorkletNode instead. (https://bit.ly/audio-worklet)
+(anonymous) @ test-audio-node-disconnect-method-support.js:3
+rt @ test-audio-node-disconnect-method-support.js:2
+(anonymous) @ audio-node-constructor.js:161
+(anonymous) @ cache-test-result.js:12
+(anonymous) @ audio-node-constructor.js:160
+(anonymous) @ audio-destination-node-constructor.js:8
+(anonymous) @ minimal-base-audio-context-constructor.js:11
+(anonymous) @ base-audio-context-constructor.js:4
+(anonymous) @ audio-context-constructor.js:22
+(anonymous) @ AudioContext.ts:13
+Gi @ Context.ts:120
+Ji @ Global.ts:26
+(anonymous) @ index.ts:33
+s @ bootstrap:19
+(anonymous) @ bootstrap:83
+(anonymous) @ Tone.js:1
+(anonymous) @ universalModuleDefinition:9
+(anonymous) @ universalModuleDefinition:1
+22:23:21.081 AudioContext.ts:13 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+(anonymous) @ test-audio-node-disconnect-method-support.js:30
+rt @ test-audio-node-disconnect-method-support.js:2
+(anonymous) @ audio-node-constructor.js:161
+(anonymous) @ cache-test-result.js:12
+(anonymous) @ audio-node-constructor.js:160
+(anonymous) @ audio-destination-node-constructor.js:8
+(anonymous) @ minimal-base-audio-context-constructor.js:11
+(anonymous) @ base-audio-context-constructor.js:4
+(anonymous) @ audio-context-constructor.js:22
+(anonymous) @ AudioContext.ts:13
+Gi @ Context.ts:120
+Ji @ Global.ts:26
+(anonymous) @ index.ts:33
+s @ bootstrap:19
+(anonymous) @ bootstrap:83
+(anonymous) @ Tone.js:1
+(anonymous) @ universalModuleDefinition:9
+(anonymous) @ universalModuleDefinition:1
+22:23:21.083 Context.ts:196 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+ae @ test-audio-scheduled-source-node-start-method-negative-parameters-support.js:4
+(anonymous) @ native-constant-source-node-factory.js:15
+(anonymous) @ cache-test-result.js:12
+(anonymous) @ native-constant-source-node-factory.js:15
+(anonymous) @ constant-source-node-constructor.js:16
+createConstantSource @ base-audio-context-constructor.js:37
+createConstantSource @ Context.ts:196
+Ao @ ToneConstantSource.ts:27
+Do @ Signal.ts:67
+Eo @ TickSignal.ts:38
+Ro @ TickSource.ts:53
+qo @ Clock.ts:84
+Yo @ Transport.ts:172
+(anonymous) @ Transport.ts:725
+(anonymous) @ ContextInitialization.ts:24
+initialize @ ContextInitialization.ts:24
+get transport @ Context.ts:301
+(anonymous) @ index.ts:33
+s @ bootstrap:19
+(anonymous) @ bootstrap:83
+(anonymous) @ Tone.js:1
+(anonymous) @ universalModuleDefinition:9
+(anonymous) @ universalModuleDefinition:1
+22:23:21.083 ToneConstantSource.ts:73 The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio
+start @ constant-source-node-constructor.js:42
+start @ ToneConstantSource.ts:73
+Do @ Signal.ts:75
+Eo @ TickSignal.ts:38
+Ro @ TickSource.ts:53
+qo @ Clock.ts:84
+Yo @ Transport.ts:172
+(anonymous) @ Transport.ts:725
+(anonymous) @ ContextInitialization.ts:24
+initialize @ ContextInitialization.ts:24
+get transport @ Context.ts:301
+(anonymous) @ index.ts:33
+s @ bootstrap:19
+(anonymous) @ bootstrap:83
+(anonymous) @ Tone.js:1
+(anonymous) @ universalModuleDefinition:9
+(anonymous) @ universalModuleDefinition:1
+22:23:21.104 client:789 [vite] connecting...
+22:23:21.524 chunk-3LBSCF6M.js?v=439028ad:21609 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+22:23:21.695 react-router-dom.js?v=439028ad:4393 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ react-router-dom.js?v=439028ad:4393
+logDeprecation @ react-router-dom.js?v=439028ad:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=439028ad:4399
+(anonymous) @ react-router-dom.js?v=439028ad:5271
+commitHookEffectListMount @ chunk-3LBSCF6M.js?v=439028ad:16963
+commitPassiveMountOnFiber @ chunk-3LBSCF6M.js?v=439028ad:18206
+commitPassiveMountEffects_complete @ chunk-3LBSCF6M.js?v=439028ad:18179
+commitPassiveMountEffects_begin @ chunk-3LBSCF6M.js?v=439028ad:18169
+commitPassiveMountEffects @ chunk-3LBSCF6M.js?v=439028ad:18159
+flushPassiveEffectsImpl @ chunk-3LBSCF6M.js?v=439028ad:19543
+flushPassiveEffects @ chunk-3LBSCF6M.js?v=439028ad:19500
+(anonymous) @ chunk-3LBSCF6M.js?v=439028ad:19381
+workLoop @ chunk-3LBSCF6M.js?v=439028ad:197
+flushWork @ chunk-3LBSCF6M.js?v=439028ad:176
+performWorkUntilDeadline @ chunk-3LBSCF6M.js?v=439028ad:384
+22:23:21.695 react-router-dom.js?v=439028ad:4393 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ react-router-dom.js?v=439028ad:4393
+logDeprecation @ react-router-dom.js?v=439028ad:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=439028ad:4402
+(anonymous) @ react-router-dom.js?v=439028ad:5271
+commitHookEffectListMount @ chunk-3LBSCF6M.js?v=439028ad:16963
+commitPassiveMountOnFiber @ chunk-3LBSCF6M.js?v=439028ad:18206
+commitPassiveMountEffects_complete @ chunk-3LBSCF6M.js?v=439028ad:18179
+commitPassiveMountEffects_begin @ chunk-3LBSCF6M.js?v=439028ad:18169
+commitPassiveMountEffects @ chunk-3LBSCF6M.js?v=439028ad:18159
+flushPassiveEffectsImpl @ chunk-3LBSCF6M.js?v=439028ad:19543
+flushPassiveEffects @ chunk-3LBSCF6M.js?v=439028ad:19500
+(anonymous) @ chunk-3LBSCF6M.js?v=439028ad:19381
+workLoop @ chunk-3LBSCF6M.js?v=439028ad:197
+flushWork @ chunk-3LBSCF6M.js?v=439028ad:176
+performWorkUntilDeadline @ chunk-3LBSCF6M.js?v=439028ad:384
+22:23:21.703 useContainerResize.ts:20 ContainerResize: {width: 1108, height: 158}
+22:23:21.704 client:912 [vite] connected.
+22:23:22.458 webSocketClient.ts:35 WebSocket connection to 'ws://localhost:3001/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ socket__io-client.js?v=439028ad:1059
+doOpen @ socket__io-client.js?v=439028ad:986
+open @ socket__io-client.js?v=439028ad:503
+_open @ socket__io-client.js?v=439028ad:1328
+_SocketWithoutUpgrade @ socket__io-client.js?v=439028ad:1289
+SocketWithUpgrade @ socket__io-client.js?v=439028ad:1633
+Socket @ socket__io-client.js?v=439028ad:1759
+open @ socket__io-client.js?v=439028ad:3125
+Manager @ socket__io-client.js?v=439028ad:3057
+lookup2 @ socket__io-client.js?v=439028ad:3393
+connect @ webSocketClient.ts:35
+WebSocketClient @ webSocketClient.ts:27
+getInstance @ webSocketClient.ts:354
+(anonymous) @ webSocketClient.ts:361
+22:23:22.459 loggingUtils.ts:35 [WS_CONNECT_ERROR] Connection error: websocket error
+log @ loggingUtils.ts:35
+throttledError @ loggingUtils.ts:103
+(anonymous) @ webSocketClient.ts:83
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+onerror @ socket__io-client.js?v=439028ad:2560
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+onError @ socket__io-client.js?v=439028ad:3137
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+_onError @ socket__io-client.js?v=439028ad:1597
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+onError @ socket__io-client.js?v=439028ad:495
+ws.onerror @ socket__io-client.js?v=439028ad:1010
+22:23:23.598 socket__io-client.js?v=439028ad:1059 WebSocket connection to 'ws://localhost:3001/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ socket__io-client.js?v=439028ad:1059
+doOpen @ socket__io-client.js?v=439028ad:986
+open @ socket__io-client.js?v=439028ad:503
+_open @ socket__io-client.js?v=439028ad:1328
+_SocketWithoutUpgrade @ socket__io-client.js?v=439028ad:1289
+SocketWithUpgrade @ socket__io-client.js?v=439028ad:1633
+Socket @ socket__io-client.js?v=439028ad:1759
+open @ socket__io-client.js?v=439028ad:3125
+(anonymous) @ socket__io-client.js?v=439028ad:3343
+22:23:25.940 socket__io-client.js?v=439028ad:1059 WebSocket connection to 'ws://localhost:3001/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ socket__io-client.js?v=439028ad:1059
+doOpen @ socket__io-client.js?v=439028ad:986
+open @ socket__io-client.js?v=439028ad:503
+_open @ socket__io-client.js?v=439028ad:1328
+_SocketWithoutUpgrade @ socket__io-client.js?v=439028ad:1289
+SocketWithUpgrade @ socket__io-client.js?v=439028ad:1633
+Socket @ socket__io-client.js?v=439028ad:1759
+open @ socket__io-client.js?v=439028ad:3125
+(anonymous) @ socket__io-client.js?v=439028ad:3343
+22:23:30.661 socket__io-client.js?v=439028ad:1059 WebSocket connection to 'ws://localhost:3001/socket.io/?EIO=4&transport=websocket' failed: 
+createSocket @ socket__io-client.js?v=439028ad:1059
+doOpen @ socket__io-client.js?v=439028ad:986
+open @ socket__io-client.js?v=439028ad:503
+_open @ socket__io-client.js?v=439028ad:1328
+_SocketWithoutUpgrade @ socket__io-client.js?v=439028ad:1289
+SocketWithUpgrade @ socket__io-client.js?v=439028ad:1633
+Socket @ socket__io-client.js?v=439028ad:1759
+open @ socket__io-client.js?v=439028ad:3125
+(anonymous) @ socket__io-client.js?v=439028ad:3343
+22:23:30.662 loggingUtils.ts:48 [WS_CONNECT_ERROR] [3 suppressed] Connection error: websocket error
+log @ loggingUtils.ts:48
+throttledError @ loggingUtils.ts:103
+(anonymous) @ webSocketClient.ts:83
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+onerror @ socket__io-client.js?v=439028ad:2560
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+onError @ socket__io-client.js?v=439028ad:3137
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+_onError @ socket__io-client.js?v=439028ad:1597
+Emitter.emit @ socket__io-client.js?v=439028ad:354
+onError @ socket__io-client.js?v=439028ad:495
+ws.onerror @ socket__io-client.js?v=439028ad:1010

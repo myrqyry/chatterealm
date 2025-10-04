@@ -41,8 +41,6 @@ export const renderGame = (
   // Clear the entire canvas first to prevent ghost frames
   // Clear the logical rendering area (accounting for transforms)
   ctx.clearRect(-gridSize, -gridSize, renderedWidth + 2 * gridSize, renderedHeight + 2 * gridSize);
-
-  // Draw animated terrain with time-based effects
   for (let y = 0; y < numTilesY; y++) {
     for (let x = 0; x < numTilesX; x++) {
       const terrain = grid[y]?.[x];

@@ -26,7 +26,7 @@ import { GAME_CONFIG } from 'shared';
 
 const app = express();
 const httpServer = createServer(app);
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 const gameStateManager = new GameStateManager();
 const emojiService = new EmojiService();
