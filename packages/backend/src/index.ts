@@ -1,5 +1,22 @@
 import express from 'express';
 import { createServer } from 'http';
+
+// Graceful shutdown and error handling
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // In production, you might want to exit gracefully
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // In production, you might want to exit gracefully
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { WebSocketServer } from './services/webSocketServer';
@@ -89,10 +106,10 @@ app.get('/api/players', (req, res) => {
 
 // Global error handling middleware
 app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Unhandled error:', error);
+  console.error('Express error:', error);
   res.status(500).json({
     error: 'Internal server error',
-    message: 'An unexpected error occurred'
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
   });
 });
 

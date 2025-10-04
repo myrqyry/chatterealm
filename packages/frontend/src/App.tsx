@@ -29,11 +29,20 @@ function App() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   async function handleEnableSound() {
     try {
+      // Check if audio context is supported
+      if (typeof window.AudioContext === 'undefined' && typeof window.webkitAudioContext === 'undefined') {
+        console.warn('Audio context not supported, skipping sound');
+        setSoundEnabled(true); // Still mark as "enabled" so UI works
+        return;
+      }
+
       await initializeSounds();
       setSoundEnabled(true);
       console.log('🎵 Sound initialized');
     } catch (err) {
       console.error('Failed to initialize sound', err);
+      // Still mark as enabled so the button disappears and app continues
+      setSoundEnabled(true);
     }
   }
 
