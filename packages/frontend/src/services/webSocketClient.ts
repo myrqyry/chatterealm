@@ -21,8 +21,6 @@ export class WebSocketClient {
   private isConnected = false;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000; // Start with 1 second
-  private reconnectTimer: NodeJS.Timeout | null = null;
   private hasJoinedGame = false; // Add flag to prevent duplicate joins
 
   constructor() {
@@ -32,19 +30,20 @@ export class WebSocketClient {
   // Connection management
   private connect(): void {
     try {
-      // Connect to the backend WebSocket server
-      // Assuming backend runs on port 3001 (adjust if needed)
-      this.socket = io('http://localhost:3001', {
+      // Use environment variable for the backend URL
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      this.socket = io(backendUrl, {
+        autoConnect: true,
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: this.maxReconnectAttempts,
         transports: ['websocket', 'polling'],
         timeout: 5000,
-        autoConnect: true,
-        reconnection: false, // We'll handle reconnection manually
       });
 
       this.setupEventHandlers();
     } catch (error) {
       throttledError('WS_CONNECT', `Failed to create WebSocket connection: ${error}`);
-      this.handleConnectionError();
     }
   }
 
@@ -56,7 +55,6 @@ export class WebSocketClient {
       throttledLog('WS_CONNECTED', `Connected to game server - Socket ID: ${this.socket?.id}`);
       this.isConnected = true;
       this.reconnectAttempts = 0;
-      this.reconnectDelay = 1000;
 
       // Automatically join the game once connected (if not already joined)
       if (!this.hasJoinedGame) {
@@ -74,12 +72,20 @@ export class WebSocketClient {
     this.socket.on('disconnect', (reason) => {
       throttledWarn('WS_DISCONNECTED', `Disconnected from game server: ${reason}`);
       this.isConnected = false;
-      this.handleDisconnect(reason);
+      if (reason === 'io server disconnect') {
+        // The server intentionally disconnected the socket.
+        // It will not automatically reconnect.
+        this.socket?.connect();
+      }
     });
 
     this.socket.on('connect_error', (error) => {
       throttledError('WS_CONNECT_ERROR', `Connection error: ${error.message}`);
-      this.handleConnectionError();
+      this.reconnectAttempts++;
+      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        throttledError('WS_MAX_ATTEMPTS', 'Max reconnection attempts reached - giving up');
+        useGameStore.getState().setGameMessage('Failed to connect to game server. Please refresh the page.');
+      }
     });
 
     // Game events
@@ -179,38 +185,6 @@ export class WebSocketClient {
       throttledWarn('LOOT_FAILURE', `Loot failed: ${data.reason}`);
       useGameStore.getState().setGameMessage(`Loot failed: ${data.reason}`);
     });
-  }
-
-  private handleDisconnect(reason: string): void {
-    // Attempt to reconnect for certain disconnect reasons
-    if (reason === 'io server disconnect' || reason === 'transport close') {
-      this.attemptReconnect();
-    }
-  }
-
-  private handleConnectionError(): void {
-    this.isConnected = false;
-    this.attemptReconnect();
-  }
-
-  private attemptReconnect(): void {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      throttledError('WS_MAX_ATTEMPTS', 'Max reconnection attempts reached - giving up');
-      useGameStore.getState().setGameMessage('Failed to connect to game server. Please refresh the page.');
-      return;
-    }
-
-    this.reconnectAttempts++;
-    throttledWarn('WS_ATTEMPT_RECONNECT', `Reconnecting to game server (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
-    useGameStore.getState().setGameMessage(`Reconnecting to game server... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
-    this.reconnectTimer = setTimeout(() => {
-      this.connect();
-    }, this.reconnectDelay);
-
-    // Exponential backoff
-    this.reconnectDelay = Math.min(this.reconnectDelay * 2, 30000); // Max 30 seconds
   }
 
   // Public methods for game actions
@@ -364,11 +338,6 @@ export class WebSocketClient {
 
   // Cleanup
   public disconnect(): void {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
