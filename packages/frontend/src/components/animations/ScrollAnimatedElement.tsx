@@ -34,70 +34,66 @@ export const ScrollAnimatedElement: React.FC<ScrollAnimatedElementProps> = ({
     const element = elementRef.current;
     if (!element) return;
 
-    // Set initial state based on animation type
-    let initialProps: any = {};
-    let animateProps: any = {};
+    const ctx = gsap.context(() => {
+      // Set initial state based on animation type
+      let initialProps: any = {};
+      let animateProps: any = {};
 
-    switch (animation) {
-      case 'fadeIn':
-        initialProps = { opacity: 0 };
-        animateProps = { opacity: 1 };
-        break;
-      case 'slideUp':
-        initialProps = { opacity: 0, y: 50 };
-        animateProps = { opacity: 1, y: 0 };
-        break;
-      case 'slideDown':
-        initialProps = { opacity: 0, y: -50 };
-        animateProps = { opacity: 1, y: 0 };
-        break;
-      case 'slideLeft':
-        initialProps = { opacity: 0, x: 50 };
-        animateProps = { opacity: 1, x: 0 };
-        break;
-      case 'slideRight':
-        initialProps = { opacity: 0, x: -50 };
-        animateProps = { opacity: 1, x: 0 };
-        break;
-      case 'scale':
-        initialProps = { opacity: 0, scale: 0.8 };
-        animateProps = { opacity: 1, scale: 1 };
-        break;
-      case 'rotate':
-        initialProps = { opacity: 0, rotation: -10 };
-        animateProps = { opacity: 1, rotation: 0 };
-        break;
-      default:
-        initialProps = { opacity: 0 };
-        animateProps = { opacity: 1 };
-    }
-
-    // Set initial state
-    gsap.set(element, initialProps);
-
-    // Create ScrollTrigger animation
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: trigger || element,
-        start,
-        end,
-        scrub,
-        pin,
-        markers,
-        toggleActions: 'play none none reverse'
+      switch (animation) {
+        case 'fadeIn':
+          initialProps = { opacity: 0 };
+          animateProps = { opacity: 1 };
+          break;
+        case 'slideUp':
+          initialProps = { opacity: 0, y: 50 };
+          animateProps = { opacity: 1, y: 0 };
+          break;
+        case 'slideDown':
+          initialProps = { opacity: 0, y: -50 };
+          animateProps = { opacity: 1, y: 0 };
+          break;
+        case 'slideLeft':
+          initialProps = { opacity: 0, x: 50 };
+          animateProps = { opacity: 1, x: 0 };
+          break;
+        case 'slideRight':
+          initialProps = { opacity: 0, x: -50 };
+          animateProps = { opacity: 1, x: 0 };
+          break;
+        case 'scale':
+          initialProps = { opacity: 0, scale: 0.8 };
+          animateProps = { opacity: 1, scale: 1 };
+          break;
+        case 'rotate':
+          initialProps = { opacity: 0, rotation: -10 };
+          animateProps = { opacity: 1, rotation: 0 };
+          break;
+        default:
+          initialProps = { opacity: 0 };
+          animateProps = { opacity: 1 };
       }
-    });
 
-    tl.to(element, {
-      ...animateProps,
-      duration: 1,
-      ease: 'power2.out'
-    });
+      // Set initial state
+      gsap.set(element, initialProps);
 
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-      tl.kill();
-    };
+      // Create ScrollTrigger animation
+      gsap.to(element, {
+        ...animateProps,
+        duration: 1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: trigger || element,
+          start,
+          end,
+          scrub,
+          pin,
+          markers,
+          toggleActions: 'play none none reverse'
+        }
+      });
+    }, elementRef); // scope the context to the component
+
+    return () => ctx.revert(); // cleanup
   }, [animation, trigger, start, end, scrub, pin, markers]);
 
   return (
@@ -234,35 +230,35 @@ export const GameScrollAnimator: React.FC<{
     const container = containerRef.current;
     if (!container) return;
 
-    // Animate game UI elements as they come into view
-    const uiElements = container.querySelectorAll('.game-ui-element');
+    const ctx = gsap.context(() => {
+      // Animate game UI elements as they come into view
+      const uiElements = container.querySelectorAll('.game-ui-element');
 
-    uiElements.forEach((element, index) => {
-      gsap.fromTo(element,
-        {
-          opacity: 0,
-          y: 30,
-          scale: 0.9
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.8,
-          ease: 'back.out(1.7)',
-          scrollTrigger: {
-            trigger: element,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse'
+      uiElements.forEach((element, index) => {
+        gsap.fromTo(element,
+          {
+            opacity: 0,
+            y: 30,
+            scale: 0.9
           },
-          delay: index * 0.1
-        }
-      );
-    });
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.8,
+            ease: 'back.out(1.7)',
+            scrollTrigger: {
+              trigger: element,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse'
+            },
+            delay: index * 0.1
+          }
+        );
+      });
+    }, containerRef); // scope the context to the component
 
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-    };
+    return () => ctx.revert(); // cleanup
   }, []);
 
   return (

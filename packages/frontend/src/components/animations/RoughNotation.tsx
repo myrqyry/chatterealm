@@ -1,6 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { annotate } from 'rough-notation';
+import type { Annotation } from 'rough-notation/lib/model';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface RoughNotationProps {
   children: React.ReactNode;
@@ -32,14 +36,13 @@ export const RoughNotation: React.FC<RoughNotationProps> = ({
   show = false,
 }) => {
   const elementRef = useRef<HTMLElement>(null);
-  const annotationRef = useRef<any>(null);
+  const annotationRef = useRef<Annotation | null>(null);
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;
 
-    // Create annotation
-    annotationRef.current = annotate(element, {
+    const annotation = annotate(element, {
       type,
       color,
       strokeWidth,
@@ -48,56 +51,49 @@ export const RoughNotation: React.FC<RoughNotationProps> = ({
       animationDuration,
       multiline,
     });
+    annotationRef.current = annotation;
 
-    // Set up trigger behavior
-    const handleTrigger = () => {
-      if (annotationRef.current) {
-        annotationRef.current.show();
-      }
-    };
+    const ctx = gsap.context(() => {
+      const handleTrigger = () => annotation.show();
+      const handleHide = () => annotation.hide();
 
-    const handleHide = () => {
-      if (annotationRef.current) {
-        annotationRef.current.hide();
-      }
-    };
-
-    switch (trigger) {
-      case 'hover':
+      if (trigger === 'scroll') {
+        ScrollTrigger.create({
+          trigger: element,
+          start: 'top 80%',
+          onEnter: handleTrigger,
+          onLeaveBack: handleHide,
+          onLeave: handleHide,
+        });
+      } else if (trigger === 'hover') {
         element.addEventListener('mouseenter', handleTrigger);
         element.addEventListener('mouseleave', handleHide);
-        break;
-      case 'click':
+      } else if (trigger === 'click') {
         element.addEventListener('click', handleTrigger);
-        break;
-      case 'scroll':
-        // Use GSAP ScrollTrigger for scroll-based annotation
-        gsap.registerPlugin(require('gsap/ScrollTrigger'));
-        gsap.timeline({
-          scrollTrigger: {
-            trigger: element,
-            start: 'top 80%',
-            onEnter: handleTrigger,
-            onLeaveBack: handleHide
-          }
-        });
-        break;
-      case 'manual':
-        if (show) {
-          handleTrigger();
-        }
-        break;
-    }
+      }
+      
+      return () => {
+        element.removeEventListener('mouseenter', handleTrigger);
+        element.removeEventListener('mouseleave', handleHide);
+        element.removeEventListener('click', handleTrigger);
+      };
+    }, elementRef);
 
     return () => {
-      element.removeEventListener('mouseenter', handleTrigger);
-      element.removeEventListener('mouseleave', handleHide);
-      element.removeEventListener('click', handleTrigger);
-      if (annotationRef.current) {
+      ctx.revert();
+      annotation.remove();
+    };
+  }, [type, color, strokeWidth, padding, iterations, animationDuration, multiline, trigger]);
+
+  useEffect(() => {
+    if (trigger === 'manual' && annotationRef.current) {
+      if (show) {
+        annotationRef.current.show();
+      } else {
         annotationRef.current.hide();
       }
-    };
-  }, [type, color, strokeWidth, padding, iterations, animationDuration, animationDelay, multiline, trigger, show]);
+    }
+  }, [show, trigger]);
 
   return (
     <span
@@ -112,7 +108,14 @@ export const RoughNotation: React.FC<RoughNotationProps> = ({
 
 // Hook for programmatic rough notation control
 export const useRoughNotation = () => {
-  const annotationsRef = useRef<Map<string, any>>(new Map());
+  const annotationsRef = useRef<Map<string, Annotation>>(new Map());
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      annotationsRef.current.forEach(annotation => annotation.remove());
+    };
+  }, []);
 
   const createAnnotation = (
     element: HTMLElement,
@@ -133,23 +136,17 @@ export const useRoughNotation = () => {
   };
 
   const show = (id: string) => {
-    const annotation = annotationsRef.current.get(id);
-    if (annotation) {
-      annotation.show();
-    }
+    annotationsRef.current.get(id)?.show();
   };
 
   const hide = (id: string) => {
-    const annotation = annotationsRef.current.get(id);
-    if (annotation) {
-      annotation.hide();
-    }
+    annotationsRef.current.get(id)?.hide();
   };
 
   const remove = (id: string) => {
     const annotation = annotationsRef.current.get(id);
     if (annotation) {
-      annotation.hide();
+      annotation.remove();
       annotationsRef.current.delete(id);
     }
   };
@@ -158,13 +155,19 @@ export const useRoughNotation = () => {
     elements: Array<{ element: HTMLElement; id: string; options?: any; delay?: number }>
   ) => {
     const tl = gsap.timeline();
+    const createdAnnotations: Annotation[] = [];
 
     elements.forEach(({ element, id, options = {}, delay = 0 }, index) => {
       const annotation = createAnnotation(element, id, options);
-
+      createdAnnotations.push(annotation);
       tl.call(() => annotation.show(), [], delay + index * 0.5);
     });
 
+    // Add a cleanup for the timeline
+    tl.eventCallback('onReverseComplete', () => {
+      createdAnnotations.forEach(ann => ann.remove());
+    });
+    
     return tl;
   };
 
