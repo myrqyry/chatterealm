@@ -1,4 +1,4 @@
-import type { Building } from 'shared/src/types/game';
+import type { Building } from 'shared';
 import { assetConverter } from '../../../services/assetConverter';
 
 // Cache for building emoji SVGs
