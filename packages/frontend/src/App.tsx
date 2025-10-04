@@ -30,7 +30,10 @@ function App() {
   async function handleEnableSound() {
     try {
       // Check if audio context is supported
-      if (typeof window.AudioContext === 'undefined' && typeof window.webkitAudioContext === 'undefined') {
+      const hasAudioContext = typeof window.AudioContext !== 'undefined';
+      const hasWebkitAudioContext = typeof (window as any).webkitAudioContext !== 'undefined';
+      
+      if (!hasAudioContext && !hasWebkitAudioContext) {
         console.warn('Audio context not supported, skipping sound');
         setSoundEnabled(true); // Still mark as "enabled" so UI works
         return;

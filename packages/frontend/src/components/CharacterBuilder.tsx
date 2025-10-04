@@ -436,12 +436,12 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
             }}>
               <h3 className="text-sm font-semibold text-white mb-3">Choose Your Class</h3>
               <div className="grid grid-cols-1 gap-2">
-                {Object.values(PlayerClass).map((playerClass) => {
+                {(Object.values(PlayerClass) as PlayerClass[]).map((playerClass) => {
                   const info = CLASS_INFO[playerClass];
                   const active = selectedClass === playerClass;
                   return (
                     <button
-                      key={playerClass}
+                      key={playerClass as string}
                       onClick={() => { setSelectedClass(playerClass); handleClassSelect(playerClass); }}
                       className={`w-full p-4 rounded-lg flex items-center gap-3 text-left transition-all duration-200 border-2 ${
                         active
