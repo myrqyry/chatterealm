@@ -33,13 +33,28 @@ const emojiService = new EmojiService();
 const webSocketServer = new WebSocketServer(httpServer, gameStateManager);
 
 // Middleware
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? ['https://chatterrealm.com']
-  : ['http://localhost:3000', 'http://localhost:5173'];
+// CORS Configuration
+const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
+const allowedOrigins = allowedOriginsEnv 
+  ? allowedOriginsEnv.split(',').map(origin => origin.trim())
+  : process.env.NODE_ENV === 'production'
+    ? ['https://chatterrealm.com']
+    : ['http://localhost:3000', 'http://localhost:5173'];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow requests with no origin (like mobile apps, Postman, curl, etc.)
+    if (!origin) {
+      // In production, be more strict
+      if (process.env.NODE_ENV === 'production') {
+        callback(new Error('Origin header is required in production'));
+      } else {
+        callback(null, true);
+      }
+      return;
+    }
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -52,12 +67,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
+// Rate limiting with configurable values
+const rateLimitWindowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes default
+const rateLimitMaxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10); // 100 requests default
+
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: rateLimitWindowMs,
+  max: rateLimitMaxRequests,
   standardHeaders: true,
   legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again later.',
 });
 
 app.use('/api/', apiLimiter);
@@ -66,7 +85,7 @@ app.use('/api/', apiLimiter);
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Chat Grid Chronicles Backend API',
+    message: 'ChatterRealm Backend API',
     version: '1.0.0',
     world: {
       players: gameStateManager.getGameWorld().players.length,
@@ -141,11 +160,13 @@ process.on('SIGTERM', () => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Chat Grid Chronicles Backend running on http://localhost:${PORT}`);
+  console.log(`🚀 ChatterRealm Backend running on http://localhost:${PORT}`);
   console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
   console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
   console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
   console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
+  console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
+  console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
 });
 
 // Endpoint to fetch emoji SVG (query param: char)
