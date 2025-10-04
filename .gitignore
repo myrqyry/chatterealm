@@ -41,6 +41,10 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Package manager lock files (use pnpm-lock.yaml only)
+package-lock.json
+yarn.lock
+
 # TypeScript v1 declaration files
 typings/
 

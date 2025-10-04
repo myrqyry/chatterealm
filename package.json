@@ -1,16 +1,22 @@
 {
-  "name": "chat-grid-chronicles",
+  "name": "chatterealm",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=packages/frontend & npm run dev --workspace=packages/backend",
-    "build": "npm run build --workspace=packages/frontend && npm run build --workspace=packages/backend"
+    "dev": "pnpm --filter frontend dev & pnpm --filter backend dev",
+    "build": "pnpm --filter shared build && pnpm --filter frontend build && pnpm --filter backend build",
+    "build:shared": "pnpm --filter shared build",
+    "test": "pnpm --filter frontend test && pnpm --filter backend test",
+    "lint": "pnpm --filter frontend lint"
   },
   "dependencies": {
     "@types/cors": "^2.8.19",
     "react-router-dom": "^6.30.1"
+  },
+  "resolutions": {
+    "@types/react": "^18.3.18"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
