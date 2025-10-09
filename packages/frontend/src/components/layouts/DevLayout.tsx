@@ -1,10 +1,9 @@
 import React from 'react';
 import GameCanvas from '../GameCanvas';
 import DevSidebar from '../sidebars/DevSidebar';
-import ModeNavigation from '../ModeNavigation';
-import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from '../index';
+import { MaterialChip, MaterialPaper } from '../index'; // Removed MaterialAppBar
 import { useGameStore } from '../../stores/gameStore';
-import { COLORS } from '../../utils/tokens';
+import { TYPOGRAPHY, SPACING, COMMON_STYLES } from '../../utils/designSystem'; // Import design system tokens
 
 interface DevLayoutProps {
   children?: React.ReactNode;
@@ -14,92 +13,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
   const { gameWorld } = useGameStore();
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      width: '100vw',
-      padding: '0',
-      margin: '0',
-      background: 'var(--color-background-primary)',
-      fontFamily: 'Inter, Roboto, sans-serif',
-      color: 'var(--color-text-primary)',
-      overflow: 'hidden',
-      boxSizing: 'border-box'
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '8px 16px',
-        background: 'rgba(25, 23, 36, 0.9)',
-        borderBottom: '1px solid rgba(196, 167, 231, 0.2)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h1 style={{
-            margin: 0,
-            color: 'var(--color-text-primary)',
-            fontSize: '1.8em',
-            fontWeight: '700',
-            textShadow: '0 0 10px rgba(196, 167, 231, 0.5)'
-          }}>
-            ChatteRealm
-          </h1>
-          <span style={{
-            color: 'var(--color-text-secondary)',
-            fontSize: '1.2em',
-            fontWeight: '500'
-          }}>
-            🛠️ Developer Mode
-          </span>
-          <MaterialChip
-            label={`Phase: ${gameWorld?.phase || 'Unknown'}`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(76, 175, 80, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MaterialChip
-            label={`${gameWorld?.players?.length || 0} Players`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(33, 150, 243, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-          <MaterialChip
-            label={`${gameWorld?.npcs?.length || 0} NPCs`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(156, 39, 176, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-          <MaterialChip
-            label={`${gameWorld?.items?.length || 0} Items`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(255, 152, 0, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-          <MaterialChip
-            label="DEV"
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(244, 67, 54, 0.2)',
-              color: 'var(--color-text-primary)',
-              fontWeight: 'bold'
-            }}
-          />
-          <ModeNavigation compact />
-        </div>
-      </div>
-
+    <>
       {/* Main Content Area */}
       <div style={{
         display: 'flex',
@@ -119,8 +33,8 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
           <div style={{
             width: '100%',
             height: '100%',
-            maxWidth: 'calc(100vw - 500px)',
-            maxHeight: '100vh',
+            maxWidth: '100%', // Adjusted for BaseLayout
+            maxHeight: '100%', // Adjusted for BaseLayout
             aspectRatio: '16/9',
             overflow: 'hidden'
           }}>
@@ -131,15 +45,14 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
           <MaterialPaper
             sx={{
               position: 'absolute',
-              bottom: '20px',
+              bottom: SPACING.md,
               left: '50%',
               transform: 'translateX(-50%)',
               display: 'flex',
-              gap: 1,
-              p: 1,
+              gap: SPACING.xs,
+              p: SPACING.xs,
               zIndex: 1000,
-              backgroundColor: 'rgba(25, 23, 36, 0.95)',
-              backdropFilter: 'blur(10px)',
+              ...COMMON_STYLES.glass,
             }}
           >
             <MaterialChip
@@ -148,7 +61,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
               sx={{
                 backgroundColor: 'var(--color-legend-knight)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: TYPOGRAPHY.fontSize.xs,
                 height: '20px'
               }}
             />
@@ -158,7 +71,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
               sx={{
                 backgroundColor: 'var(--color-legend-rogue)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: TYPOGRAPHY.fontSize.xs,
                 height: '20px'
               }}
             />
@@ -168,7 +81,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
               sx={{
                 backgroundColor: 'var(--color-legend-mage)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: TYPOGRAPHY.fontSize.xs,
                 height: '20px'
               }}
             />
@@ -178,7 +91,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
               sx={{
                 backgroundColor: 'var(--color-legend-npc)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: TYPOGRAPHY.fontSize.xs,
                 height: '20px'
               }}
             />
@@ -188,7 +101,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
               sx={{
                 backgroundColor: 'var(--color-legend-item)',
                 color: 'white',
-                fontSize: '0.7rem',
+                fontSize: TYPOGRAPHY.fontSize.xs,
                 height: '20px'
               }}
             />
@@ -198,57 +111,56 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
           <MaterialPaper
             sx={{
               position: 'absolute',
-              top: '20px',
-              left: '20px',
-              p: 2,
+              top: SPACING.md,
+              left: SPACING.md,
+              p: SPACING.md,
               zIndex: 1000,
-              backgroundColor: 'rgba(25, 23, 36, 0.95)',
-              backdropFilter: 'blur(10px)',
+              ...COMMON_STYLES.glass,
               maxWidth: '350px'
             }}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING.sm }}>
               <h3 style={{
                 margin: 0,
                 color: 'var(--color-text-primary)',
-                fontSize: '1em',
-                fontWeight: '600'
+                fontSize: TYPOGRAPHY.fontSize.md,
+                fontWeight: TYPOGRAPHY.fontWeight.semibold
               }}>
                 Developer Status
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: SPACING.xs }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     World Size:
                   </span>
-                  <span style={{ color: 'var(--color-text-primary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-primary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     {gameWorld?.grid?.[0]?.length || 0} × {gameWorld?.grid?.length || 0}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     World Age:
                   </span>
-                  <span style={{ color: 'var(--color-text-primary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-primary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     {gameWorld?.worldAge || 0}s
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     Cataclysm:
                   </span>
                   <span style={{
-                    color: gameWorld?.cataclysmCircle?.isActive ? '#ff4444' : '#44ff44',
-                    fontSize: '0.8em'
+                    color: gameWorld?.cataclysmCircle?.isActive ? 'var(--color-error)' : 'var(--color-success)',
+                    fontSize: TYPOGRAPHY.fontSize.sm
                   }}>
                     {gameWorld?.cataclysmCircle?.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     Memory Usage:
                   </span>
-                  <span style={{ color: 'var(--color-text-primary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-primary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     {(performance as any).memory?.usedJSHeapSize ?
                       `${Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024)}MB` :
                       'N/A'
@@ -256,10 +168,10 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     FPS:
                   </span>
-                  <span style={{ color: 'var(--color-text-primary)', fontSize: '0.8em' }}>
+                  <span style={{ color: 'var(--color-text-primary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     {Math.round(1000 / (performance.now() / 1000))} fps
                   </span>
                 </div>
@@ -277,7 +189,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
         {/* Developer Sidebar */}
         <DevSidebar />
       </div>
-    </div>
+    </>
   );
 };
 

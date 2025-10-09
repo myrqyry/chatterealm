@@ -8,6 +8,7 @@ export { default as MaterialDialog } from './MaterialDialog';
 export { default as MaterialChip } from './MaterialChip';
 export { default as MaterialTooltip } from './MaterialTooltip';
 export { default as MaterialPopover } from './MaterialPopover';
+export { default as MaterialIcon } from './MaterialIcon';
 
 // Existing components
 export { default as ResponsiveLayout } from './ResponsiveLayout';

@@ -1,6 +1,7 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
+import { Z_INDEX, COMMON_STYLES, TYPOGRAPHY, SPACING } from '../utils/designSystem';
 
 interface MaterialAppBarProps {
   title?: string;
@@ -19,10 +20,10 @@ const MaterialAppBar: React.FC<MaterialAppBarProps> = ({
     <AppBar
       position="fixed"
       sx={{
-        zIndex: (theme) => theme.zIndex.drawer + 1,
-        backgroundColor: 'rgba(25, 23, 36, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid',
+        zIndex: Z_INDEX.appBar,
+        backgroundColor: COMMON_STYLES.glass.background,
+        backdropFilter: COMMON_STYLES.glass.backdropFilter,
+        borderBottom: COMMON_STYLES.glass.border,
         borderBottomColor: 'divider',
         ...sx
       }}
@@ -34,7 +35,7 @@ const MaterialAppBar: React.FC<MaterialAppBarProps> = ({
             aria-label="open drawer"
             edge="start"
             onClick={onMenuClick}
-            sx={{ mr: 2 }}
+            sx={{ mr: SPACING.md }}
           >
             <MenuIcon />
           </IconButton>
@@ -44,9 +45,9 @@ const MaterialAppBar: React.FC<MaterialAppBarProps> = ({
           noWrap
           component="div"
           sx={{
-            fontFamily: 'JetBrains Mono',
-            fontWeight: 600,
-            fontSize: '1.1rem'
+            fontFamily: TYPOGRAPHY.fontFamily.code,
+            fontWeight: TYPOGRAPHY.fontWeight.semibold,
+            fontSize: TYPOGRAPHY.fontSize.lg
           }}
         >
           {title}

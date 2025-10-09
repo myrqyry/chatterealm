@@ -1,18 +1,26 @@
-import ResponsiveLayout from './components/ResponsiveLayout';
 import { useGameWorld } from './hooks/useGameWorld';
 import { useTheme } from './hooks/useTheme';
-import GameLayout from './components/GameLayout';
-import PlayLayout from './components/layouts/PlayLayout';
-import SpectateLayout from './components/layouts/SpectateLayout';
-import DevLayout from './components/layouts/DevLayout';
+import { useState } from 'react';
+import { initializeSounds } from './services/soundService';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+// Import new layout components
+import BaseLayout from './components/layout/BaseLayout';
+import AppHeader from './components/layout/AppHeader';
+import ModeNavigation from './components/ModeNavigation';
+
+// Import content components for routes
 import { AnimationDemo } from './components';
 import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
 import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
 import EmojiSvgSmokeTest from './components/dev/EmojiSvgSmokeTest';
-import { useState } from 'react';
-import { initializeSounds } from './services/soundService';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+
+// Import mode-specific layouts
+import PlayLayout from './components/layouts/PlayLayout';
+import SpectateLayout from './components/layouts/SpectateLayout';
+import DevLayout from './components/layouts/DevLayout';
+import GameLayout from './components/GameLayout'; // Still needed for legacy route
 
 function App() {
   const {
@@ -63,33 +71,33 @@ function App() {
           {/* Default route redirects to /play */}
           <Route path="/" element={<Navigate to="/play" replace />} />
 
-          {/* Play mode - Player interface with settings */}
+          {/* Play mode */}
           <Route
             path="/play"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
                 <PlayLayout />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
-          {/* Spectate mode - Full game monitoring */}
+          {/* Spectate mode */}
           <Route
             path="/spectate"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="spectate" headerContent={<ModeNavigation compact />}>
                 <SpectateLayout />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
-          {/* Developer mode - Complete configuration access */}
+          {/* Developer mode */}
           <Route
             path="/dev"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
                 <DevLayout />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
@@ -97,11 +105,11 @@ function App() {
           <Route
             path="/dev/emoji-test"
             element={
-              <ResponsiveLayout>
-                <DevLayout>
+              <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
+                <DevLayout> {/* DevLayout can accept children for nested dev tools */}
                   <EmojiSvgSmokeTest />
                 </DevLayout>
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
@@ -109,9 +117,9 @@ function App() {
           <Route
             path="/animations"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
                 <AnimationDemo />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
@@ -119,9 +127,9 @@ function App() {
           <Route
             path="/drawing-effects"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
                 <DrawingEffectsDemo />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
@@ -129,9 +137,9 @@ function App() {
           <Route
             path="/cataclysm-demo"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
                 <CataclysmDemo />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
@@ -139,9 +147,9 @@ function App() {
           <Route
             path="/svg-assets"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
                 <SVGAssetDemo />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
 
@@ -149,7 +157,7 @@ function App() {
           <Route
             path="/game"
             element={
-              <ResponsiveLayout>
+              <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
                 <GameLayout
                   handleRegenerateWorld={handleRegenerateWorld}
                   handleMove={handleMove}
@@ -157,7 +165,7 @@ function App() {
                   handleStartCataclysm={handleStartCataclysm}
                   handlePickUpItem={handlePickUpItem}
                 />
-              </ResponsiveLayout>
+              </BaseLayout>
             }
           />
         </Routes>

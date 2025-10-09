@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from '../GameCanvas';
 import PlayerSidebar from '../sidebars/PlayerSidebar';
-import ModeNavigation from '../ModeNavigation';
-import CharacterBuilder from '../CharacterBuilder';
-import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper, MaterialButton } from '../index';
+import { MaterialButton, MaterialCard, MaterialChip } from '../index'; // Removed MaterialAppBar, MaterialPaper
 import { useGameStore } from '../../stores/gameStore';
 import { useGameWorld } from '../../hooks/useGameWorld';
-import { COLORS } from '../../utils/tokens';
+import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../../utils/designSystem'; // Import design system tokens
 
 const PlayLayout: React.FC = () => {
   const { gameWorld } = useGameStore();
@@ -75,58 +73,7 @@ const PlayLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen p-0 m-0 overflow-hidden box-border" style={{ background: 'var(--color-background-primary)', color: 'var(--color-text-primary)', fontFamily: 'Inter, Roboto, sans-serif' }}>
-      {/* Header */}
-      <div className="p-2 px-4 bg-[rgba(25,23,36,0.9)] border-b flex items-center justify-between" style={{ borderColor: 'rgba(196, 167, 231, 0.2)' }}>
-        <div className="flex items-center gap-3">
-          <h1 className="m-0 text-text-primary text-2xl font-extrabold" style={{ textShadow: '0 0 10px rgba(196, 167, 231, 0.5)' }}>ChatteRealm</h1>
-          <span className="text-text-secondary text-lg font-medium">🎮 Play Mode</span>
-          <MaterialChip
-            label={`Phase: ${gameWorld?.phase || 'Unknown'}`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(76, 175, 80, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MaterialChip
-            label={`${gameWorld?.players?.length || 0} Players`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(33, 150, 243, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-          <MaterialChip
-            label={`${gameWorld?.npcs?.length || 0} NPCs`}
-            size="small"
-            sx={{
-              backgroundColor: 'rgba(156, 39, 176, 0.2)',
-              color: 'var(--color-text-primary)'
-            }}
-          />
-          <MaterialButton
-            onClick={() => window.open('/svg-assets', '_blank')}
-            variant="outlined"
-            size="small"
-            sx={{
-              borderColor: 'rgba(196, 167, 231, 0.5)',
-              color: 'var(--color-text-primary)',
-              fontSize: '0.7rem',
-              '&:hover': {
-                borderColor: 'rgba(196, 167, 231, 0.8)',
-                backgroundColor: 'rgba(196, 167, 231, 0.1)'
-              }
-            }}
-          >
-            🎨 Assets
-          </MaterialButton>
-          <ModeNavigation compact />
-        </div>
-      </div>
-
+    <>
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Game Canvas or Character Builder */}
@@ -135,13 +82,13 @@ const PlayLayout: React.FC = () => {
             // Character Creation Screen
             <div className="flex flex-col items-center justify-center gap-8 p-8 text-center">
               <div>
-                <h1 className="text-text-primary font-bold" style={{ fontSize: '3rem', marginBottom: '1rem', textShadow: '0 0 20px rgba(196, 167, 231, 0.5)' }}>
+                <h1 className="text-text-primary font-bold" style={{ fontSize: TYPOGRAPHY.fontSize.h3, marginBottom: SPACING.md, textShadow: COMMON_STYLES.textShadow.neon }}>
                   ⚔️ Welcome to ChatteRealm ⚔️
                 </h1>
                 <p style={{
-                  fontSize: '1.2rem',
+                  fontSize: TYPOGRAPHY.fontSize.lg,
                   color: 'var(--color-text-secondary)',
-                  marginBottom: '2rem',
+                  marginBottom: SPACING.lg,
                   maxWidth: '600px'
                 }}>
                   Embark on an epic adventure in a procedurally generated world.
@@ -153,16 +100,16 @@ const PlayLayout: React.FC = () => {
                 onClick={handleOpenCharacterBuilder}
                 variant="contained"
                 sx={{
-                  backgroundColor: 'rgba(196, 167, 231, 0.8)',
-                  color: 'white',
-                  fontSize: '1.2rem',
-                  padding: '1rem 2rem',
-                  borderRadius: '12px',
+                  backgroundColor: 'primary.main', // Using theme color
+                  color: 'primary.contrastText', // Using theme color
+                  fontSize: TYPOGRAPHY.fontSize.lg,
+                  padding: `${SPACING.md} ${SPACING.lg}`,
+                  borderRadius: BORDER_RADIUS.md,
                   '&:hover': {
-                    backgroundColor: 'rgba(196, 167, 231, 1)',
+                    backgroundColor: 'primary.dark', // Using theme color
                     transform: 'scale(1.05)'
                   },
-                  transition: 'all 0.3s ease'
+                  transition: `all ${ANIMATION.duration.standard} ${ANIMATION.easing.easeInOut}`
                 }}
               >
                 🎮 Create Your Character
@@ -171,45 +118,45 @@ const PlayLayout: React.FC = () => {
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1rem',
+                gap: SPACING.lg,
                 maxWidth: '800px',
-                marginTop: '2rem'
+                marginTop: SPACING.lg
               }}>
-                <MaterialCard sx={{ background: 'rgba(49, 46, 56, 0.8)', border: '1px solid rgba(196, 167, 231, 0.2)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center' }}>
-                  <h3 className="text-text-primary mb-2">🏰 Dynamic World</h3>
-                  <p className="text-text-secondary text-sm">Explore procedurally generated terrain with biomes, rivers, and cataclysmic events</p>
+                <MaterialCard sx={{ background: COMMON_STYLES.glass.background, border: COMMON_STYLES.glass.border, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, textAlign: 'center' }}>
+                  <h3 className="text-text-primary mb-2" style={{ fontSize: TYPOGRAPHY.fontSize.h5 }}>🏰 Dynamic World</h3>
+                  <p className="text-text-secondary" style={{ fontSize: TYPOGRAPHY.fontSize.sm }}>Explore procedurally generated terrain with biomes, rivers, and cataclysmic events</p>
                 </MaterialCard>
 
                 <MaterialCard
                   sx={{
-                    background: 'rgba(49, 46, 56, 0.8)',
-                    border: '1px solid rgba(196, 167, 231, 0.2)',
-                    borderRadius: '12px',
-                    padding: '1.5rem',
+                    background: COMMON_STYLES.glass.background,
+                    border: COMMON_STYLES.glass.border,
+                    borderRadius: BORDER_RADIUS.lg,
+                    padding: SPACING.lg,
                     textAlign: 'center'
                   }}
                 >
-                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.h5 }}>
                     ⚔️ Class System
                   </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     Choose from Knight, Rogue, or Mage with unique abilities and playstyles
                   </p>
                 </MaterialCard>
 
                 <MaterialCard
                   sx={{
-                    background: 'rgba(49, 46, 56, 0.8)',
-                    border: '1px solid rgba(196, 167, 231, 0.2)',
-                    borderRadius: '12px',
-                    padding: '1.5rem',
+                    background: COMMON_STYLES.glass.background,
+                    border: COMMON_STYLES.glass.border,
+                    borderRadius: BORDER_RADIUS.lg,
+                    padding: SPACING.lg,
                     textAlign: 'center'
                   }}
                 >
-                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.h5 }}>
                     🎨 Rich Animations
                   </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                  <p style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
                     Experience smooth GSAP animations and hand-drawn effects throughout your journey
                   </p>
                 </MaterialCard>
@@ -217,62 +164,15 @@ const PlayLayout: React.FC = () => {
             </div>
           ) : (
             // Game Canvas
-            <>
-              <div style={{
-                width: '100%',
-                height: '100%',
-                maxWidth: 'calc(100vw - 320px)',
-                maxHeight: '100vh',
-                overflow: 'hidden'
-              }}>
-                <GameCanvas />
-              </div>
-
-              {/* Game Legend */}
-              <MaterialPaper sx={{ position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 1, p: 1, zIndex: 1000, backgroundColor: 'rgba(25, 23, 36, 0.95)', backdropFilter: 'blur(10px)' }}>
-                <MaterialChip label="Knight" size="small" sx={{ backgroundColor: 'var(--color-legend-knight)', color: 'white', fontSize: '0.7rem', height: '20px' }} />
-                <MaterialChip
-                  label="Rogue"
-                  size="small"
-                  sx={{
-                    backgroundColor: 'var(--color-legend-rogue)',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    height: '20px'
-                  }}
-                />
-                <MaterialChip
-                  label="Mage"
-                  size="small"
-                  sx={{
-                    backgroundColor: 'var(--color-legend-mage)',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    height: '20px'
-                  }}
-                />
-                <MaterialChip
-                  label="NPC"
-                  size="small"
-                  sx={{
-                    backgroundColor: 'var(--color-legend-npc)',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    height: '20px'
-                  }}
-                />
-                <MaterialChip
-                  label="Item"
-                  size="small"
-                  sx={{
-                    backgroundColor: 'var(--color-legend-item)',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                    height: '20px'
-                  }}
-                />
-              </MaterialPaper>
-            </>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              maxWidth: '100%', // Changed from calc(100vw - 320px) to allow BaseLayout to manage overall width
+              maxHeight: '100%', // Changed from 100vh
+              overflow: 'hidden'
+            }}>
+              <GameCanvas />
+            </div>
           )}
         </div>
 
@@ -287,7 +187,7 @@ const PlayLayout: React.FC = () => {
         onJoinGame={handleCharacterJoin}
         currentPlayer={currentPlayer}
       />
-    </div>
+    </>
   );
 };
 
