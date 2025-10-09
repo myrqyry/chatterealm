@@ -99,7 +99,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
 
           {/* Game Legend */}
           {showLegend && (
-            <GameLegend position={isMobile ? 'bottom' : legendPosition} /> {/* Adjust legend position on mobile */}
+            <GameLegend position={isMobile ? 'bottom' : legendPosition} />
           )}
         </main>
 

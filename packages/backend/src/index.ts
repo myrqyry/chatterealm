@@ -22,6 +22,11 @@ import rateLimit from 'express-rate-limit';
 import { WebSocketServer } from './services/webSocketServer';
 import { GameStateManager } from './services/gameStateManager';
 import { EmojiService } from './services/EmojiService';
+import { StreamOptimizedTwitchService } from './services/StreamOptimizedTwitchService';
+import { StreamCommentaryService } from './services/StreamCommentaryService';
+import { AutoWanderService } from './services/AutoWanderService';
+import { TarkovLootService } from './services/TarkovLootService';
+import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
 import { GAME_CONFIG } from 'shared';
 
 const app = express();
@@ -31,6 +36,31 @@ const PORT = process.env.PORT || 8080;
 const gameStateManager = new GameStateManager();
 const emojiService = new EmojiService();
 const webSocketServer = new WebSocketServer(httpServer, gameStateManager);
+const handDrawnBuildingService = new HandDrawnBuildingService();
+
+// Instantiate the Twitch service
+const twitchService = new StreamOptimizedTwitchService(
+  webSocketServer.getIO(),
+  process.env.TWITCH_CLIENT_ID,
+  process.env.TWITCH_CLIENT_SECRET,
+  process.env.TWITCH_CHANNEL_NAME,
+  gameStateManager,
+);
+
+// Instantiate remaining services
+const streamCommentaryService = new StreamCommentaryService(twitchService);
+const autoWanderService = new AutoWanderService(twitchService);
+const tarkovLootService = new TarkovLootService(webSocketServer.getIO(), twitchService);
+
+// Set circular dependencies
+gameStateManager.setServices(streamCommentaryService, autoWanderService, tarkovLootService);
+autoWanderService.setGameStateManager(gameStateManager);
+tarkovLootService.setGameStateManager(gameStateManager);
+
+// Connect to Twitch
+twitchService.connect().catch(err => {
+    console.error("Failed to connect to Twitch:", err);
+});
 
 // Middleware
 // CORS Configuration

@@ -90,6 +90,16 @@ export const CataclysmDemo: React.FC = () => {
         </div>
       </div>
 
+      {/* Controls */}
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <button
+          onClick={() => useGameStore.getState().startCataclysm()}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Start Cataclysm
+        </button>
+      </div>
+
       {/* Game Canvas */}
       <div className="border-2 border-gray-600 rounded-lg overflow-hidden">
         <GameCanvas />

@@ -73,7 +73,9 @@ export enum BuildingType {
   STABLES = 'stables',
   BLACKSMITH = 'blacksmith',
   LIBRARY = 'library',
-  LABORATORY = 'laboratory'
+  LABORATORY = 'laboratory',
+  WAREHOUSE = 'warehouse',
+  BUNKER = 'bunker'
 }
 
 export enum Buff {
@@ -132,9 +134,10 @@ export interface Terrain {
 }
 
 export interface Building {
-  id: string;
+  id:string;
   type: BuildingType;
   emoji: string;
+  roughSvg?: string;
   position: Position;
   name: string;
   description: string;
@@ -437,6 +440,48 @@ export interface UnifiedSettings {
   visual: VisualSettings;
   world: WorldSettings;
   animations: AnimationSettings;
+}
+
+// Auto-wander types
+export interface WanderSettings {
+  maxRiskLevel: number;
+  stopOnDanger: boolean;
+  maxDistance: number;
+  avoidHighLevelAreas: boolean;
+  prioritizeLoot: string[];
+}
+
+export interface DangerAssessment {
+  level: number;
+  threats: string[];
+}
+
+export type DangerLevel = number;
+
+// Tarkov-style looting types
+export interface LootingSession {
+  playerId: string;
+  buildingId: string;
+  startTime: number;
+  duration: number;
+  revealedItems: Item[];
+  totalItems: number;
+  canceled: boolean;
+}
+
+export interface LootResult {
+  success: boolean;
+  message: string;
+}
+
+// Hand-drawn building types
+export interface HandDrawnBuilding {
+  type: BuildingType;
+  size: { width: number; height: number };
+  roughSvg: string;
+  lootCapacity: number;
+  searchTime: number;
+  dangerLevel: number;
 }
 
 // Legacy AnimationSettings interface (keeping for compatibility)

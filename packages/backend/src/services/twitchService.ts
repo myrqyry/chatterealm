@@ -15,7 +15,7 @@ interface TwitchMessage {
   channelPoints?: number;
 }
 
-interface ChatCommand {
+export interface ChatCommand {
   command: string;
   args: string[];
   username: string;
@@ -25,7 +25,7 @@ interface ChatCommand {
   timestamp: number;
 }
 
-interface CommandHandler {
+export interface CommandHandler {
   command: string;
   handler: (cmd: ChatCommand) => Promise<string>;
   cooldown: number; // milliseconds
@@ -33,7 +33,7 @@ interface CommandHandler {
 }
 
 export class TwitchService {
-  private io: Server;
+  protected io: Server;
   private clientId: string;
   private clientSecret: string;
   private accessToken: string = '';
@@ -41,9 +41,9 @@ export class TwitchService {
   private commandCooldowns: Map<string, number> = new Map();
   private userCooldowns: Map<string, number> = new Map();
   private globalCooldowns: Map<string, number> = new Map();
-  private commandHandlers: Map<string, CommandHandler> = new Map();
+  protected commandHandlers: Map<string, CommandHandler> = new Map();
   private tmiClient: tmi.Client | null = null;
-  private gameStateManager: GameStateManager;
+  protected gameStateManager: GameStateManager;
   private connected: boolean = false;
 
   // Rate limiting configuration
@@ -471,7 +471,7 @@ export class TwitchService {
     }, 5000); // 5 second cooldown
   }
 
-  private handleMovementCommand(cmd: ChatCommand, direction: 'up' | 'down' | 'left' | 'right'): string {
+  protected handleMovementCommand(cmd: ChatCommand, direction: 'up' | 'down' | 'left' | 'right'): string {
     const player = this.getExistingPlayer(cmd.username);
     if (!player) {
       return `@${cmd.displayName} You haven't spawned yet! Use !spawn first.`;
@@ -784,7 +784,7 @@ export class TwitchService {
   }
 
   // Player management methods
-  private async spawnPlayer(username: string, displayName: string, playerClass: string): Promise<{ success: boolean; player?: any; message?: string }> {
+  protected async spawnPlayer(username: string, displayName: string, playerClass: string): Promise<{ success: boolean; player?: any; message?: string }> {
     try {
       // Create player object based on class
       const playerStats = this.getPlayerStatsForClass(playerClass);
@@ -833,7 +833,7 @@ export class TwitchService {
     }
   }
 
-  private getExistingPlayer(username: string): any {
+  protected getExistingPlayer(username: string): any {
     // Get player from GameStateManager
     return this.gameStateManager.getGameWorld().players.find(p => p.id === username);
   }
@@ -866,7 +866,11 @@ export class TwitchService {
     return true;
   }
 
-  private async sendChatResponse(message: string): Promise<void> {
+  public async sendStreamMessage(message: string): Promise<void> {
+    await this.sendChatResponse(message);
+  }
+
+  protected async sendChatResponse(message: string): Promise<void> {
     // Send message to Twitch chat via tmi.js
     if (this.tmiClient && this.connected) {
       try {

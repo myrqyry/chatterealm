@@ -17,6 +17,8 @@ import { useParticleManager } from './GameCanvas/managers/ParticleManager';
 import { useEffectManager } from './GameCanvas/managers/EffectManager';
 import { useRegenerationManager } from './GameCanvas/managers/RegenerationManager';
 import { webSocketClient } from '../services/webSocketClient';
+import { CataclysmVisualizer } from './CataclysmVisualizer';
+import { Position } from 'shared';
 
 /**
  * Main game canvas component that renders the game world and handles user interactions.
@@ -247,6 +249,28 @@ const GameCanvas: React.FC = () => {
     }
   };
 
+  const getInfectedAreas = (): Position[] => {
+    if (!gameWorld || !gameWorld.cataclysmCircle.isActive) {
+      return [];
+    }
+
+    const infected: Position[] = [];
+    const { center, radius } = gameWorld.cataclysmCircle;
+    const grid = gameWorld.grid;
+
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[y].length; x++) {
+        const distance = Math.sqrt(Math.pow(x - center.x, 2) + Math.pow(y - center.y, 2));
+        if (distance > radius) {
+          infected.push({ x, y });
+        }
+      }
+    }
+    return infected;
+  };
+
+  const infectedAreas = getInfectedAreas();
+
   return (
     <div ref={containerRef} className="w-full h-full overflow-hidden p-2 box-border relative min-w-0 min-h-0" style={{ maxHeight: '100%', maxWidth: '100%' }}>
       <canvas 
@@ -255,6 +279,9 @@ const GameCanvas: React.FC = () => {
         onPointerDown={handlePointerDown}
         style={{ imageRendering: 'pixelated', maxHeight: '100%', maxWidth: '100%' }}
       />
+      {gameWorld?.phase === 'cataclysm' && gameWorld.cataclysmCircle.isActive && (
+        <CataclysmVisualizer gameWorld={gameWorld} infectedAreas={infectedAreas} />
+      )}
       {drawEffects.map(effect => (
         <CanvasDrawEffectComponent
           key={effect.id}

@@ -56,6 +56,10 @@ export class WebSocketServer {
     this.gameStateManager = gameStateManager;
   }
 
+  public getIO(): SocketIOServer {
+    return this.io;
+  }
+
   private setupEventHandlers(): void {
     this.io.on('connection', (socket: Socket) => {
       console.log(`[CONNECTION] Client connected: ${socket.id}`);
