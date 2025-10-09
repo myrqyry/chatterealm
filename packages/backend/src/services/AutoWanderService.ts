@@ -6,7 +6,7 @@ export class AutoWanderService {
   private wanderingPlayers: Map<string, WanderSettings> = new Map();
   private dangerZones: Map<string, DangerLevel> = new Map();
 
-  private gameStateManager: GameStateManager;
+  private gameStateManager!: GameStateManager;
 
   constructor(private twitchService: TwitchService) {}
 

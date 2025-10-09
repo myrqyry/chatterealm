@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from '../GameCanvas';
 import PlayerSidebar from '../sidebars/PlayerSidebar';
+import CharacterBuilder from '../CharacterBuilder';
 import { MaterialButton, MaterialCard, MaterialChip } from '../index'; // Removed MaterialAppBar, MaterialPaper
 import { useGameStore } from '../../stores/gameStore';
 import { useGameWorld } from '../../hooks/useGameWorld';
@@ -82,7 +83,7 @@ const PlayLayout: React.FC = () => {
             // Character Creation Screen
             <div className="flex flex-col items-center justify-center gap-8 p-8 text-center">
               <div>
-                <h1 className="text-text-primary font-bold" style={{ fontSize: TYPOGRAPHY.fontSize.h3, marginBottom: SPACING.md, textShadow: COMMON_STYLES.textShadow.neon }}>
+                <h1 className="text-text-primary font-bold" style={{ fontSize: TYPOGRAPHY.fontSize['3xl'], marginBottom: SPACING.md, textShadow: COMMON_STYLES.textShadow.neon }}>
                   ⚔️ Welcome to ChatteRealm ⚔️
                 </h1>
                 <p style={{
@@ -123,7 +124,7 @@ const PlayLayout: React.FC = () => {
                 marginTop: SPACING.lg
               }}>
                 <MaterialCard sx={{ background: COMMON_STYLES.glass.background, border: COMMON_STYLES.glass.border, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, textAlign: 'center' }}>
-                  <h3 className="text-text-primary mb-2" style={{ fontSize: TYPOGRAPHY.fontSize.h5 }}>🏰 Dynamic World</h3>
+                  <h3 className="text-text-primary mb-2" style={{ fontSize: TYPOGRAPHY.fontSize.xl }}>🏰 Dynamic World</h3>
                   <p className="text-text-secondary" style={{ fontSize: TYPOGRAPHY.fontSize.sm }}>Explore procedurally generated terrain with biomes, rivers, and cataclysmic events</p>
                 </MaterialCard>
 
@@ -136,7 +137,7 @@ const PlayLayout: React.FC = () => {
                     textAlign: 'center'
                   }}
                 >
-                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.h5 }}>
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.xl }}>
                     ⚔️ Class System
                   </h3>
                   <p style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
@@ -153,7 +154,7 @@ const PlayLayout: React.FC = () => {
                     textAlign: 'center'
                   }}
                 >
-                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.h5 }}>
+                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.xl }}>
                     🎨 Rich Animations
                   </h3>
                   <p style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>

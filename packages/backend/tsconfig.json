@@ -3,7 +3,8 @@
     "target": "es6",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./src",
+  "rootDir": "..",
+  "rootDirs": ["src", "../shared/src"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -15,6 +16,6 @@
       "shared/*": ["../shared/src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../shared/src"],
   "exclude": ["node_modules"]
 }

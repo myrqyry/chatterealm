@@ -1,4 +1,4 @@
-import { Player, NPC, Item, Position, GameWorld, GAME_CONFIG } from 'shared';
+import { Player, NPC, Item, Position, GameWorld, GAME_CONFIG, Terrain, Building } from 'shared';
 import { CombatSystem, CombatResult } from './CombatSystem';
 import { PlayerMovementService, MoveResult } from './PlayerMovementService';
 import { TarkovLootService } from './TarkovLootService';
@@ -79,7 +79,9 @@ export class GameStateManager {
    */
   private updateModuleReferences(): void {
     this.npcManager.updateOccupiedPositions(this.occupiedPositions);
-    this.cataclysmService.updateOccupiedPositions(this.occupiedPositions);
+    if (this.cataclysmService) {
+      this.cataclysmService.updateOccupiedPositions(this.occupiedPositions);
+    }
     this.playerMovementService.updateOccupiedPositions(this.gameWorld);
   }
 
@@ -328,13 +330,12 @@ export class GameStateManager {
    * Start the cataclysm event
    */
   public startCataclysm(): GameActionResult {
-    const result = this.cataclysmService.startCataclysm(this.gameWorld);
+    // Invoke service which returns both result and generated events
+    const { result, events } = this.cataclysmService.startCataclysm(this.gameWorld);
     
     if (result.success) {
-      this.recordEvent({
-        type: 'cataclysm_started',
-        data: { timestamp: Date.now() }
-      });
+      // Record all events produced by the service
+      events.forEach(event => this.recordEvent(event));
     }
     
     return result;
@@ -373,6 +374,50 @@ export class GameStateManager {
    */
   public getWorldStats() {
     return this.gameWorldManager.getWorldStats(this.gameWorld);
+  }
+
+  /**
+   * Check if a position is within world bounds
+   */
+  public isPositionValid(position: Position): boolean {
+    return (
+      position.x >= 0 &&
+      position.x < GAME_CONFIG.gridWidth &&
+      position.y >= 0 &&
+      position.y < GAME_CONFIG.gridHeight
+    );
+  }
+
+  /**
+   * Get terrain at a given position, if valid
+   */
+  public getTerrainAt(position: Position): Terrain | undefined {
+    if (!this.isPositionValid(position)) {
+      return undefined;
+    }
+    // @ts-ignore grid typing
+    return this.gameWorld.grid[position.y][position.x] as Terrain;
+  }
+
+  /**
+   * Get building at a given position, if any
+   */
+  public getBuildingAt(position: Position): Building | undefined {
+    return this.gameWorld.buildings.find(
+      b => b.position.x === position.x && b.position.y === position.y
+    );
+  }
+
+  /**
+   * Check if position is inside active cataclysm zone
+   */
+  public isInCataclysm(position: Position): boolean {
+    if (!this.gameWorld.cataclysmCircle.isActive) return false;
+    const center = this.gameWorld.cataclysmCircle.center;
+    const distance = Math.sqrt(
+      Math.pow(position.x - center.x, 2) + Math.pow(position.y - center.y, 2)
+    );
+    return distance >= this.gameWorld.cataclysmCircle.radius;
   }
 
   // =============================================================================

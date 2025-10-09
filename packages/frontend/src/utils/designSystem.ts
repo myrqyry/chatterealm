@@ -85,6 +85,18 @@ export const LAYOUT = {
 
 // Animation durations
 export const ANIMATION = {
+  duration: {
+    fast: '150ms',
+    standard: '300ms',
+    slow: '500ms',
+    slower: '750ms',
+  },
+  easing: {
+    easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
+    easeOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
+    easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
+  },
+  // Legacy flat properties for backwards compatibility
   fast: '150ms',
   normal: '300ms',
   slow: '500ms',
@@ -128,6 +140,13 @@ export const COMMON_STYLES = {
     cursor: 'pointer',
     border: 'none',
     outline: 'none',
+  },
+
+  // Text shadow effects
+  textShadow: {
+    neon: '0 0 10px rgba(196, 167, 231, 0.8), 0 0 20px rgba(196, 167, 231, 0.5)',
+    glow: '0 0 8px rgba(156, 207, 216, 0.6)',
+    subtle: '0 1px 2px rgba(0, 0, 0, 0.3)',
   },
 
   // Text gradient for titles

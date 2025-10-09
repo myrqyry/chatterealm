@@ -41,9 +41,9 @@ const handDrawnBuildingService = new HandDrawnBuildingService();
 // Instantiate the Twitch service
 const twitchService = new StreamOptimizedTwitchService(
   webSocketServer.getIO(),
-  process.env.TWITCH_CLIENT_ID,
-  process.env.TWITCH_CLIENT_SECRET,
-  process.env.TWITCH_CHANNEL_NAME,
+  process.env.TWITCH_CLIENT_ID!,
+  process.env.TWITCH_CLIENT_SECRET!,
+  process.env.TWITCH_CHANNEL_NAME!,
   gameStateManager,
 );
 

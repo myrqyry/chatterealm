@@ -121,7 +121,8 @@ export class StreamOptimizedTwitchService extends TwitchService {
     this.commandQueue.push(chatCommand);
   }
 
-  public sendStreamMessage(message: string): void {
-    this.sendChatResponse(message);
+  public async sendStreamMessage(message: string): Promise<void> {
+    // Override base method, return a promise
+    await this.sendChatResponse(message);
   }
 }

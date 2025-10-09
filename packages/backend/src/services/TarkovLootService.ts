@@ -6,7 +6,7 @@ import { Player, Item, Position, LootingSession, LootResult } from 'shared/src/t
 
 export class TarkovLootService extends LootManager {
   private lootingPlayers: Map<string, LootingSession> = new Map();
-  private gameStateManager: GameStateManager;
+  private gameStateManager!: GameStateManager;
 
   constructor(private io: Server, private twitchService: TwitchService) {
     super();
@@ -100,7 +100,8 @@ export class TarkovLootService extends LootManager {
     if (!building) return null;
 
     // For demonstration, we generate a new item. In a real implementation, you'd pull from the building's loot table.
-    return this.generateTerrainBasedLoot(player.position, this.gameStateManager.getTerrainAt(player.position)?.type || 'plain');
+    const terrain = this.gameStateManager.getTerrainAt(player.position);
+    return this.generateTerrainBasedLoot(player.position, terrain?.type || ('plain' as any));
   }
 
   private checkForInterruptions(session: LootingSession): boolean {
