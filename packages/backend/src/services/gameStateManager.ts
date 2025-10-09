@@ -1,10 +1,13 @@
 import { Player, NPC, Item, Position, GameWorld, GAME_CONFIG } from 'shared';
 import { CombatSystem, CombatResult } from './CombatSystem';
 import { PlayerMovementService, MoveResult } from './PlayerMovementService';
-import { LootManager, ItemResult } from './LootManager';
+import { TarkovLootService } from './TarkovLootService';
 import { NPCManager } from './NPCManager';
 import { CataclysmService, GameActionResult } from './CataclysmService';
 import { GameWorldManager } from './GameWorldManager';
+import { StreamCommentaryService } from './StreamCommentaryService';
+import { AutoWanderService } from './AutoWanderService';
+import { ItemResult } from './LootManager';
 
 // Core result interfaces
 export { GameActionResult, MoveResult, CombatResult, ItemResult };
@@ -32,11 +35,15 @@ export class GameStateManager {
   // Module instances
   private combatSystem: CombatSystem;
   private playerMovementService: PlayerMovementService;
-  private lootManager: LootManager;
   private npcManager: NPCManager;
-  private cataclysmService: CataclysmService;
+  private cataclysmService!: CataclysmService;
   private gameWorldManager: GameWorldManager;
   
+  // Injected services
+  private streamCommentaryService!: StreamCommentaryService;
+  private autoWanderService!: AutoWanderService;
+  private tarkovLootService!: TarkovLootService;
+
   // Shared state
   private occupiedPositions: Set<string> = new Set();
   private reservedPositions: Set<string> = new Set();
@@ -47,8 +54,6 @@ export class GameStateManager {
     this.npcManager = new NPCManager(this.occupiedPositions);
     this.gameWorldManager = new GameWorldManager(this.npcManager);
     this.combatSystem = new CombatSystem();
-    this.lootManager = new LootManager();
-    this.cataclysmService = new CataclysmService(this.lootManager, this.npcManager, this.occupiedPositions);
     
     // Initialize world
     this.gameWorld = this.gameWorldManager.initializeGameWorld(options);
@@ -56,6 +61,17 @@ export class GameStateManager {
     
     // Update all modules with current state
     this.updateModuleReferences();
+  }
+
+  public setServices(
+    streamCommentaryService: StreamCommentaryService,
+    autoWanderService: AutoWanderService,
+    tarkovLootService: TarkovLootService
+  ): void {
+    this.streamCommentaryService = streamCommentaryService;
+    this.autoWanderService = autoWanderService;
+    this.tarkovLootService = tarkovLootService;
+    this.cataclysmService = new CataclysmService(this.tarkovLootService, this.npcManager, this.occupiedPositions);
   }
 
   /**
@@ -205,6 +221,7 @@ export class GameStateManager {
     const result = this.combatSystem.processAttack(player, enemy, player.position, targetPosition);
     
     if (result.success) {
+      this.streamCommentaryService.announceCombat(player, enemy, result);
       this.recordEvent({
         type: 'player_attacked',
         data: {
@@ -257,7 +274,7 @@ export class GameStateManager {
    * Pick up an item
    */
   public pickupItem(playerId: string, itemId: string): ItemResult {
-    const result = this.lootManager.pickupItem(itemId, itemId, this.gameWorld.items, this.gameWorld.players);
+    const result = this.tarkovLootService.pickupItem(itemId, itemId, this.gameWorld.items, this.gameWorld.players);
     
     if (result.success) {
       this.recordEvent({
@@ -277,14 +294,14 @@ export class GameStateManager {
    * Inspect an item
    */
   public inspectItem(playerId: string, itemId: string): ItemResult {
-    return this.lootManager.inspectItem(playerId, itemId, this.gameWorld.items, this.gameWorld.players);
+    return this.tarkovLootService.inspectItem(playerId, itemId, this.gameWorld.items, this.gameWorld.players);
   }
 
   /**
    * Loot an item (Tarkov-style)
    */
   public lootItem(playerId: string, itemId: string): ItemResult {
-    const result = this.lootManager.lootItem(playerId, itemId, this.gameWorld.items, this.gameWorld.players);
+    const result = this.tarkovLootService.lootItem(playerId, itemId, this.gameWorld.items, this.gameWorld.players);
     
     if (result.success) {
       this.recordEvent({
@@ -300,7 +317,7 @@ export class GameStateManager {
    * Use an item from inventory
    */
   public useItem(playerId: string, itemId: string): ItemResult {
-    return this.lootManager.useItem(playerId, itemId, this.gameWorld.players);
+    return this.tarkovLootService.useItem(playerId, itemId, this.gameWorld.players);
   }
 
   // =============================================================================
@@ -373,7 +390,10 @@ export class GameStateManager {
     this.cataclysmService.updateCataclysm(this.gameWorld);
     
     // Update item reveals (Tarkov-style)
-    this.lootManager.updateItemReveals(this.gameWorld.items);
+    this.tarkovLootService.update();
+
+    // Update auto-wander
+    this.autoWanderService.update();
     
     // Process player movement queues
     this.playerMovementService.processPlayerMovementQueues(this.gameWorld);

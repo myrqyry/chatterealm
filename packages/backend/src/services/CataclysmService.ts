@@ -1,6 +1,7 @@
 import { GameWorld, Position, TerrainType, Player, GAME_CONFIG } from 'shared';
 import { LootManager } from './LootManager';
 import { NPCManager } from './NPCManager';
+import { GameEvent } from './gameStateManager';
 
 export interface GameActionResult {
   success: boolean;
@@ -12,6 +13,7 @@ export class CataclysmService {
   private lootManager: LootManager;
   private npcManager: NPCManager;
   private occupiedPositions: Set<string>;
+  private rebirthEndTime: number | null = null;
 
   constructor(lootManager: LootManager, npcManager: NPCManager, occupiedPositions: Set<string>) {
     this.lootManager = lootManager;
@@ -22,18 +24,23 @@ export class CataclysmService {
   /**
    * Start the cataclysm event
    */
-  public startCataclysm(gameWorld: GameWorld): GameActionResult {
+  public startCataclysm(gameWorld: GameWorld): { result: GameActionResult, events: GameEvent[] } {
     if (gameWorld.cataclysmCircle.isActive) {
-      return { success: false, message: 'Cataclysm is already active.' };
+      return { result: { success: false, message: 'Cataclysm is already active.' }, events: [] };
     }
 
     gameWorld.cataclysmCircle.isActive = true;
-    gameWorld.cataclysmCircle.nextShrinkTime = Date.now() + 60000; // Start shrinking in 1 minute
+    gameWorld.cataclysmCircle.nextShrinkTime = Date.now() + 10000; // Start shrinking in 10 seconds for faster demo
     gameWorld.phase = 'cataclysm';
 
-    return { 
-      success: true, 
-      message: 'The cataclysm has begun! The world will start changing soon.' 
+    const event: GameEvent = { type: 'cataclysm_started', data: { timestamp: Date.now() } };
+
+    return {
+      result: {
+        success: true,
+        message: 'The cataclysm has begun! The world will start changing soon.'
+      },
+      events: [event]
     };
   }
 
@@ -181,10 +188,8 @@ export class CataclysmService {
     gameWorld.cataclysmRoughnessMultiplier = 1.0;
     gameWorld.phase = 'rebirth';
 
-    // Start world reset timer
-    setTimeout(() => {
-      this.resetWorld(gameWorld);
-    }, 30000); // 30 seconds rebirth phase
+    // Set the end time for the rebirth phase
+    this.rebirthEndTime = Date.now() + 5000; // 5 seconds rebirth phase
   }
 
   /**
@@ -209,10 +214,7 @@ export class CataclysmService {
       }
     });
 
-    // After a brief delay, return to exploration phase
-    setTimeout(() => {
-      gameWorld.phase = 'exploration';
-    }, 5000);
+    // The phase will be transitioned back to 'exploration' in the update loop
   }
 
   /**

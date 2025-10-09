@@ -117,6 +117,13 @@ export class WebSocketClient {
               player.position = delta.data.newPosition;
             }
             break;
+          case 'cataclysm_started':
+            currentWorld.phase = 'cataclysm';
+            currentWorld.cataclysmCircle.isActive = true;
+            break;
+          case 'cataclysm_shrunk':
+            currentWorld.cataclysmCircle.radius = delta.data.newRadius;
+            break;
           // Add more delta types as needed
         }
       }

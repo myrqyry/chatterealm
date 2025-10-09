@@ -10,8 +10,33 @@ export const drawAnimatedBuilding = async (rc: any, x: number, y: number, gridSi
   const centerY = y * gridSize + gridSize / 2;
   const ctx = (rc as any).ctx;
 
-  // Try to render building emoji
-  if (building.emoji) {
+  // Priority 1: Use pre-generated roughSvg if available
+  if (building.roughSvg) {
+    try {
+      const converted = await assetConverter.convertSvgToCanvas(building.roughSvg, {
+        roughness: 1.0 + Math.sin(time * 0.02) * 0.2,
+        bowing: 1.3 + Math.sin(time * 0.03) * 0.3,
+        randomize: true,
+        seed: seed || Math.floor(time * 1000) % 1000
+      });
+
+      if (converted.canvas) {
+        const scaleX = (building.size.width * gridSize) / 32;
+        const scaleY = (building.size.height * gridSize) / 32;
+        const scale = Math.min(scaleX, scaleY) * 0.8;
+
+        const svgX = centerX - (32 * scale) / 2;
+        const svgY = centerY - (32 * scale) / 2;
+
+        ctx.save();
+        ctx.drawImage(converted.canvas, svgX, svgY, 32 * scale, 32 * scale);
+        ctx.restore();
+      }
+    } catch (error) {
+      console.warn('Failed to render pre-generated building SVG:', error);
+      drawFallbackBuilding(rc, centerX, centerY, gridSize, building, time);
+    }
+  } else if (building.emoji) { // Priority 2: Fallback to emoji rendering
     try {
       // Check cache first
       const cacheKey = building.emoji;
