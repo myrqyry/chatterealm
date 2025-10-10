@@ -87,12 +87,12 @@ export class BoundaryTracer {
       case 2: return [{ p1: top, p2: right }];
       case 3: return [{ p1: left, p2: right }];
       case 4: return [{ p1: right, p2: bottom }];
-      case 5: return [{ p1: top, p2: right }, { p1: left, p2: bottom }];
+      case 5: return [{ p1: top, p2: left }, { p1: right, p2: bottom }]; // Swapped with case 10
       case 6: return [{ p1: top, p2: bottom }];
       case 7: return [{ p1: left, p2: bottom }];
       case 8: return [{ p1: left, p2: bottom }];
       case 9: return [{ p1: top, p2: bottom }];
-      case 10: return [{ p1: top, p2: left }, { p1: right, p2: bottom }];
+      case 10: return [{ p1: top, p2: right }, { p1: left, p2: bottom }]; // Swapped with case 5
       case 11: return [{ p1: right, p2: bottom }];
       case 12: return [{ p1: left, p2: right }];
       case 13: return [{ p1: top, p2: right }];
