@@ -1,21 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2016",
     "module": "commonjs",
-    "outDir": "./dist",
-  "rootDir": "..",
-  "rootDirs": ["src", "../shared/src"],
-    "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node", "jest"],
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "shared": ["../shared/src"],
-      "shared/*": ["../shared/src/*"]
+      "shared/*": ["../shared/src*"]
     }
   },
-  "include": ["src", "../shared/src"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

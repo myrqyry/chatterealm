@@ -1,4 +1,5 @@
-import { PlayerClass, TerrainType, GameSettings } from '../types/game';
+import { PlayerClass, GameSettings } from '../types/game';
+import { BiomeType } from '../types/biomes';
 
 // Game Configuration Constants
 export const GAME_CONFIG: GameSettings = {
@@ -46,163 +47,41 @@ export const GAME_CONFIG: GameSettings = {
     }
   },
   terrainConfig: {
-    [TerrainType.PLAIN]: {
-      movementCost: 1,
-      defenseBonus: 0,
-      visibilityModifier: 0,
-      spawnChance: 0.3
-    },
-    [TerrainType.FOREST]: {
-      movementCost: 2,
-      defenseBonus: 5,
-      visibilityModifier: -2,
-      spawnChance: 0.18 // Increased from 0.15
-    },
-    [TerrainType.MOUNTAIN]: {
-      movementCost: 3,
-      defenseBonus: 15,
-      visibilityModifier: 3,
-      spawnChance: 0.1
-    },
-    // New terrain types with spawn chances
-    [TerrainType.WATER]: {
-      movementCost: 1.5,
-      defenseBonus: 0,
-      visibilityModifier: 0,
-      spawnChance: 0.05
-    },
-    [TerrainType.OCEAN]: {
-      movementCost: 2.0,
-      defenseBonus: 0,
-      visibilityModifier: 0,
-      spawnChance: 0.02
-    },
-    [TerrainType.RIVER]: {
-      movementCost: 1.2,
-      defenseBonus: 0,
-      visibilityModifier: 0,
-      spawnChance: 0.03
-    },
-    [TerrainType.MOUNTAIN_PEAK]: {
-      movementCost: 4,
-      defenseBonus: 20,
-      visibilityModifier: 4,
-      spawnChance: 0.02
-    },
-    [TerrainType.HILLS]: {
-      movementCost: 1.2,
-      defenseBonus: 2,
-      visibilityModifier: 0,
-      spawnChance: 0.08
-    },
-    [TerrainType.SNOW]: {
-      movementCost: 1.8,
-      defenseBonus: 5,
-      visibilityModifier: -1,
-      spawnChance: 0.01
-    },
-    [TerrainType.ICE]: {
-      movementCost: 2.5,
-      defenseBonus: 0,
-      visibilityModifier: -1.5,
-      spawnChance: 0.01
-    },
-    [TerrainType.SNOWY_HILLS]: {
-      movementCost: 2.0,
-      defenseBonus: 7,
-      visibilityModifier: 0,
-      spawnChance: 0.03
-    },
-    [TerrainType.DUNES]: {
-      movementCost: 1.5,
-      defenseBonus: 0,
-      visibilityModifier: 0.5,
-      spawnChance: 0.02
-    },
-    [TerrainType.OASIS]: {
-      movementCost: 1.0,
-      defenseBonus: 1,
-      visibilityModifier: 0,
-      spawnChance: 0.005
-    },
-    [TerrainType.SAND]: {
-      movementCost: 1.3,
-      defenseBonus: 0,
-      visibilityModifier: 0.3,
-      spawnChance: 0.04
-    },
-    [TerrainType.DENSE_JUNGLE]: {
-      movementCost: 3.0,
-      defenseBonus: 10,
-      visibilityModifier: -3,
-      spawnChance: 0.02
-    },
-    [TerrainType.JUNGLE]: {
-      movementCost: 2.5,
-      defenseBonus: 8,
-      visibilityModifier: -2.5,
-      spawnChance: 0.04
-    },
-    [TerrainType.DEEP_WATER]: {
-      movementCost: 3.0,
-      defenseBonus: 0,
-      visibilityModifier: -1,
-      spawnChance: 0.01
-    },
-    [TerrainType.MARSH]: {
-      movementCost: 2.0,
-      defenseBonus: 3,
-      visibilityModifier: -1,
-      spawnChance: 0.02
-    },
-    [TerrainType.SWAMP]: {
-      movementCost: 2.2,
-      defenseBonus: 5,
-      visibilityModifier: -1.5,
-      spawnChance: 0.02
-    },
-    [TerrainType.DENSE_FOREST]: {
-      movementCost: 2.8,
-      defenseBonus: 12,
-      visibilityModifier: -2.5,
-      spawnChance: 0.03
-    },
-    [TerrainType.CLEARING]: {
-      movementCost: 1.0,
-      defenseBonus: 0,
-      visibilityModifier: 0,
-      spawnChance: 0.02
-    },
-    [TerrainType.ROLLING_HILLS]: {
-      movementCost: 1.3,
-      defenseBonus: 3,
-      visibilityModifier: 0,
-      spawnChance: 0.06
-    },
-    [TerrainType.FLOWER_FIELD]: {
-      movementCost: 1.0,
-      defenseBonus: 1,
-      visibilityModifier: 0,
-      spawnChance: 0.01
-    },
-    [TerrainType.GRASSLAND]: {
-      movementCost: 1.0,
-      defenseBonus: 0,
-      visibilityModifier: 0,
-      spawnChance: 0.08
-    },
-    [TerrainType.ROUGH_TERRAIN]: {
-      movementCost: 2.0,
-      defenseBonus: 5,
-      visibilityModifier: 0,
-      spawnChance: 0.03
-    },
-    [TerrainType.ANCIENT_RUINS]: {
-      movementCost: 1.5,
-      defenseBonus: 8,
-      visibilityModifier: 1,
-      spawnChance: 0.008 // Increased from 0.005 for better loot distribution
-    }
+    [BiomeType.PLAIN]: { movementCost: 1, defenseBonus: 0, visibilityModifier: 0, spawnChance: 0.3 },
+    [BiomeType.FOREST]: { movementCost: 2, defenseBonus: 5, visibilityModifier: -2, spawnChance: 0.18 },
+    [BiomeType.MOUNTAIN]: { movementCost: 3, defenseBonus: 15, visibilityModifier: 3, spawnChance: 0.1 },
+    [BiomeType.WATER]: { movementCost: 1.5, defenseBonus: 0, visibilityModifier: 0, spawnChance: 0.05 },
+    [BiomeType.OCEAN]: { movementCost: 2.0, defenseBonus: 0, visibilityModifier: 0, spawnChance: 0.02 },
+    [BiomeType.RIVER]: { movementCost: 1.2, defenseBonus: 0, visibilityModifier: 0, spawnChance: 0.03 },
+    [BiomeType.MOUNTAIN_PEAK]: { movementCost: 4, defenseBonus: 20, visibilityModifier: 4, spawnChance: 0.02 },
+    [BiomeType.HILLS]: { movementCost: 1.2, defenseBonus: 2, visibilityModifier: 0, spawnChance: 0.08 },
+    [BiomeType.SNOW]: { movementCost: 1.8, defenseBonus: 5, visibilityModifier: -1, spawnChance: 0.01 },
+    [BiomeType.ICE]: { movementCost: 2.5, defenseBonus: 0, visibilityModifier: -1.5, spawnChance: 0.01 },
+    [BiomeType.SNOWY_HILLS]: { movementCost: 2.0, defenseBonus: 7, visibilityModifier: 0, spawnChance: 0.03 },
+    [BiomeType.DUNES]: { movementCost: 1.5, defenseBonus: 0, visibilityModifier: 0.5, spawnChance: 0.02 },
+    [BiomeType.OASIS]: { movementCost: 1.0, defenseBonus: 1, visibilityModifier: 0, spawnChance: 0.005 },
+    [BiomeType.SAND]: { movementCost: 1.3, defenseBonus: 0, visibilityModifier: 0.3, spawnChance: 0.04 },
+    [BiomeType.DENSE_JUNGLE]: { movementCost: 3.0, defenseBonus: 10, visibilityModifier: -3, spawnChance: 0.02 },
+    [BiomeType.JUNGLE]: { movementCost: 2.5, defenseBonus: 8, visibilityModifier: -2.5, spawnChance: 0.04 },
+    [BiomeType.DEEP_WATER]: { movementCost: 3.0, defenseBonus: 0, visibilityModifier: -1, spawnChance: 0.01 },
+    [BiomeType.MARSH]: { movementCost: 2.0, defenseBonus: 3, visibilityModifier: -1, spawnChance: 0.02 },
+    [BiomeType.SWAMP]: { movementCost: 2.2, defenseBonus: 5, visibilityModifier: -1.5, spawnChance: 0.02 },
+    [BiomeType.DENSE_FOREST]: { movementCost: 2.8, defenseBonus: 12, visibilityModifier: -2.5, spawnChance: 0.03 },
+    [BiomeType.CLEARING]: { movementCost: 1.0, defenseBonus: 0, visibilityModifier: 0, spawnChance: 0.02 },
+    [BiomeType.ROLLING_HILLS]: { movementCost: 1.3, defenseBonus: 3, visibilityModifier: 0, spawnChance: 0.06 },
+    [BiomeType.FLOWER_FIELD]: { movementCost: 1.0, defenseBonus: 1, visibilityModifier: 0, spawnChance: 0.01 },
+    [BiomeType.GRASSLAND]: { movementCost: 1.0, defenseBonus: 0, visibilityModifier: 0, spawnChance: 0.08 },
+    [BiomeType.ROUGH_TERRAIN]: { movementCost: 2.0, defenseBonus: 5, visibilityModifier: 0, spawnChance: 0.03 },
+    [BiomeType.ANCIENT_RUINS]: { movementCost: 1.5, defenseBonus: 8, visibilityModifier: 1, spawnChance: 0.008 },
+    [BiomeType.DESERT]: { movementCost: 1.5, defenseBonus: 0, visibilityModifier: 2, spawnChance: 0.02 },
+    [BiomeType.WASTELAND]: { movementCost: 2.5, defenseBonus: 2, visibilityModifier: 1, spawnChance: 0.01 },
+    [BiomeType.TOXIC_ZONE]: { movementCost: 3, defenseBonus: -5, visibilityModifier: -1, spawnChance: 0.005 },
+    [BiomeType.RADIATION_FIELD]: { movementCost: 3, defenseBonus: -5, visibilityModifier: -1, spawnChance: 0.005 },
+    [BiomeType.CRYSTAL_GARDEN]: { movementCost: 1.5, defenseBonus: 5, visibilityModifier: 2, spawnChance: 0.001 },
+    [BiomeType.URBAN_RUINS]: { movementCost: 1.8, defenseBonus: 3, visibilityModifier: 0, spawnChance: 0.008 },
+    [BiomeType.INFECTED_NORMAL]: { movementCost: 2, defenseBonus: 0, visibilityModifier: -1, spawnChance: 0.01 },
+    [BiomeType.INFECTED_HEAVY]: { movementCost: 2.5, defenseBonus: -2, visibilityModifier: -2, spawnChance: 0.005 },
+    [BiomeType.INFECTED_CORE]: { movementCost: 4, defenseBonus: -10, visibilityModifier: -3, spawnChance: 0.001 },
   }
 };
 
@@ -281,32 +160,41 @@ export const CHAT_COMMANDS = {
 
 // Terrain emojis for visual representation
 export const TERRAIN_EMOJIS = {
-  [TerrainType.PLAIN]: '🌱',
-  [TerrainType.FOREST]: '🌲',
-  [TerrainType.MOUNTAIN]: '⛰️',
-  [TerrainType.WATER]: '🌊',
-  [TerrainType.OCEAN]: ' OCEANA',
-  [TerrainType.RIVER]: 'RIVER',
-  [TerrainType.MOUNTAIN_PEAK]: 'MOUNTAIN_PEAK',
-  [TerrainType.HILLS]: 'HILLS',
-  [TerrainType.SNOW]: 'SNOW',
-  [TerrainType.ICE]: 'ICE',
-  [TerrainType.SNOWY_HILLS]: 'SNOWY_HILLS',
-  [TerrainType.DUNES]: 'DUNES',
-  [TerrainType.OASIS]: 'OASIS',
-  [TerrainType.SAND]: 'SAND',
-  [TerrainType.DENSE_JUNGLE]: 'DENSE_JUNGLE',
-  [TerrainType.JUNGLE]: 'JUNGLE',
-  [TerrainType.DEEP_WATER]: 'DEEP_WATER',
-  [TerrainType.MARSH]: 'MARSH',
-  [TerrainType.SWAMP]: 'SWAMP',
-  [TerrainType.DENSE_FOREST]: 'DENSE_FOREST',
-  [TerrainType.CLEARING]: 'CLEARING',
-  [TerrainType.ROLLING_HILLS]: 'ROLLING_HILLS',
-  [TerrainType.FLOWER_FIELD]: 'FLOWER_FIELD',
-  [TerrainType.GRASSLAND]: 'GRASSLAND',
-  [TerrainType.ROUGH_TERRAIN]: 'ROUGH_TERRAIN',
-  [TerrainType.ANCIENT_RUINS]: 'ANCIENT_RUINS',
+  [BiomeType.PLAIN]: '🌱',
+  [BiomeType.FOREST]: '🌲',
+  [BiomeType.MOUNTAIN]: '⛰️',
+  [BiomeType.WATER]: '🌊',
+  [BiomeType.OCEAN]: '🌊',
+  [BiomeType.RIVER]: '💧',
+  [BiomeType.MOUNTAIN_PEAK]: '🏔️',
+  [BiomeType.HILLS]: '🌄',
+  [BiomeType.SNOW]: '❄️',
+  [BiomeType.ICE]: '🧊',
+  [BiomeType.SNOWY_HILLS]: '🌨️',
+  [BiomeType.DUNES]: '🏜️',
+  [BiomeType.OASIS]: '🏝️',
+  [BiomeType.SAND]: '🏖️',
+  [BiomeType.DENSE_JUNGLE]: '🌳',
+  [BiomeType.JUNGLE]: '🌴',
+  [BiomeType.DEEP_WATER]: '🌊',
+  [BiomeType.MARSH]: '🐸',
+  [BiomeType.SWAMP]: '🐊',
+  [BiomeType.DENSE_FOREST]: '🌲',
+  [BiomeType.CLEARING]: '☀️',
+  [BiomeType.ROLLING_HILLS]: '🏞️',
+  [BiomeType.FLOWER_FIELD]: '🌸',
+  [BiomeType.GRASSLAND]: '🌾',
+  [BiomeType.ROUGH_TERRAIN]: '🪨',
+  [BiomeType.ANCIENT_RUINS]: '🏺',
+  [BiomeType.DESERT]: '🌵',
+  [BiomeType.WASTELAND]: '☢️',
+  [BiomeType.TOXIC_ZONE]: '☣️',
+  [BiomeType.RADIATION_FIELD]: '☢️',
+  [BiomeType.CRYSTAL_GARDEN]: '💎',
+  [BiomeType.URBAN_RUINS]: '🏚️',
+  [BiomeType.INFECTED_NORMAL]: '🤢',
+  [BiomeType.INFECTED_HEAVY]: '🤮',
+  [BiomeType.INFECTED_CORE]: '💀',
 };
 
 // Achievement definitions
@@ -349,4 +237,23 @@ export const DEFAULT_WORLD_CONFIG = {
   worldAge: 0,
   lastResetTime: Date.now(),
   phase: 'exploration' as const
+};
+
+export const ENHANCED_RENDER_CONFIG = {
+  animation: {
+    enabled: true,
+    frameRate: 60,
+    breathingIntensity: 0.1,
+    colorPulseSpeed: 0.02
+  },
+  performance: {
+    maxBiomesPerFrame: 50,
+    textureDetailDistance: 200,
+    animationDistance: 300
+  },
+  quality: {
+    roughnessQuality: 'high' as 'low' | 'medium' | 'high',
+    textureDetail: 'medium' as 'low' | 'medium' | 'high',
+    antiAliasing: true
+  }
 };

@@ -1,5 +1,6 @@
 // Core Game Types for Chat Grid Chronicles
 import { CharacterClass, CharacterVisual, ClassAbility } from './characterClasses';
+import { BiomeType } from './biomes';
 
 export enum SocketEvents {
   CONNECT = 'connect',
@@ -25,35 +26,6 @@ export interface Stats {
   attack: number;
   defense: number;
   speed: number;
-}
-
-export enum TerrainType {
-  WATER = 'water',
-  OCEAN = 'ocean',
-  RIVER = 'river',
-  MOUNTAIN_PEAK = 'mountain_peak',
-  MOUNTAIN = 'mountain',
-  HILLS = 'hills',
-  SNOW = 'snow',
-  ICE = 'ice',
-  SNOWY_HILLS = 'snowy_hills',
-  DUNES = 'dunes',
-  OASIS = 'oasis',
-  SAND = 'sand',
-  DENSE_JUNGLE = 'dense_jungle',
-  JUNGLE = 'jungle',
-  DEEP_WATER = 'deep_water',
-  MARSH = 'marsh',
-  SWAMP = 'swamp',
-  DENSE_FOREST = 'dense_forest',
-  FOREST = 'forest',
-  CLEARING = 'clearing',
-  ROLLING_HILLS = 'rolling_hills',
-  FLOWER_FIELD = 'flower_field',
-  GRASSLAND = 'grassland',
-  ROUGH_TERRAIN = 'rough_terrain',
-  ANCIENT_RUINS = 'ancient_ruins',
-  PLAIN = 'plain',
 }
 
 export enum BuildingType {
@@ -127,7 +99,7 @@ export enum NotificationType {
 }
 
 export interface Terrain {
-  type: TerrainType;
+  type: BiomeType;
   position: Position;
   movementCost: number;
   defenseBonus: number;
@@ -146,7 +118,7 @@ export interface Building {
   isAccessible: boolean;
   providesBuff?: Buff;
   spawnChance: number;
-  terrainPreference: TerrainType[]; // Which terrain types this building prefers
+  terrainPreference: BiomeType[]; // Which terrain types this building prefers
 }
 
 export interface Player {
@@ -241,7 +213,7 @@ export interface BoundingBox {
 }
 
 export interface Biome {
-  type: TerrainType;
+  type: BiomeType;
   cells: Position[];
   bounds: BoundingBox;
 }
@@ -291,7 +263,7 @@ export interface GameSettings {
   spawnCost: number; // channel points
   autoWanderCost: number;
   baseStats: Record<PlayerClass, Stats>;
-  terrainConfig: Record<TerrainType, {
+  terrainConfig: Record<BiomeType, {
     movementCost: number;
     defenseBonus: number;
     visibilityModifier: number;
