@@ -15,6 +15,7 @@ import { DrawingEffectsDemo } from './components/DrawingEffectsDemo';
 import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
 import EmojiSvgSmokeTest from './components/dev/EmojiSvgSmokeTest';
+import { CharacterCreator } from './components/character/CharacterCreator';
 
 // Import mode-specific layouts
 import PlayLayout from './components/layouts/PlayLayout';
@@ -68,8 +69,18 @@ function App() {
           {soundEnabled ? 'Sound enabled' : 'Enable sound'}
         </button>
         <Routes>
-          {/* Default route redirects to /play */}
-          <Route path="/" element={<Navigate to="/play" replace />} />
+          {/* Default route redirects to character creation for new users */}
+          <Route path="/" element={<Navigate to="/create-character" replace />} />
+
+          {/* Add character creation route */}
+          <Route
+            path="/create-character"
+            element={
+              <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
+                <CharacterCreator />
+              </BaseLayout>
+            }
+          />
 
           {/* Play mode */}
           <Route

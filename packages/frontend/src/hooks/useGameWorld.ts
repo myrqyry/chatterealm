@@ -19,6 +19,7 @@ interface GameWorldHook {
   handleRegenerateWorld: () => void;
   handleMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
   handleJoinGame: (characterData?: { displayName: string; class: any; avatar: string }) => void;
+  handleCreateCharacter: (characterData: any) => Promise<void>;
   handleStartCataclysm: () => void;
   handlePickUpItem: () => void;
 }
@@ -71,6 +72,19 @@ export const useGameWorld = (): GameWorldHook => {
     webSocketClient.joinGame(playerData);
   };
 
+  const handleCreateCharacter = async (characterData: any) => {
+    try {
+      const newPlayer = await webSocketClient.createNewCharacter(characterData);
+      setCurrentPlayer(newPlayer);
+      setGameMessageInStore(`Character ${newPlayer.name} created! Welcome!`);
+    } catch (error: any) {
+      console.error("Failed to create character:", error);
+      setGameMessageInStore(`Error creating character: ${error.message || 'Unknown error'}`);
+      // Re-throw the error so the UI can also react to it
+      throw error;
+    }
+  };
+
   const handleStartCataclysm = () => {
     setGameMessageInStore('Cataclysm started!');
   };
@@ -94,6 +108,7 @@ export const useGameWorld = (): GameWorldHook => {
     handleRegenerateWorld,
     handleMove,
     handleJoinGame,
+    handleCreateCharacter,
     handleStartCataclysm,
     handlePickUpItem,
   };

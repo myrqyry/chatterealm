@@ -1,4 +1,5 @@
 // Core Game Types for Chat Grid Chronicles
+import { CharacterClass, CharacterVisual, ClassAbility } from './characterClasses';
 
 export enum SocketEvents {
   CONNECT = 'connect',
@@ -151,17 +152,29 @@ export interface Building {
 export interface Player {
   id: string;
   name?: string; // Made optional for backward compatibility
-  twitchUsername: string;
+  twitchUsername?: string; // Made optional for new character creation system
   displayName: string;
   avatar: string; // emoji
   position: Position;
   class: PlayerClass;
+  characterClass?: CharacterClass;
+  visual?: CharacterVisual;
   health: number; // Added to player
   mana: number; // Added to player
   stamina: number; // Added to player
   hunger: number; // Added to player
   thirst: number; // Added to player
   stats: Stats;
+  characterStats?: {
+    vitality: number;
+    intellect: number;
+    agility: number;
+    perception: number;
+    resonance: number;
+    scavenge: number;
+  };
+  abilities?: ClassAbility[];
+  resources?: { [key: string]: number };
   level: number;
   experience: number;
   inventory: Item[];
