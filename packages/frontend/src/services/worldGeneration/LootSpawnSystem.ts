@@ -1,127 +1,128 @@
-import { Item, ItemType, ItemRarity, TerrainType, Position } from '../../../../shared/src/types/game';
+import { Item, ItemType, ItemRarity, Position } from 'shared';
+import { BiomeType } from 'shared';
 import { perlinNoise } from './NoiseGenerator';
 
 // Terrain-based loot configuration
-const TERRAIN_LOOT_CONFIG: Record<TerrainType, {
+const TERRAIN_LOOT_CONFIG: Record<BiomeType, {
   spawnChance: number;
   preferredTypes: ItemType[];
   rarityWeights: { common: number; uncommon: number; rare: number; epic?: number; legendary?: number };
   maxItemsPerTile: number;
   lootDensityMultiplier: number;
 }> = {
-  [TerrainType.ANCIENT_RUINS]: {
+  [BiomeType.ANCIENT_RUINS]: {
     spawnChance: 0.35,
     preferredTypes: [ItemType.WEAPON, ItemType.ARMOR, ItemType.CONSUMABLE],
     rarityWeights: { common: 20, uncommon: 30, rare: 35, epic: 12, legendary: 3 },
     maxItemsPerTile: 3,
     lootDensityMultiplier: 2.5
   },
-  [TerrainType.FOREST]: {
+  [BiomeType.FOREST]: {
     spawnChance: 0.12,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.WEAPON],
     rarityWeights: { common: 65, uncommon: 25, rare: 10 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.0
   },
-  [TerrainType.DENSE_FOREST]: {
+  [BiomeType.DENSE_FOREST]: {
     spawnChance: 0.18,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
     rarityWeights: { common: 55, uncommon: 30, rare: 15 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.3
   },
-  [TerrainType.MOUNTAIN]: {
+  [BiomeType.MOUNTAIN]: {
     spawnChance: 0.15,
     preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
     rarityWeights: { common: 50, uncommon: 35, rare: 15 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.2
   },
-  [TerrainType.MOUNTAIN_PEAK]: {
+  [BiomeType.MOUNTAIN_PEAK]: {
     spawnChance: 0.25,
     preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
     rarityWeights: { common: 30, uncommon: 40, rare: 25, epic: 5 },
     maxItemsPerTile: 3,
     lootDensityMultiplier: 1.8
   },
-  [TerrainType.SWAMP]: {
+  [BiomeType.SWAMP]: {
     spawnChance: 0.08,
     preferredTypes: [ItemType.CONSUMABLE],
     rarityWeights: { common: 70, uncommon: 20, rare: 10 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.8
   },
-  [TerrainType.SAND]: {
+  [BiomeType.SAND]: {
     spawnChance: 0.06,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
     rarityWeights: { common: 75, uncommon: 20, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.6
   },
-  [TerrainType.DUNES]: {
+  [BiomeType.DUNES]: {
     spawnChance: 0.04,
     preferredTypes: [ItemType.ARMOR, ItemType.WEAPON],
     rarityWeights: { common: 60, uncommon: 30, rare: 10 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.7
   },
-  [TerrainType.OASIS]: {
+  [BiomeType.OASIS]: {
     spawnChance: 0.45,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
     rarityWeights: { common: 40, uncommon: 40, rare: 15, epic: 5 },
     maxItemsPerTile: 3,
     lootDensityMultiplier: 2.0
   },
-  [TerrainType.JUNGLE]: {
+  [BiomeType.JUNGLE]: {
     spawnChance: 0.20,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.WEAPON],
     rarityWeights: { common: 50, uncommon: 35, rare: 15 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.4
   },
-  [TerrainType.DENSE_JUNGLE]: {
+  [BiomeType.DENSE_JUNGLE]: {
     spawnChance: 0.25,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
     rarityWeights: { common: 45, uncommon: 35, rare: 18, epic: 2 },
     maxItemsPerTile: 3,
     lootDensityMultiplier: 1.6
   },
-  [TerrainType.RIVER]: {
+  [BiomeType.RIVER]: {
     spawnChance: 0.10,
     preferredTypes: [ItemType.CONSUMABLE],
     rarityWeights: { common: 70, uncommon: 25, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.9
   },
-  [TerrainType.DEEP_WATER]: {
+  [BiomeType.DEEP_WATER]: {
     spawnChance: 0.03,
     preferredTypes: [ItemType.ARMOR],
     rarityWeights: { common: 80, uncommon: 18, rare: 2 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.5
   },
-  [TerrainType.OCEAN]: {
+  [BiomeType.OCEAN]: {
     spawnChance: 0.02,
     preferredTypes: [ItemType.ARMOR],
     rarityWeights: { common: 85, uncommon: 13, rare: 2 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.3
   },
-  [TerrainType.ICE]: {
+  [BiomeType.ICE]: {
     spawnChance: 0.05,
     preferredTypes: [ItemType.ARMOR, ItemType.CONSUMABLE],
     rarityWeights: { common: 70, uncommon: 25, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.7
   },
-  [TerrainType.SNOW]: {
+  [BiomeType.SNOW]: {
     spawnChance: 0.07,
     preferredTypes: [ItemType.ARMOR, ItemType.CONSUMABLE],
     rarityWeights: { common: 65, uncommon: 30, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.8
   },
-  [TerrainType.SNOWY_HILLS]: {
+  [BiomeType.SNOWY_HILLS]: {
     spawnChance: 0.12,
     preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
     rarityWeights: { common: 55, uncommon: 35, rare: 10 },
@@ -129,68 +130,131 @@ const TERRAIN_LOOT_CONFIG: Record<TerrainType, {
     lootDensityMultiplier: 1.1
   },
   // Default for other terrain types
-  [TerrainType.PLAIN]: {
+  [BiomeType.PLAIN]: {
     spawnChance: 0.05,
     preferredTypes: [ItemType.CONSUMABLE],
     rarityWeights: { common: 80, uncommon: 18, rare: 2 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.6
   },
-  [TerrainType.GRASSLAND]: {
+  [BiomeType.GRASSLAND]: {
     spawnChance: 0.04,
     preferredTypes: [ItemType.CONSUMABLE],
     rarityWeights: { common: 85, uncommon: 14, rare: 1 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.5
   },
-  [TerrainType.HILLS]: {
+  [BiomeType.HILLS]: {
     spawnChance: 0.08,
     preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
     rarityWeights: { common: 65, uncommon: 30, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.9
   },
-  [TerrainType.ROLLING_HILLS]: {
+  [BiomeType.ROLLING_HILLS]: {
     spawnChance: 0.06,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
     rarityWeights: { common: 70, uncommon: 25, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.8
   },
-  [TerrainType.WATER]: {
+  [BiomeType.WATER]: {
     spawnChance: 0.03,
     preferredTypes: [ItemType.CONSUMABLE],
     rarityWeights: { common: 85, uncommon: 14, rare: 1 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.4
   },
-  [TerrainType.MARSH]: {
+  [BiomeType.MARSH]: {
     spawnChance: 0.10,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
     rarityWeights: { common: 60, uncommon: 30, rare: 10 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.0
   },
-  [TerrainType.CLEARING]: {
+  [BiomeType.CLEARING]: {
     spawnChance: 0.15,
     preferredTypes: [ItemType.CONSUMABLE, ItemType.WEAPON],
     rarityWeights: { common: 55, uncommon: 35, rare: 10 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.2
   },
-  [TerrainType.ROUGH_TERRAIN]: {
+  [BiomeType.ROUGH_TERRAIN]: {
     spawnChance: 0.12,
     preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
     rarityWeights: { common: 60, uncommon: 30, rare: 10 },
     maxItemsPerTile: 2,
     lootDensityMultiplier: 1.1
   },
-  [TerrainType.FLOWER_FIELD]: {
+  [BiomeType.FLOWER_FIELD]: {
     spawnChance: 0.08,
     preferredTypes: [ItemType.CONSUMABLE],
     rarityWeights: { common: 70, uncommon: 25, rare: 5 },
     maxItemsPerTile: 1,
     lootDensityMultiplier: 0.9
+  },
+  [BiomeType.DESERT]: {
+    spawnChance: 0.06,
+    preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
+    rarityWeights: { common: 75, uncommon: 20, rare: 5 },
+    maxItemsPerTile: 1,
+    lootDensityMultiplier: 0.6
+  },
+  [BiomeType.WASTELAND]: {
+    spawnChance: 0.08,
+    preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
+    rarityWeights: { common: 65, uncommon: 30, rare: 5 },
+    maxItemsPerTile: 1,
+    lootDensityMultiplier: 0.9
+  },
+  [BiomeType.TOXIC_ZONE]: {
+    spawnChance: 0.10,
+    preferredTypes: [ItemType.CONSUMABLE],
+    rarityWeights: { common: 60, uncommon: 30, rare: 10 },
+    maxItemsPerTile: 2,
+    lootDensityMultiplier: 1.0
+  },
+  [BiomeType.RADIATION_FIELD]: {
+    spawnChance: 0.12,
+    preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
+    rarityWeights: { common: 60, uncommon: 30, rare: 10 },
+    maxItemsPerTile: 2,
+    lootDensityMultiplier: 1.1
+  },
+  [BiomeType.CRYSTAL_GARDEN]: {
+    spawnChance: 0.15,
+    preferredTypes: [ItemType.CONSUMABLE, ItemType.WEAPON],
+    rarityWeights: { common: 55, uncommon: 35, rare: 10 },
+    maxItemsPerTile: 2,
+    lootDensityMultiplier: 1.2
+  },
+  [BiomeType.URBAN_RUINS]: {
+    spawnChance: 0.18,
+    preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
+    rarityWeights: { common: 50, uncommon: 35, rare: 15 },
+    maxItemsPerTile: 2,
+    lootDensityMultiplier: 1.3
+  },
+  [BiomeType.INFECTED_NORMAL]: {
+    spawnChance: 0.20,
+    preferredTypes: [ItemType.CONSUMABLE, ItemType.ARMOR],
+    rarityWeights: { common: 45, uncommon: 35, rare: 20 },
+    maxItemsPerTile: 3,
+    lootDensityMultiplier: 1.4
+  },
+  [BiomeType.INFECTED_HEAVY]: {
+    spawnChance: 0.25,
+    preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
+    rarityWeights: { common: 40, uncommon: 35, rare: 25 },
+    maxItemsPerTile: 3,
+    lootDensityMultiplier: 1.5
+  },
+  [BiomeType.INFECTED_CORE]: {
+    spawnChance: 0.30,
+    preferredTypes: [ItemType.WEAPON, ItemType.ARMOR],
+    rarityWeights: { common: 30, uncommon: 40, rare: 30 },
+    maxItemsPerTile: 4,
+    lootDensityMultiplier: 1.6
   }
 };
 
@@ -216,7 +280,7 @@ export const generateTerrainLoot = (
       const terrain = terrainGrid[y]?.[x];
       if (!terrain) continue;
 
-      const config = TERRAIN_LOOT_CONFIG[terrain.type];
+      const config = TERRAIN_LOOT_CONFIG[terrain.type as BiomeType];
       if (!config) continue;
 
       // Calculate loot density based on noise patterns
@@ -256,7 +320,7 @@ export const generateTerrainLoot = (
         );
 
         for (let i = 0; i < numItems; i++) {
-          const item = generateTerrainItem(x, y, terrain.type, config, rarityWeights, rarityNoise);
+          const item = generateTerrainItem(x, y, terrain.type as BiomeType, config, rarityWeights, rarityNoise);
           if (item) {
             items.push(item);
           }
@@ -272,7 +336,7 @@ export const generateTerrainLoot = (
 const generateTerrainItem = (
   x: number,
   y: number,
-  terrainType: TerrainType,
+  terrainType: BiomeType,
   config: any,
   rarityWeights: any,
   rarityNoise: number
@@ -311,14 +375,14 @@ const generateTerrainItem = (
 };
 
 // Generate terrain-specific item names
-const generateTerrainItemName = (type: ItemType, rarity: ItemRarity, terrainType: TerrainType): string => {
+const generateTerrainItemName = (type: ItemType, rarity: ItemRarity, terrainType: BiomeType): string => {
   const terrainModifiers = {
-    [TerrainType.ANCIENT_RUINS]: ['Ancient', 'Ruined', 'Lost', 'Forgotten'],
-    [TerrainType.FOREST]: ['Wooden', 'Natural', 'Forest', 'Wild'],
-    [TerrainType.MOUNTAIN]: ['Stone', 'Mountain', 'Rocky', 'Dwarven'],
-    [TerrainType.SAND]: ['Desert', 'Sand', 'Sun-bleached', 'Nomad'],
-    [TerrainType.SWAMP]: ['Murky', 'Bog', 'Swamp', 'Poisonous'],
-    [TerrainType.ICE]: ['Frozen', 'Ice', 'Crystal', 'Arctic']
+    [BiomeType.ANCIENT_RUINS]: ['Ancient', 'Ruined', 'Lost', 'Forgotten'],
+    [BiomeType.FOREST]: ['Wooden', 'Natural', 'Forest', 'Wild'],
+    [BiomeType.MOUNTAIN]: ['Stone', 'Mountain', 'Rocky', 'Dwarven'],
+    [BiomeType.SAND]: ['Desert', 'Sand', 'Sun-bleached', 'Nomad'],
+    [BiomeType.SWAMP]: ['Murky', 'Bog', 'Swamp', 'Poisonous'],
+    [BiomeType.ICE]: ['Frozen', 'Ice', 'Crystal', 'Arctic']
   };
 
   const rarityPrefixes = {
@@ -343,14 +407,14 @@ const generateTerrainItemName = (type: ItemType, rarity: ItemRarity, terrainType
 };
 
 // Generate terrain-specific item descriptions
-const generateTerrainItemDescription = (type: ItemType, rarity: ItemRarity, terrainType: TerrainType): string => {
+const generateTerrainItemDescription = (type: ItemType, rarity: ItemRarity, terrainType: BiomeType): string => {
   const terrainContext = {
-    [TerrainType.ANCIENT_RUINS]: 'discovered among ancient ruins',
-    [TerrainType.FOREST]: 'found deep in the forest',
-    [TerrainType.MOUNTAIN]: 'carved from mountain stone',
-    [TerrainType.SAND]: 'buried in desert sands',
-    [TerrainType.SWAMP]: 'recovered from murky swamplands',
-    [TerrainType.ICE]: 'preserved in eternal ice'
+    [BiomeType.ANCIENT_RUINS]: 'discovered among ancient ruins',
+    [BiomeType.FOREST]: 'found deep in the forest',
+    [BiomeType.MOUNTAIN]: 'carved from mountain stone',
+    [BiomeType.SAND]: 'buried in desert sands',
+    [BiomeType.SWAMP]: 'recovered from murky swamplands',
+    [BiomeType.ICE]: 'preserved in eternal ice'
   };
 
   const context = terrainContext[terrainType] || 'found in the wilderness';
@@ -358,7 +422,7 @@ const generateTerrainItemDescription = (type: ItemType, rarity: ItemRarity, terr
 };
 
 // Generate terrain-specific item stats with environmental bonuses
-const generateTerrainItemStats = (type: ItemType, rarity: ItemRarity, terrainType: TerrainType): any => {
+const generateTerrainItemStats = (type: ItemType, rarity: ItemRarity, terrainType: BiomeType): any => {
   const rarityMultipliers = {
     [ItemRarity.COMMON]: 1,
     [ItemRarity.UNCOMMON]: 1.5,
@@ -371,9 +435,9 @@ const generateTerrainItemStats = (type: ItemType, rarity: ItemRarity, terrainTyp
   
   // Terrain-specific bonuses
   const terrainBonuses = {
-    [TerrainType.ANCIENT_RUINS]: 1.3,
-    [TerrainType.MOUNTAIN]: 1.1,
-    [TerrainType.MOUNTAIN_PEAK]: 1.15
+    [BiomeType.ANCIENT_RUINS]: 1.3,
+    [BiomeType.MOUNTAIN]: 1.1,
+    [BiomeType.MOUNTAIN_PEAK]: 1.15
   };
 
   const terrainMultiplier = terrainBonuses[terrainType] || 1.0;
@@ -387,12 +451,12 @@ const generateTerrainItemStats = (type: ItemType, rarity: ItemRarity, terrainTyp
     case ItemType.ARMOR:
       return { 
         defense: Math.floor(3 * finalMultiplier + Math.random() * 2),
-        ...(terrainType === TerrainType.ICE && { coldResistance: Math.floor(2 * multiplier) })
+        ...(terrainType === BiomeType.ICE && { coldResistance: Math.floor(2 * multiplier) })
       };
     case ItemType.CONSUMABLE:
       return { 
         hp: Math.floor(20 * finalMultiplier + Math.random() * 10),
-        ...(terrainType === TerrainType.FOREST && { naturalHealing: true })
+        ...(terrainType === BiomeType.FOREST && { naturalHealing: true })
       };
     default:
       return {};

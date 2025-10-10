@@ -40,7 +40,7 @@ export const renderGame = (
   const renderedHeight = numTilesY * gridSize;
 
   const biomeIdentificationService = new BiomeIdentificationService();
-  const biomeRenderer = new BiomeRenderer();
+  const biomeRenderer = new BiomeRenderer(rc);
 
   // Clear the entire canvas first to prevent ghost frames
   // Clear the logical rendering area (accounting for transforms)
@@ -48,8 +48,9 @@ export const renderGame = (
 
   // Identify and render biomes
   const biomes = biomeIdentificationService.identifyBiomeRegions(grid);
+  biomeRenderer.setAnimationFrame(time);
   biomes.forEach(biome => {
-    biomeRenderer.drawBiome(rc, biome, tileSize);
+    biomeRenderer.drawBiome(biome, tileSize);
   });
 
   // Draw animated buildings

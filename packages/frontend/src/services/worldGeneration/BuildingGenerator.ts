@@ -1,4 +1,5 @@
-import { Building, BuildingType, TerrainType, Position, Item, ItemType, ItemRarity } from '../../../../shared/src/types/game';
+import { Building, BuildingType, Position, Item, ItemType, ItemRarity } from 'shared';
+import { BiomeType } from 'shared';
 import { perlinNoise } from './NoiseGenerator';
 
 // Enhanced building configurations with loot generation capabilities
@@ -8,7 +9,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
   description: string;
   size: { width: number; height: number };
   spawnChance: number;
-  terrainPreference: TerrainType[];
+  terrainPreference: BiomeType[];
   isAccessible: boolean;
   lootSpawnChance?: number; // Chance to spawn loot inside/around building
   maxLootItems?: number; // Maximum loot items per building
@@ -21,7 +22,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A simple dwelling for villagers',
     size: { width: 1, height: 1 },
     spawnChance: 0.18, // Increased from 0.15
-    terrainPreference: [TerrainType.PLAIN, TerrainType.GRASSLAND, TerrainType.FOREST],
+    terrainPreference: [BiomeType.PLAIN, BiomeType.GRASSLAND, BiomeType.FOREST],
     isAccessible: true,
     lootSpawnChance: 0.25,
     maxLootItems: 2,
@@ -34,7 +35,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A fortified stronghold',
     size: { width: 3, height: 3 },
     spawnChance: 0.025, // Slightly increased from 0.02
-    terrainPreference: [TerrainType.HILLS, TerrainType.MOUNTAIN],
+    terrainPreference: [BiomeType.HILLS, BiomeType.MOUNTAIN],
     isAccessible: true,
     lootSpawnChance: 0.85,
     maxLootItems: 6,
@@ -47,7 +48,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A tall observation tower',
     size: { width: 1, height: 2 },
     spawnChance: 0.06, // Increased from 0.05
-    terrainPreference: [TerrainType.HILLS, TerrainType.MOUNTAIN, TerrainType.PLAIN],
+    terrainPreference: [BiomeType.HILLS, BiomeType.MOUNTAIN, BiomeType.PLAIN],
     isAccessible: true,
     lootSpawnChance: 0.35,
     maxLootItems: 2,
@@ -60,7 +61,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A place to buy and sell goods',
     size: { width: 2, height: 1 },
     spawnChance: 0.10, // Increased from 0.08
-    terrainPreference: [TerrainType.PLAIN, TerrainType.GRASSLAND],
+    terrainPreference: [BiomeType.PLAIN, BiomeType.GRASSLAND],
     isAccessible: true,
     lootSpawnChance: 0.45,
     maxLootItems: 4,
@@ -73,7 +74,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A place for rest and rumors',
     size: { width: 2, height: 2 },
     spawnChance: 0.08, // Increased from 0.06
-    terrainPreference: [TerrainType.PLAIN, TerrainType.GRASSLAND, TerrainType.FOREST],
+    terrainPreference: [BiomeType.PLAIN, BiomeType.GRASSLAND, BiomeType.FOREST],
     isAccessible: true,
     lootSpawnChance: 0.30,
     maxLootItems: 3,
@@ -86,7 +87,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A sacred place of worship',
     size: { width: 2, height: 2 },
     spawnChance: 0.05, // Increased from 0.04
-    terrainPreference: [TerrainType.MOUNTAIN, TerrainType.HILLS, TerrainType.FOREST],
+    terrainPreference: [BiomeType.MOUNTAIN, BiomeType.HILLS, BiomeType.FOREST],
     isAccessible: true,
     lootSpawnChance: 0.60,
     maxLootItems: 4,
@@ -99,7 +100,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Fields of crops and livestock',
     size: { width: 3, height: 2 },
     spawnChance: 0.14, // Increased from 0.12
-    terrainPreference: [TerrainType.GRASSLAND, TerrainType.PLAIN, TerrainType.ROLLING_HILLS],
+    terrainPreference: [BiomeType.GRASSLAND, BiomeType.PLAIN, BiomeType.ROLLING_HILLS],
     isAccessible: true,
     lootSpawnChance: 0.20,
     maxLootItems: 3,
@@ -112,7 +113,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Powered by flowing water',
     size: { width: 2, height: 2 },
     spawnChance: 0.04, // Increased from 0.03
-    terrainPreference: [TerrainType.RIVER, TerrainType.PLAIN],
+    terrainPreference: [BiomeType.RIVER, BiomeType.PLAIN],
     isAccessible: true,
     lootSpawnChance: 0.25,
     maxLootItems: 2,
@@ -125,7 +126,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Spans rivers and ravines',
     size: { width: 3, height: 1 },
     spawnChance: 0.08, // Increased from 0.07
-    terrainPreference: [TerrainType.RIVER, TerrainType.PLAIN],
+    terrainPreference: [BiomeType.RIVER, BiomeType.PLAIN],
     isAccessible: true,
     lootSpawnChance: 0.15,
     maxLootItems: 1,
@@ -138,7 +139,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Protective fortifications',
     size: { width: 5, height: 1 },
     spawnChance: 0.025, // Increased from 0.02
-    terrainPreference: [TerrainType.PLAIN, TerrainType.HILLS],
+    terrainPreference: [BiomeType.PLAIN, BiomeType.HILLS],
     isAccessible: false,
     lootSpawnChance: 0.10,
     maxLootItems: 1,
@@ -151,7 +152,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Entrance to settlements',
     size: { width: 1, height: 2 },
     spawnChance: 0.04, // Increased from 0.03
-    terrainPreference: [TerrainType.PLAIN, TerrainType.HILLS],
+    terrainPreference: [BiomeType.PLAIN, BiomeType.HILLS],
     isAccessible: true,
     lootSpawnChance: 0.20,
     maxLootItems: 2,
@@ -164,7 +165,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Remnants of a lost civilization',
     size: { width: 2, height: 2 },
     spawnChance: 0.10, // Increased from 0.08
-    terrainPreference: [TerrainType.ANCIENT_RUINS, TerrainType.FOREST, TerrainType.MOUNTAIN],
+    terrainPreference: [BiomeType.ANCIENT_RUINS, BiomeType.FOREST, BiomeType.MOUNTAIN],
     isAccessible: true,
     lootSpawnChance: 0.75,
     maxLootItems: 5,
@@ -177,7 +178,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'A small place of contemplation',
     size: { width: 1, height: 1 },
     spawnChance: 0.12, // Increased from 0.10
-    terrainPreference: [TerrainType.FOREST, TerrainType.DENSE_FOREST, TerrainType.MOUNTAIN],
+    terrainPreference: [BiomeType.FOREST, BiomeType.DENSE_FOREST, BiomeType.MOUNTAIN],
     isAccessible: true,
     lootSpawnChance: 0.40,
     maxLootItems: 2,
@@ -190,7 +191,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Scans the horizon for threats',
     size: { width: 1, height: 2 },
     spawnChance: 0.05, // Increased from 0.04
-    terrainPreference: [TerrainType.HILLS, TerrainType.MOUNTAIN, TerrainType.PLAIN],
+    terrainPreference: [BiomeType.HILLS, BiomeType.MOUNTAIN, BiomeType.PLAIN],
     isAccessible: true,
     lootSpawnChance: 0.45,
     maxLootItems: 3,
@@ -203,7 +204,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Home for noble steeds',
     size: { width: 2, height: 2 },
     spawnChance: 0.06, // Increased from 0.05
-    terrainPreference: [TerrainType.GRASSLAND, TerrainType.PLAIN],
+    terrainPreference: [BiomeType.GRASSLAND, BiomeType.PLAIN],
     isAccessible: true,
     lootSpawnChance: 0.25,
     maxLootItems: 3,
@@ -216,7 +217,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Where weapons and armor are crafted',
     size: { width: 2, height: 1 },
     spawnChance: 0.08, // Increased from 0.06
-    terrainPreference: [TerrainType.PLAIN, TerrainType.GRASSLAND],
+    terrainPreference: [BiomeType.PLAIN, BiomeType.GRASSLAND],
     isAccessible: true,
     lootSpawnChance: 0.70,
     maxLootItems: 4,
@@ -229,7 +230,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Repository of knowledge and magic',
     size: { width: 2, height: 2 },
     spawnChance: 0.04, // Increased from 0.03
-    terrainPreference: [TerrainType.ANCIENT_RUINS, TerrainType.FOREST],
+    terrainPreference: [BiomeType.ANCIENT_RUINS, BiomeType.FOREST],
     isAccessible: true,
     lootSpawnChance: 0.65,
     maxLootItems: 4,
@@ -242,7 +243,7 @@ const BUILDING_CONFIGS: Record<BuildingType, {
     description: 'Where potions and experiments happen',
     size: { width: 2, height: 1 },
     spawnChance: 0.05, // Increased from 0.04
-    terrainPreference: [TerrainType.MOUNTAIN, TerrainType.FOREST, TerrainType.ANCIENT_RUINS],
+    terrainPreference: [BiomeType.MOUNTAIN, BiomeType.FOREST, BiomeType.ANCIENT_RUINS],
     isAccessible: true,
     lootSpawnChance: 0.80,
     maxLootItems: 5,
@@ -312,7 +313,7 @@ export const generateBuildings = (terrainGrid: any[][], worldWidth: number, worl
 };
 
 // Determine if a building type is suitable for the given terrain
-const getSuitableBuildingType = (terrainType: TerrainType, x: number, y: number, worldWidth: number, worldHeight: number): BuildingType | null => {
+const getSuitableBuildingType = (terrainType: BiomeType, x: number, y: number, worldWidth: number, worldHeight: number): BuildingType | null => {
   // Use noise to create natural clustering
   const clusterNoise = perlinNoise(x * 0.05, y * 0.05, 5);
   const rarityNoise = perlinNoise(x * 0.1, y * 0.1, 6);

@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { GameStateManager } from '../services/gameStateManager';
-import { Player } from 'shared/types/game';
+import { Player, PlayerClass } from 'shared/types/game';
 import { CHARACTER_CLASSES } from 'shared';
 
 export class CharacterHandler {
@@ -19,23 +19,14 @@ export class CharacterHandler {
         return;
       }
 
-      // Find a safe spawn position for the new player
-      const spawnPosition = this.gameStateManager.findSpawnPosition();
-      if (!spawnPosition) {
-        socket.emit('character_created', {
-          success: false,
-          error: 'Could not find a valid spawn location.',
-        });
-        return;
-      }
-
-      // Construct the new player object using the additive approach
+      // The GameStateManager will find a suitable spawn position.
+      // We provide a placeholder position here.
       const player: Player = {
         id: characterData.id,
         name: characterData.name,
         displayName: characterData.name,
         avatar: characterData.emoji,
-        position: spawnPosition,
+        position: { x: -1, y: -1 },
 
         // New character class system fields
         characterClass: characterData.characterClass,
@@ -47,7 +38,7 @@ export class CharacterHandler {
         },
 
         // Legacy fields for backward compatibility
-        class: 'knight', // Default legacy class
+        class: PlayerClass.KNIGHT, // Default legacy class
         stats: { hp: 100, maxHp: 100, attack: 10, defense: 5, speed: 5 }, // Default legacy stats
         health: 100,
         mana: 50,
