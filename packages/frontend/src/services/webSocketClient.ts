@@ -334,6 +334,41 @@ export class WebSocketClient {
     this.socket.emit('loot_item', itemId);
   }
 
+  public createNewCharacter(characterData: any): Promise<Player> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        return reject(new Error('WebSocket is not connected.'));
+      }
+
+      this.socket.emit('create_character', {
+        characterData,
+        timestamp: Date.now()
+      });
+
+      const onCharacterCreated = (response: { success: boolean; player: Player; error?: string }) => {
+        cleanup();
+        if (response.success) {
+          resolve(response.player);
+        } else {
+          reject(new Error(response.error || 'Failed to create character.'));
+        }
+      };
+
+      const onError = (error: { message: string }) => {
+        cleanup();
+        reject(new Error(error.message));
+      };
+
+      const cleanup = () => {
+        this.socket?.off('character_created', onCharacterCreated);
+        this.socket?.off('error', onError);
+      }
+
+      this.socket.once('character_created', onCharacterCreated);
+      this.socket.once('error', onError);
+    });
+  }
+
   // Connection status
   public getConnectionStatus(): boolean {
     return this.isConnected;

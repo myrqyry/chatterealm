@@ -2,6 +2,7 @@ import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { GameStateManager, GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
 import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from 'shared';
+import { CharacterHandler } from '../handlers/CharacterHandler';
 
 export interface ClientData {
   playerId: string;
@@ -20,6 +21,7 @@ export interface PlayerCommand {
 export class WebSocketServer {
   private io: SocketIOServer;
   private gameStateManager: GameStateManager;
+  private characterHandler: CharacterHandler;
   private connectedClients: Map<string, ClientData> = new Map();
   private playerSockets: Map<string, string> = new Map(); // playerId -> socketId
   private gameLoopInterval: NodeJS.Timeout | null = null;
@@ -47,6 +49,7 @@ export class WebSocketServer {
       pingInterval: 25000
     });
 
+    this.characterHandler = new CharacterHandler(this.io, this.gameStateManager);
     this.setupEventHandlers();
     this.startGameLoop();
     this.startCleanupInterval(); // Start periodic stale client cleanup
@@ -71,6 +74,11 @@ export class WebSocketServer {
       socket.on(SocketEvents.JOIN_GAME, (playerData: JoinGameData) => {
         console.log(`[JOIN_GAME_RECEIVED] Socket ${socket.id} attempting to join with data:`, playerData);
         this.handlePlayerJoin(socket, playerData);
+      });
+
+      // Handle character creation
+      socket.on('create_character', (data: any) => {
+        this.characterHandler.handleCreateCharacter(socket, data);
       });
 
       // Handle explicit leave requests from clients
