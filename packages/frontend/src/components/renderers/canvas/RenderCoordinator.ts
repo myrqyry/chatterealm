@@ -1,7 +1,8 @@
 import type { Player, Item } from 'shared';
 import { TerrainType, AnimationSettings } from 'shared';
 import { GAME_CONFIG } from 'shared';
-import { drawAnimatedTerrainTile } from '../terrain/TerrainRenderer';
+import { BiomeIdentificationService } from '../../../services/BiomeIdentificationService';
+import { BiomeRenderer } from '../BiomeRenderer';
 import { drawAnimatedItem } from '../entities/ItemRenderer';
 import { drawAnimatedNPC } from '../entities/NPCRenderer';
 import { drawAnimatedPlayer } from '../entities/PlayerRenderer';
@@ -38,16 +39,18 @@ export const renderGame = (
   const renderedWidth = numTilesX * gridSize;
   const renderedHeight = numTilesY * gridSize;
 
+  const biomeIdentificationService = new BiomeIdentificationService();
+  const biomeRenderer = new BiomeRenderer();
+
   // Clear the entire canvas first to prevent ghost frames
   // Clear the logical rendering area (accounting for transforms)
   ctx.clearRect(-gridSize, -gridSize, renderedWidth + 2 * gridSize, renderedHeight + 2 * gridSize);
-  for (let y = 0; y < numTilesY; y++) {
-    for (let x = 0; x < numTilesX; x++) {
-      const terrain = grid[y]?.[x];
-      if (!terrain) continue;
-      drawAnimatedTerrainTile(rc, x, y, gridSize, terrain.type, time, animationSettings);
-    }
-  }
+
+  // Identify and render biomes
+  const biomes = biomeIdentificationService.identifyBiomeRegions(grid);
+  biomes.forEach(biome => {
+    biomeRenderer.drawBiome(rc, biome, tileSize);
+  });
 
   // Draw animated buildings
   buildings.forEach(async building => {

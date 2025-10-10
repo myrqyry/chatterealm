@@ -233,6 +233,19 @@ export interface NPC {
   lastMoveTime: number;
 }
 
+export interface BoundingBox {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+export interface Biome {
+  type: TerrainType;
+  cells: Position[];
+  bounds: BoundingBox;
+}
+
 export interface GameWorld {
   id: string;
   grid: Terrain[][];

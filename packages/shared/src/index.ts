@@ -1,5 +1,6 @@
 // Export all types
 export * from './types/game';
+export * from './types/characterClasses';
 
 // Export all constants
 export * from './constants/gameConstants';
