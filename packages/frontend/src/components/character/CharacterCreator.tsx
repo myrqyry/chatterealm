@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CharacterClass, CharacterVisual } from 'shared';
 import { EmojiCharacterService } from '../../services/EmojiCharacterService';
 import { useCharacterClasses } from '../../hooks/useCharacterClasses';
-import { useGameWorld } from '../../hooks/useGameWorld';
+import { useGameStore } from '../../stores/gameStore';
 import { EmojiPicker } from './EmojiPicker';
 import { ClassCard } from './ClassCard';
 import { CharacterStats } from './CharacterStats';
@@ -20,7 +20,7 @@ export const CharacterCreator: React.FC = () => {
 
   const [emojiService] = useState(() => new EmojiCharacterService());
   const { characterClasses } = useCharacterClasses();
-  const { handleCreateCharacter } = useGameWorld();
+  const { handleCreateCharacter } = useGameStore();
   const navigate = useNavigate();
 
   useEffect(() => {

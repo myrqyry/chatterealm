@@ -10,6 +10,7 @@ import type { NotificationData } from '../types/notification';
 
 // Import WebSocket client
 import { webSocketClient } from '../services/webSocketClient';
+import { createMockGameWorld } from '../services/worldGeneration/WorldGenerator';
 
 interface GameState {
   // Core game state
@@ -74,7 +75,8 @@ interface GameState {
 
   // Game actions
   joinGame: (playerData: Partial<Player>) => void;
-  regenerateWorld: () => void;
+  handleRegenerateWorld: () => void;
+  handleCreateCharacter: (characterData: any) => Promise<void>;
   movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
   moveTo: (target: { x: number; y: number }) => void;
   attackPlayer: (targetId: string) => void;
@@ -82,6 +84,9 @@ interface GameState {
   useItem: (itemId: string) => void;
   startCataclysm: () => void;
   clearMessage: () => void;
+  handleJoinGame: (characterData?: { displayName: string; class: any; avatar: string }) => void;
+  handleStartCataclysm: () => void;
+  handlePickUpItem: () => void;
 
   // Utility functions
   getPlayerById: (id: string) => Player | undefined;
@@ -242,11 +247,53 @@ export const useGameStore = create<GameState>()(
           webSocketClient.joinGame(playerData);
         },
 
-        regenerateWorld: () => {
+        handleRegenerateWorld: () => {
+          const newWorld = createMockGameWorld();
           set({
-            gameMessage: '🌍 New world generated! Explore the fresh terrain!'
+            gameWorld: newWorld,
+            currentPlayer: newWorld.players[0],
+            gameMessage: '🌍 New world generated! Explore the fresh terrain!',
           });
           setTimeout(() => set({ gameMessage: '' }), 5000);
+        },
+
+        handleCreateCharacter: async (characterData) => {
+          try {
+            const newPlayer = await webSocketClient.createNewCharacter(characterData);
+            set({
+              currentPlayer: newPlayer,
+              gameMessage: `Character ${newPlayer.name} created! Welcome!`,
+            });
+          } catch (error) {
+            set({
+              error: `Error creating character: ${error.message || 'Unknown error'}`,
+            });
+            // Re-throw the error so the UI can also react to it
+            throw error;
+          }
+        },
+
+        handleJoinGame: (characterData) => {
+          const playerData = characterData ? {
+            id: 'player_' + Date.now(),
+            displayName: characterData.displayName,
+            class: characterData.class,
+            avatar: characterData.avatar
+          } : {
+            id: 'player_' + Date.now(),
+            displayName: 'TestPlayer',
+            class: 'knight' as any,
+            avatar: '🤠'
+          };
+          webSocketClient.joinGame(playerData);
+        },
+
+        handleStartCataclysm: () => {
+          set({ gameMessage: 'Cataclysm started!' });
+        },
+
+        handlePickUpItem: () => {
+          set({ gameMessage: 'Looking for items...' });
         },
 
         movePlayer: (direction) => {
