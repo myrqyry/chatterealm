@@ -1,11 +1,10 @@
 import { Server, Socket } from 'socket.io';
-import { GameStateManager } from '../services/gameStateManager';
+import { gameService } from '../services/GameService';
 import { Player, PlayerClass, CHARACTER_CLASSES } from 'shared';
 
 export class CharacterHandler {
   constructor(
-    private io: Server,
-    private gameStateManager: GameStateManager
+    private io: Server
   ) {}
 
   public handleCreateCharacter(socket: Socket, data: any): void {
@@ -60,19 +59,23 @@ export class CharacterHandler {
         buffs: [],
       };
 
-      // Add the new player to the game world
-      const success = this.gameStateManager.addPlayer(player);
+      // Add the new player to the game world using GameService
+      const roomId = 'main_room';
+      const room = gameService.joinRoom(roomId, player);
 
-      if (success) {
+      if (room) {
         socket.emit('character_created', {
           success: true,
           player: player
         });
 
-        // Notify other players in the game that a new player has joined
-        socket.broadcast.emit('player_joined', { player });
+        // Make the player's socket join the room's channel
+        socket.join(roomId);
 
-        console.log(`Player ${player.name} (${player.id}) created and joined the game.`);
+        // Notify other players in the room that a new player has joined
+        socket.to(roomId).emit('player_joined', { player });
+
+        console.log(`Player ${player.name} (${player.id}) created and joined room ${roomId}.`);
       } else {
         socket.emit('character_created', {
           success: false,

@@ -4,12 +4,10 @@ import PlayerSidebar from '../sidebars/PlayerSidebar';
 import CharacterBuilder from '../CharacterBuilder';
 import { MaterialButton, MaterialCard, MaterialChip } from '../index'; // Removed MaterialAppBar, MaterialPaper
 import { useGameStore } from '../../stores/gameStore';
-import { useGameWorld } from '../../hooks/useGameWorld';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../../utils/designSystem'; // Import design system tokens
 
 const PlayLayout: React.FC = () => {
-  const { gameWorld } = useGameStore();
-  const { handleJoinGame } = useGameWorld();
+  const { gameWorld, handleJoinGame } = useGameStore();
   const [isCharacterBuilderOpen, setIsCharacterBuilderOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<{
     displayName: string;

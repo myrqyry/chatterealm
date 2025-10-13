@@ -1,6 +1,6 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { GameStateManager, GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
+import { GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
 import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from 'shared';
 import { CharacterHandler } from '../handlers/CharacterHandler';
 
@@ -18,9 +18,10 @@ export interface PlayerCommand {
 
 // The QueuedCommand interface is no longer needed with the simplified authentication logic.
 
+import { gameService } from './GameService';
+
 export class WebSocketServer {
   private io: SocketIOServer;
-  private gameStateManager: GameStateManager;
   private characterHandler: CharacterHandler;
   private connectedClients: Map<string, ClientData> = new Map();
   private playerSockets: Map<string, string> = new Map(); // playerId -> socketId
@@ -34,9 +35,7 @@ export class WebSocketServer {
     errorCount: 0
   };
 
-  constructor(httpServer: HTTPServer, gameStateManager: GameStateManager) {
-    this.gameStateManager = gameStateManager;
-
+  constructor(httpServer: HTTPServer) {
     // Initialize Socket.IO server with CORS configuration
     this.io = new SocketIOServer(httpServer, {
       cors: {
@@ -49,14 +48,10 @@ export class WebSocketServer {
       pingInterval: 25000
     });
 
-    this.characterHandler = new CharacterHandler(this.io, this.gameStateManager);
+    this.characterHandler = new CharacterHandler(this.io);
     this.setupEventHandlers();
     this.startGameLoop();
     this.startCleanupInterval(); // Start periodic stale client cleanup
-  }
-
-  public setGameStateManager(gameStateManager: GameStateManager): void {
-    this.gameStateManager = gameStateManager;
   }
 
   public getIO(): SocketIOServer {
@@ -91,15 +86,11 @@ export class WebSocketServer {
           }
 
           console.log(`[LEAVE_GAME] Received leave request for player ${pid} from socket ${socket.id}`);
+          const roomId = 'main_room';
+          gameService.leaveRoom(roomId, pid);
 
-          // Remove player from game state
-          const result = this.gameStateManager.removePlayer(pid);
-          if (!result.success) {
-            console.warn(`[LEAVE_GAME] Failed to remove player ${pid}: ${result.message}`);
-          } else {
-            // Broadcast player left to all clients
-            this.io.to('game_room').emit('player_left', { playerId: pid, player: result.data.player });
-          }
+          this.io.to(roomId).emit('player_left', { playerId: pid });
+
 
           // Clean up client tracking maps
           this.connectedClients.delete(socket.id);
@@ -186,12 +177,12 @@ export class WebSocketServer {
         lastActive: Date.now()
       };
 
-      // Add player to game state
-      const result = this.gameStateManager.addPlayer(player);
+      const roomId = 'main_room';
+      const room = gameService.joinRoom(roomId, player);
 
-      if (!result.success) {
-        console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName}:`, result.message);
-        socket.emit('error', { message: result.message });
+      if (!room) {
+        console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${roomId}`);
+        socket.emit('error', { message: 'Failed to join room' });
         return;
       }
 
@@ -228,7 +219,7 @@ export class WebSocketServer {
       // Send success response with initial game state
       socket.emit(SocketEvents.GAME_JOINED, {
         player: player,
-        gameWorld: this.gameStateManager.getGameWorld()
+        gameWorld: room.getGameState(),
       });
 
       // Broadcast player joined to all other clients
@@ -286,27 +277,7 @@ export class WebSocketServer {
         return;
       }
 
-      // Update player's lastActive timestamp
-  const player = this.gameStateManager.getPlayers().find(p => p.id === clientData.playerId);
-      if (player) {
-        player.lastActive = Date.now();
-      }
-
-      // With the simplified authentication flow, the presence of clientData means the user is authenticated.
-      // There is no need to queue commands.
-      const result = this.executePlayerCommand(clientData, command);
-
-      // Send result back to the client
-      socket.emit('command_result', {
-        command: command.type,
-        success: result.success,
-        message: result.message
-      });
-
-      // If command was successful and affects game state, broadcast update
-      if (result.success) {
-  this.broadcastGameDeltas();
-      }
+      // TODO: Implement command handling with gameService
 
     } catch (error) {
       console.error('Error handling player command:', error);
@@ -314,151 +285,19 @@ export class WebSocketServer {
     }
   }
 
-  private executePlayerCommand(clientData: ClientData, command: PlayerCommand): GameActionResult | MoveResult | CombatResult | ItemResult {
-    let result: GameActionResult | MoveResult | CombatResult | ItemResult;
-
-    switch (command.type) {
-      case 'move':
-        if (!command.data?.direction) {
-          throw new Error('Missing direction for move command');
-        }
-        const player = this.gameStateManager.getPlayer(clientData.playerId);
-        if (!player) {
-            throw new Error('Player not found for move command');
-        }
-        const newPosition = {
-            x: player.position.x + command.data.direction.x,
-            y: player.position.y + command.data.direction.y,
-        };
-        result = this.gameStateManager.movePlayer(clientData.playerId, newPosition);
-        break;
-
-      case 'move_to':
-        if (!command.data?.target) {
-          throw new Error('Missing target for move_to command');
-        }
-        result = this.gameStateManager.requestMoveTo(clientData.playerId, command.data.target);
-        break;
-
-      case 'attack':
-        if (!command.data?.targetId) {
-          throw new Error('Missing target for attack command');
-        }
-        // Find the target (player or NPC)
-        const attacker = this.gameStateManager.getGameWorld().players.find(p => p.id === clientData.playerId);
-        if (!attacker) {
-          throw new Error('Attacker not found');
-        }
-
-        const targetPlayer = this.gameStateManager.getGameWorld().players.find(p => p.id === command.data.targetId);
-        const targetNPC = this.gameStateManager.getGameWorld().npcs.find(n => n.id === command.data.targetId);
-
-        if (!targetPlayer && !targetNPC) {
-          throw new Error('Target not found');
-        }
-
-        // Attack enemy using the new API which takes playerId and targetPosition
-        const targetPosition = (targetPlayer || targetNPC)!.position;
-        result = this.gameStateManager.attackEnemy(clientData.playerId, targetPosition);
-        break;
-
-      case 'pickup':
-        if (!command.data?.itemId) {
-          throw new Error('Missing item ID for pickup command');
-        }
-        result = this.gameStateManager.pickupItem(clientData.playerId, command.data.itemId);
-        break;
-
-      case 'use_item':
-        if (!command.data?.itemId) {
-          throw new Error('Missing item ID for use command');
-        }
-        result = this.gameStateManager.useItem(clientData.playerId, command.data.itemId);
-        break;
-
-      case 'start_cataclysm':
-        result = this.gameStateManager.startCataclysm();
-        break;
-
-      default:
-        throw new Error('Unknown command type');
-    }
-
-    return result;
-  }
-
-  private handleInspectItem(socket: Socket, itemId: string): void {
-    try {
-      const clientData = this.connectedClients.get(socket.id);
-      if (!clientData) {
-        socket.emit('error', { message: 'Not authenticated' });
-        return;
-      }
-
-      const result = this.gameStateManager.inspectItem(clientData.playerId, itemId);
-
-      socket.emit('command_result', {
-        command: 'inspect_item',
-        success: result.success,
-        message: result.message,
-        item: result.item
-      });
-
-      if (result.success) {
-        this.broadcastGameDeltas();
-      }
-    } catch (error) {
-      console.error('Error handling inspect item:', error);
-      socket.emit('error', { message: 'Inspect item failed' });
-    }
-  }
-
-  private handleLootItem(socket: Socket, itemId: string): void {
-    try {
-      const clientData = this.connectedClients.get(socket.id);
-      if (!clientData) {
-        socket.emit('error', { message: 'Not authenticated' });
-        return;
-      }
-
-      const result = this.gameStateManager.lootItem(clientData.playerId, itemId);
-
-      if (result.success) {
-        socket.emit('loot_success', { item: result.item });
-      } else {
-        socket.emit('loot_failure', { reason: result.message });
-      }
-
-      socket.emit('command_result', {
-        command: 'loot_item',
-        success: result.success,
-        message: result.message,
-        item: result.item
-      });
-
-      if (result.success) {
-        this.broadcastGameDeltas();
-      }
-    } catch (error) {
-      console.error('Error handling loot item:', error);
-      socket.emit('error', { message: 'Loot item failed' });
-    }
-  }
 
   private handlePlayerDisconnect(socket: Socket): void {
     try {
       const clientData = this.connectedClients.get(socket.id);
       if (clientData) {
-        // Mark player as disconnected instead of removing them completely
-    const player = this.gameStateManager.getPlayers().find(p => p.id === clientData.playerId);
-        if (player) {
-          player.connected = false;
-          player.lastActive = Date.now();
+        const roomId = 'main_room';
+        const player = gameService.leaveRoom(roomId, clientData.playerId);
 
-          // Broadcast player disconnected to all clients (but keep them in game world)
-          this.io.to('game_room').emit(SocketEvents.PLAYER_DISCONNECTED, {
+        if (player) {
+          // Broadcast player disconnected to all clients in the room
+          this.io.to(roomId).emit(SocketEvents.PLAYER_DISCONNECTED, {
             playerId: clientData.playerId,
-            player: player
+            player: player.getData(),
           });
         }
 
@@ -479,9 +318,11 @@ export class WebSocketServer {
   // Broadcast only deltas (state changes)
   public broadcastGameDeltas(): void {
     try {
-      const deltas = this.gameStateManager.getAndClearChangeEvents();
-      if (deltas.length > 0) {
-        this.io.to('game_room').emit('game_state_delta', deltas);
+      const room = gameService.getRoom('main_room');
+      if (room) {
+        // In a more advanced implementation, we would have deltas.
+        // For now, we broadcast the full game state.
+        this.io.to('main_room').emit('game_state_update', room.getGameState());
       }
     } catch (error) {
       console.error('Error broadcasting game deltas:', error);
@@ -510,8 +351,8 @@ export class WebSocketServer {
         return;
       }
 
-      // Execute game state updates
-      this.gameStateManager.update();
+      // TODO: Implement game loop with gameService
+      // this.gameStateManager.update();
 
       // Broadcast only deltas (state changes)
       this.broadcastGameDeltas();

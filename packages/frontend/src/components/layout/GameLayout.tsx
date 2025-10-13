@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import GameCanvas from './GameCanvas';
-import NotificationSystem from './NotificationSystem';
-import PlayerSidebar from './sidebars/PlayerSidebar';
-import { MaterialAppBar, MaterialCard, MaterialChip, MaterialPaper } from './index';
-import { useGameStore } from '../stores/gameStore';
+import GameCanvas from '../GameCanvas/GameCanvas';
+import NotificationSystem from '../notifications/NotificationSystem';
+import PlayerSidebar from '../sidebars/PlayerSidebar';
+import { MaterialCard } from '../ui/MaterialCard';
+import { MaterialChip } from '../ui/MaterialChip';
+import { MaterialPaper } from '../ui/MaterialPaper';
+import { useGameStore } from '../../stores/gameStore';
 import { COLORS } from '../utils/tokens';
 import { PlayerClass } from 'shared';
 
 interface GameLayoutProps {
   handleRegenerateWorld: () => void;
-  handleMove: (direction: 'up' | 'down' | 'left' | 'right') => void;
+  movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
   handleJoinGame: () => void;
   handleStartCataclysm: () => void;
   handlePickUpItem: () => void;
@@ -17,7 +19,7 @@ interface GameLayoutProps {
 
 const GameLayout: React.FC<GameLayoutProps> = ({
   handleRegenerateWorld,
-  handleMove,
+  movePlayer,
   handleJoinGame,
   handleStartCataclysm,
   handlePickUpItem,

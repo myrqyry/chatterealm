@@ -1,4 +1,4 @@
-import { useGameWorld } from './hooks/useGameWorld';
+import { useGameStore } from './stores/gameStore';
 import { useTheme } from './hooks/useTheme';
 import { useState } from 'react';
 import { initializeSounds } from './services/soundService';
@@ -7,7 +7,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 // Import new layout components
 import BaseLayout from './components/layout/BaseLayout';
 import AppHeader from './components/layout/AppHeader';
-import ModeNavigation from './components/ModeNavigation';
+import ModeNavigation from './components/layout/ModeNavigation';
 
 // Import content components for routes
 import { AnimationDemo } from './components';
@@ -21,16 +21,16 @@ import { CharacterCreator } from './components/character/CharacterCreator';
 import PlayLayout from './components/layouts/PlayLayout';
 import SpectateLayout from './components/layouts/SpectateLayout';
 import DevLayout from './components/layouts/DevLayout';
-import GameLayout from './components/GameLayout'; // Still needed for legacy route
+import GameLayout from './components/layout/GameLayout'; // Still needed for legacy route
 
 function App() {
   const {
     handleRegenerateWorld,
-    handleMove,
     handleJoinGame,
     handleStartCataclysm,
     handlePickUpItem,
-  } = useGameWorld();
+    movePlayer,
+  } = useGameStore();
 
   // Apply theme globally
   useTheme();
@@ -171,7 +171,7 @@ function App() {
               <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
                 <GameLayout
                   handleRegenerateWorld={handleRegenerateWorld}
-                  handleMove={handleMove}
+                  handleMove={movePlayer}
                   handleJoinGame={handleJoinGame}
                   handleStartCataclysm={handleStartCataclysm}
                   handlePickUpItem={handlePickUpItem}
