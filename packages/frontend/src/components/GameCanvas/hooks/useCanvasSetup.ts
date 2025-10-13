@@ -16,7 +16,7 @@ export const useCanvasSetup = (
   containerSize: { width: number; height: number },
   grid: { length: number } | null,
   innerPadding: number = 8,
-  renderScale: number = 0.75 // Default to 75% resolution for better performance
+  renderScale: number = 1.0 // Default to full resolution for crisp rendering
 ): CanvasSetup => {
   const [isReady, setIsReady] = useState(false);
   const setupRef = useRef<CanvasSetup>({
@@ -88,7 +88,7 @@ export const useCanvasSetup = (
     
     // Apply DPR and render scaling
     ctx.setTransform(dpr * renderScale, 0, 0, dpr * renderScale, 0, 0);
-    ctx.imageSmoothingEnabled = true; // Enable smoothing for scaled rendering
+    ctx.imageSmoothingEnabled = false; // Disable smoothing for pixel-perfect rendering
     ctx.imageSmoothingQuality = 'high';
 
     // Center the game world

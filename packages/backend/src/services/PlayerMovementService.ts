@@ -1,4 +1,4 @@
-import { Player, Position, GameWorld, TerrainType, MOVEMENT_CONSTANTS } from 'shared';
+import { Player, Position, GameWorld, BiomeType, MOVEMENT_CONSTANTS } from 'shared';
 
 export interface MoveResult {
   success: boolean;
@@ -60,7 +60,7 @@ export class PlayerMovementService {
     for (let y = 0; y < gameWorld.grid.length; y++) {
       for (let x = 0; x < gameWorld.grid[y].length; x++) {
         const terrain = gameWorld.grid[y][x];
-        if (terrain.type !== TerrainType.MOUNTAIN && 
+        if (terrain.type !== BiomeType.MOUNTAIN && 
             !this.occupiedPositions.has(`${x},${y}`)) {
           this.availableSpawnPoints.add(`${x},${y}`);
         }
@@ -89,7 +89,7 @@ export class PlayerMovementService {
 
     // Check if target is accessible
     const targetTerrain = gameWorld.grid[target.y][target.x];
-    if (targetTerrain.type === TerrainType.MOUNTAIN) {
+    if (targetTerrain.type === BiomeType.MOUNTAIN) {
       return { success: false, message: 'Cannot move to mountain terrain.' };
     }
 
@@ -248,7 +248,7 @@ export class PlayerMovementService {
 
         // Check if the neighbor is walkable
         const terrain = grid[neighborPos.y][neighborPos.x];
-        if (terrain.type === TerrainType.MOUNTAIN) continue;
+        if (terrain.type === BiomeType.MOUNTAIN) continue;
 
         // Skip if occupied (unless it's the target)
         if (this.isPositionOccupied(neighborPos) && 
@@ -331,7 +331,7 @@ export class PlayerMovementService {
 
     // Check terrain
     const terrain = grid[to.y][to.x];
-    return terrain.type !== TerrainType.MOUNTAIN;
+    return terrain.type !== BiomeType.MOUNTAIN;
   }
 
   /**

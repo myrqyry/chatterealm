@@ -1,7 +1,7 @@
-import { Biome, BoundingBox, Position, TerrainType } from 'shared';
+import { Biome, BoundingBox, Position, BiomeType } from 'shared';
 
 export class BiomeIdentificationService {
-  public identifyBiomeRegions(grid: { type: TerrainType }[][]): Biome[] {
+  public identifyBiomeRegions(grid: { type: BiomeType }[][]): Biome[] {
     if (!grid || grid.length === 0) {
       return [];
     }
@@ -35,10 +35,10 @@ export class BiomeIdentificationService {
   }
 
   private floodFill(
-    grid: { type: TerrainType }[][],
+    grid: { type: BiomeType }[][],
     startX: number,
     startY: number,
-    targetType: TerrainType,
+    targetType: BiomeType,
     visited: Set<string>
   ): Position[] {
     const cells: Position[] = [];

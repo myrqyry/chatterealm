@@ -1,11 +1,11 @@
-import { GameWorld, TerrainType, PlayerClass, Player, GAME_CONFIG } from 'shared';
+import { GameWorld, BiomeType, PlayerClass, Player, GAME_CONFIG } from 'shared';
 
 export const createMockGameWorld = (gridWidth: number, gridHeight: number): GameWorld => {
-  const grid: TerrainType[][] = [];
+  const grid: BiomeType[][] = [];
   for (let y = 0; y < gridHeight; y++) {
     grid[y] = [];
     for (let x = 0; x < gridWidth; x++) {
-      grid[y][x] = TerrainType.PLAIN;
+      grid[y][x] = BiomeType.PLAIN;
     }
   }
 

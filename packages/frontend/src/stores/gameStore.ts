@@ -151,7 +151,7 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     backgroundColor: '#191724',
 
     // Performance Settings
-    renderScale: 0.75,
+    renderScale: 1.0,  // Full resolution for crisp rendering
   },
 
   world: {
@@ -186,12 +186,12 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     windSpeed: 0.02,
 
     // Rough.js Settings
-    roughness: 1.5,
-    bowing: 1.2,
-    fillWeight: 2.0, // Increased for thicker fills
+    roughness: 0.8,  // Reduced for cleaner lines
+    bowing: 0.5,     // Reduced for straighter lines
+    fillWeight: 1.5, // Balanced fill weight
     hachureAngle: 45,
-    hachureGap: 4,
-    fillStyle: 'hachure', // Default fill style
+    hachureGap: 3,   // Tighter gap for smoother fills
+    fillStyle: 'solid', // Solid fills for cleaner look
     seed: 1, // Default seed for rough.js randomness
     strokeWidth: 4.0, // Increased for thicker lines
     simplification: 0.8,
@@ -201,7 +201,7 @@ const createDefaultUnifiedSettings = (): UnifiedSettings => ({
     curveFitting: 0.95,
     curveTightness: 0,
     curveStepCount: 9,
-    fillShapeRoughnessGain: 0.8,
+    fillShapeRoughnessGain: 0.4,  // Reduced for smoother fills
     disableMultiStroke: false,
     disableMultiStrokeFill: false,
     preserveVertices: false,

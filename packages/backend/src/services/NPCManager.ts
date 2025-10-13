@@ -1,4 +1,4 @@
-import { NPC, Position, TerrainType, GAME_CONFIG, WORLD_CONSTANTS } from 'shared';
+import { NPC, Position, BiomeType, GAME_CONFIG, WORLD_CONSTANTS } from 'shared';
 
 export class NPCManager {
   private occupiedPositions: Set<string>;
@@ -74,7 +74,7 @@ export class NPCManager {
 
         if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight &&
             !this.occupiedPositions.has(`${x},${y}`) &&
-            grid[y][x].type !== TerrainType.MOUNTAIN) {
+            grid[y][x].type !== BiomeType.MOUNTAIN) {
           position = { x, y };
         }
         attempts++;
@@ -170,7 +170,7 @@ export class NPCManager {
 
     // Check terrain
     const terrain = grid[to.y][to.x];
-    return terrain.type !== TerrainType.MOUNTAIN;
+    return terrain.type !== BiomeType.MOUNTAIN;
   }
 
   /**
@@ -222,7 +222,7 @@ export class NPCManager {
 
     // Check terrain
     const terrain = grid[y][x];
-    if (terrain.type === TerrainType.MOUNTAIN) {
+    if (terrain.type === BiomeType.MOUNTAIN) {
       return false;
     }
 
@@ -235,7 +235,7 @@ export class NPCManager {
       const checkY = y + dy;
       
       if (checkX >= 0 && checkX < grid[0].length && checkY >= 0 && checkY < grid.length) {
-        if (grid[checkY][checkX].type === TerrainType.MOUNTAIN) {
+        if (grid[checkY][checkX].type === BiomeType.MOUNTAIN) {
           adjacentMountains++;
         }
       }

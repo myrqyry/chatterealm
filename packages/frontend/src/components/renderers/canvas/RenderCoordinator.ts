@@ -1,5 +1,5 @@
 import type { Player, Item } from 'shared';
-import { TerrainType, AnimationSettings } from 'shared';
+import { BiomeType, AnimationSettings } from 'shared';
 import { GAME_CONFIG } from 'shared';
 import { BiomeIdentificationService } from '../../../services/BiomeIdentificationService';
 import { BiomeRenderer } from '../BiomeRenderer';
@@ -18,7 +18,7 @@ export interface ParticleEmitter {
 export const renderGame = (
   rc: any,
   ctx: CanvasRenderingContext2D,
-  grid: { type: TerrainType }[][],
+  grid: { type: BiomeType }[][],
   players: Player[],
   npcs: any[],
   items: Item[],

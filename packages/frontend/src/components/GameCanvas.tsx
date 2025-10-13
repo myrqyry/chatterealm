@@ -4,7 +4,7 @@ import {
   Player,
   Item,
   AnimationSettings,
-  TerrainType,
+  BiomeType,
   GameWorld
 } from 'shared';
 import { GAME_CONFIG } from 'shared';
@@ -56,7 +56,7 @@ const GameCanvas: React.FC = () => {
     containerSize, 
     gameWorld?.grid, 
     8,
-    unifiedSettings.visual.renderScale || 0.75 // Use setting or default to 75%
+    unifiedSettings.visual.renderScale || 1.0 // Use setting or default to full resolution
   );
   const { particles, addParticles, updateParticles } = useParticleManager({ 
     animationSettings: unifiedSettings.animations, 
@@ -154,7 +154,7 @@ const GameCanvas: React.FC = () => {
         renderGame(
           rc,
           canvasSetup.ctx!,
-          gridRef.current as { type: TerrainType }[][],
+          gridRef.current as { type: BiomeType }[][],
           playersRef.current,
           npcsRef.current,
           itemsRef.current,
@@ -277,7 +277,7 @@ const GameCanvas: React.FC = () => {
         ref={canvasRef} 
         className={`border border-outline rounded-md block w-full h-full max-w-full max-h-full ${canvasSetup.isReady ? '' : 'hidden'}`} 
         onPointerDown={handlePointerDown}
-        style={{ imageRendering: 'pixelated', maxHeight: '100%', maxWidth: '100%' }}
+        style={{ maxHeight: '100%', maxWidth: '100%' }}
       />
       {gameWorld?.phase === 'cataclysm' && gameWorld.cataclysmCircle.isActive && (
         <CataclysmVisualizer gameWorld={gameWorld} infectedAreas={infectedAreas} />

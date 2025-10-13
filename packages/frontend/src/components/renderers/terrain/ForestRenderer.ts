@@ -1,13 +1,13 @@
 import type { AnimationSettings } from 'shared';
-import { TerrainType } from 'shared';
+import { BiomeType } from 'shared';
 
-export const drawForest = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
+export const drawForest = (rc: any, startX: number, startY: number, gridSize: number, terrainType: BiomeType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
   const fillStyle = settings?.fillStyle || 'hachure';
   const treeSwaySpeed = settings?.treeSwaySpeed || 0.025; // Slightly faster tree swaying
 
   switch (terrainType) {
-    case TerrainType.DENSE_FOREST:
+    case BiomeType.DENSE_FOREST:
       // Very thick forest
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#14532d',
@@ -36,7 +36,7 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
       }
       break;
 
-    case TerrainType.FOREST:
+    case BiomeType.FOREST:
       // Regular forest
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#166534',
@@ -65,7 +65,7 @@ export const drawForest = (rc: any, startX: number, startY: number, gridSize: nu
       }
       break;
 
-    case TerrainType.CLEARING:
+    case BiomeType.CLEARING:
       // Forest clearing
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#84cc16',

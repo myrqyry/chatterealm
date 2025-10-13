@@ -1,28 +1,28 @@
 import type { AnimationSettings } from 'shared';
-import { TerrainType } from 'shared';
+import { BiomeType } from 'shared';
 
-export const drawBiome = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
+export const drawBiome = (rc: any, startX: number, startY: number, gridSize: number, terrainType: BiomeType, time: number, settings: AnimationSettings) => {
   // Simplified Rough.js options to avoid errors
   const roughness = settings?.roughness || 1.5;
   const fillStyle = settings?.fillStyle || 'hachure';
 
   // Get biome-specific fill styles
-  const getBiomeFillStyle = (terrainType: TerrainType): string => {
+  const getBiomeFillStyle = (terrainType: BiomeType): string => {
     switch (terrainType) {
-      case TerrainType.SNOW:
-      case TerrainType.ICE:
-      case TerrainType.SNOWY_HILLS:
+      case BiomeType.SNOW:
+      case BiomeType.ICE:
+      case BiomeType.SNOWY_HILLS:
         return 'cross-hatch';
-      case TerrainType.DUNES:
-      case TerrainType.SAND:
-      case TerrainType.OASIS:
+      case BiomeType.DUNES:
+      case BiomeType.SAND:
+      case BiomeType.OASIS:
         return 'hachure';
-      case TerrainType.DENSE_JUNGLE:
-      case TerrainType.JUNGLE:
+      case BiomeType.DENSE_JUNGLE:
+      case BiomeType.JUNGLE:
         return 'cross-hatch';
-      case TerrainType.DEEP_WATER:
-      case TerrainType.MARSH:
-      case TerrainType.SWAMP:
+      case BiomeType.DEEP_WATER:
+      case BiomeType.MARSH:
+      case BiomeType.SWAMP:
         return 'dots';
       default:
         return fillStyle;
@@ -30,25 +30,25 @@ export const drawBiome = (rc: any, startX: number, startY: number, gridSize: num
   };
 
   // Get biome-specific colors with unified styling
-  const getBiomeColor = (terrainType: TerrainType): { fill: string, stroke: string } => {
+  const getBiomeColor = (terrainType: BiomeType): { fill: string, stroke: string } => {
     switch (terrainType) {
-      case TerrainType.PLAIN:
+      case BiomeType.PLAIN:
         return { fill: '#90EE90', stroke: '#7BC97B' }; // Lighter green stroke
-      case TerrainType.GRASSLAND:
+      case BiomeType.GRASSLAND:
         return { fill: '#84cc16', stroke: '#6BA312' }; // Darker green stroke
-      case TerrainType.FOREST:
+      case BiomeType.FOREST:
         return { fill: '#166534', stroke: '#0F4A2A' }; // Darker green stroke
-      case TerrainType.MOUNTAIN:
+      case BiomeType.MOUNTAIN:
         return { fill: '#a8a29e', stroke: '#8B8682' }; // Slightly darker gray
-      case TerrainType.SNOW:
-      case TerrainType.ICE:
+      case BiomeType.SNOW:
+      case BiomeType.ICE:
         return { fill: '#f8fafc', stroke: '#E8ECF0' }; // Very light blue-gray
-      case TerrainType.DUNES:
-      case TerrainType.SAND:
+      case BiomeType.DUNES:
+      case BiomeType.SAND:
         return { fill: '#f4a460', stroke: '#D4A050' }; // Golden brown
-      case TerrainType.WATER:
-      case TerrainType.OCEAN:
-      case TerrainType.RIVER:
+      case BiomeType.WATER:
+      case BiomeType.OCEAN:
+      case BiomeType.RIVER:
         return { fill: '#1e293b', stroke: '#2A3441' }; // Slightly lighter blue
       default:
         return { fill: '#90EE90', stroke: '#7BC97B' };

@@ -1,7 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { GameStateManager } from '../services/gameStateManager';
-import { Player, PlayerClass } from 'shared/types/game';
-import { CHARACTER_CLASSES } from 'shared';
+import { Player, PlayerClass, CHARACTER_CLASSES } from 'shared';
 
 export class CharacterHandler {
   constructor(

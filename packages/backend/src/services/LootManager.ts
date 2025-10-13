@@ -1,4 +1,4 @@
-import { Item, ItemType, ItemRarity, Position, TerrainType, Player, NPC, GAME_CONFIG } from 'shared';
+import { Item, ItemType, ItemRarity, Position, BiomeType, Player, NPC, GAME_CONFIG } from 'shared';
 
 export interface ItemResult {
   success: boolean;
@@ -10,7 +10,7 @@ export class LootManager {
   /**
    * Generate terrain-based loot with enhanced properties
    */
-  public generateTerrainBasedLoot(position: Position, terrainType: TerrainType, isCataclysmLoot: boolean = false): Item | null {
+  public generateTerrainBasedLoot(position: Position, terrainType: BiomeType, isCataclysmLoot: boolean = false): Item | null {
     const rarityChances: Record<string, number> = isCataclysmLoot ? 
       { common: 30, uncommon: 35, rare: 25, epic: 8, legendary: 2 } : // Enhanced for cataclysm
       { common: 60, uncommon: 30, rare: 9, epic: 1 }; // Normal terrain loot
@@ -39,18 +39,18 @@ export class LootManager {
   /**
    * Generate enhanced item name with terrain context
    */
-  private generateEnhancedItemName(type: ItemType, rarity: ItemRarity, terrainType: TerrainType): string {
-    const terrainModifiers: Record<TerrainType, string[]> = {
-      [TerrainType.ANCIENT_RUINS]: ['Ancient', 'Ruined', 'Lost', 'Forgotten'],
-      [TerrainType.FOREST]: ['Wooden', 'Natural', 'Forest', 'Wild'],
-      [TerrainType.MOUNTAIN]: ['Stone', 'Mountain', 'Rocky', 'Dwarven'],
-      [TerrainType.SWAMP]: ['Murky', 'Bog', 'Swamp', 'Poisonous'],
-      [TerrainType.ICE]: ['Frozen', 'Ice', 'Crystal', 'Arctic'],
-      [TerrainType.SNOW]: ['Snow-touched', 'Frigid', 'Winter', 'Frost'],
-      [TerrainType.SAND]: ['Desert', 'Sand-worn', 'Nomad', 'Sun-bleached'],
-      [TerrainType.DEEP_WATER]: ['Sunken', 'Waterlogged', 'Coral', 'Deep'],
-      [TerrainType.RIVER]: ['River-blessed', 'Flowing', 'Current-touched', 'Stream']
-    } as Record<TerrainType, string[]>;
+  private generateEnhancedItemName(type: ItemType, rarity: ItemRarity, terrainType: BiomeType): string {
+    const terrainModifiers: Record<BiomeType, string[]> = {
+      [BiomeType.ANCIENT_RUINS]: ['Ancient', 'Ruined', 'Lost', 'Forgotten'],
+      [BiomeType.FOREST]: ['Wooden', 'Natural', 'Forest', 'Wild'],
+      [BiomeType.MOUNTAIN]: ['Stone', 'Mountain', 'Rocky', 'Dwarven'],
+      [BiomeType.SWAMP]: ['Murky', 'Bog', 'Swamp', 'Poisonous'],
+      [BiomeType.ICE]: ['Frozen', 'Ice', 'Crystal', 'Arctic'],
+      [BiomeType.SNOW]: ['Snow-touched', 'Frigid', 'Winter', 'Frost'],
+      [BiomeType.SAND]: ['Desert', 'Sand-worn', 'Nomad', 'Sun-bleached'],
+      [BiomeType.DEEP_WATER]: ['Sunken', 'Waterlogged', 'Coral', 'Deep'],
+      [BiomeType.RIVER]: ['River-blessed', 'Flowing', 'Current-touched', 'Stream']
+    } as Record<BiomeType, string[]>;
 
     const rarityPrefixes: Record<ItemRarity, string[]> = {
       [ItemRarity.COMMON]: ['Worn', 'Simple', 'Basic', 'Crude'],
@@ -78,15 +78,15 @@ export class LootManager {
   /**
    * Generate terrain-specific item descriptions
    */
-  private generateTerrainItemDescription(type: ItemType, rarity: ItemRarity, terrainType: TerrainType): string {
-    const terrainContext: Record<TerrainType, string> = {
-      [TerrainType.ANCIENT_RUINS]: 'discovered among ancient ruins',
-      [TerrainType.FOREST]: 'found deep in the forest',
-      [TerrainType.MOUNTAIN]: 'carved from mountain stone',
-      [TerrainType.SWAMP]: 'recovered from murky swamplands',
-      [TerrainType.ICE]: 'preserved in eternal ice',
-      [TerrainType.SAND]: 'buried in desert sands'
-    } as Record<TerrainType, string>;
+  private generateTerrainItemDescription(type: ItemType, rarity: ItemRarity, terrainType: BiomeType): string {
+    const terrainContext: Record<BiomeType, string> = {
+      [BiomeType.ANCIENT_RUINS]: 'discovered among ancient ruins',
+      [BiomeType.FOREST]: 'found deep in the forest',
+      [BiomeType.MOUNTAIN]: 'carved from mountain stone',
+      [BiomeType.SWAMP]: 'recovered from murky swamplands',
+      [BiomeType.ICE]: 'preserved in eternal ice',
+      [BiomeType.SAND]: 'buried in desert sands'
+    } as Record<BiomeType, string>;
 
     const context = terrainContext[terrainType] || 'found in the wilderness';
     return `A ${rarity} ${type} ${context}.`;
@@ -95,7 +95,7 @@ export class LootManager {
   /**
    * Generate enhanced item stats with terrain and cataclysm bonuses
    */
-  private generateEnhancedItemStats(type: ItemType, rarity: ItemRarity, terrainType: TerrainType, isCataclysmLoot: boolean): any {
+  private generateEnhancedItemStats(type: ItemType, rarity: ItemRarity, terrainType: BiomeType, isCataclysmLoot: boolean): any {
     const rarityMultipliers: Record<ItemRarity, number> = {
       [ItemRarity.COMMON]: 1,
       [ItemRarity.UNCOMMON]: 1.5,
@@ -107,11 +107,11 @@ export class LootManager {
     let multiplier = rarityMultipliers[rarity];
     
     // Terrain bonuses
-    const terrainBonuses: Record<TerrainType, number> = {
-      [TerrainType.ANCIENT_RUINS]: 1.3,
-      [TerrainType.MOUNTAIN]: 1.1,
-      [TerrainType.MOUNTAIN_PEAK]: 1.2
-    } as Record<TerrainType, number>;
+    const terrainBonuses: Record<BiomeType, number> = {
+      [BiomeType.ANCIENT_RUINS]: 1.3,
+      [BiomeType.MOUNTAIN]: 1.1,
+      [BiomeType.MOUNTAIN_PEAK]: 1.2
+    } as Record<BiomeType, number>;
 
     multiplier *= (terrainBonuses[terrainType] || 1.0);
     

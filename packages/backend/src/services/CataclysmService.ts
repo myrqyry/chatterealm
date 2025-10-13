@@ -1,4 +1,4 @@
-import { GameWorld, Position, TerrainType, Player, GAME_CONFIG } from 'shared';
+import { GameWorld, Position, BiomeType, Player, GAME_CONFIG } from 'shared';
 import { LootManager } from './LootManager';
 import { NPCManager } from './NPCManager';
 import { GameEvent } from './gameStateManager';
@@ -91,7 +91,7 @@ export class CataclysmService {
         // If this tile is in the affected zone (between old and new radius)
         if (distance <= oldRadius && distance > newRadius) {
           // Regenerate terrain with some cataclysm effects
-          const terrainType = this.generateTerrainType();
+          const terrainType = this.generateBiomeType();
           const config = GAME_CONFIG.terrainConfig[terrainType];
 
           // Apply cataclysm transformation - make terrain more chaotic
@@ -99,17 +99,17 @@ export class CataclysmService {
           if (Math.random() < 0.3) { // 30% chance of transformation
             // Transform some terrain types to more dangerous/chaotic versions
             switch (terrainType) {
-              case TerrainType.FOREST:
-                transformedType = Math.random() < 0.5 ? TerrainType.DENSE_FOREST : TerrainType.ANCIENT_RUINS;
+              case BiomeType.FOREST:
+                transformedType = Math.random() < 0.5 ? BiomeType.DENSE_FOREST : BiomeType.ANCIENT_RUINS;
                 break;
-              case TerrainType.PLAIN:
-                transformedType = Math.random() < 0.4 ? TerrainType.ROUGH_TERRAIN : TerrainType.ANCIENT_RUINS;
+              case BiomeType.PLAIN:
+                transformedType = Math.random() < 0.4 ? BiomeType.ROUGH_TERRAIN : BiomeType.ANCIENT_RUINS;
                 break;
-              case TerrainType.GRASSLAND:
-                transformedType = Math.random() < 0.3 ? TerrainType.SWAMP : TerrainType.FLOWER_FIELD;
+              case BiomeType.GRASSLAND:
+                transformedType = Math.random() < 0.3 ? BiomeType.SWAMP : BiomeType.FLOWER_FIELD;
                 break;
-              case TerrainType.MOUNTAIN:
-                transformedType = Math.random() < 0.5 ? TerrainType.MOUNTAIN_PEAK : TerrainType.ROUGH_TERRAIN;
+              case BiomeType.MOUNTAIN:
+                transformedType = Math.random() < 0.5 ? BiomeType.MOUNTAIN_PEAK : BiomeType.ROUGH_TERRAIN;
                 break;
             }
           }
@@ -228,7 +228,7 @@ export class CataclysmService {
     // Regenerate terrain grid
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-        const terrainType = this.generateTerrainType();
+        const terrainType = this.generateBiomeType();
         const config = GAME_CONFIG.terrainConfig[terrainType];
         gameWorld.grid[y][x] = {
           type: terrainType,
@@ -252,18 +252,18 @@ export class CataclysmService {
   /**
    * Generate a random terrain type based on spawn chances
    */
-  private generateTerrainType(): TerrainType {
+  private generateBiomeType(): BiomeType {
     const rand = Math.random();
     let cumulative = 0;
     
     for (const [terrainType, config] of Object.entries(GAME_CONFIG.terrainConfig)) {
       cumulative += config.spawnChance;
       if (rand <= cumulative) {
-        return terrainType as TerrainType;
+        return terrainType as BiomeType;
       }
     }
     
-    return TerrainType.PLAIN;
+    return BiomeType.PLAIN;
   }
 
   /**

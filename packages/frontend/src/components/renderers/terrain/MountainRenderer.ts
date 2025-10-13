@@ -1,11 +1,11 @@
 import type { AnimationSettings } from 'shared';
-import { TerrainType } from 'shared';
+import { BiomeType } from 'shared';
 
-export const drawMountain = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
+export const drawMountain = (rc: any, startX: number, startY: number, gridSize: number, terrainType: BiomeType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
 
   switch (terrainType) {
-    case TerrainType.MOUNTAIN_PEAK:
+    case BiomeType.MOUNTAIN_PEAK:
       // Snow-capped mountain peaks
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#64748b',
@@ -29,7 +29,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       });
       break;
 
-    case TerrainType.MOUNTAIN:
+    case BiomeType.MOUNTAIN:
       // Rocky mountains with shadow
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#78716c',
@@ -54,7 +54,7 @@ export const drawMountain = (rc: any, startX: number, startY: number, gridSize: 
       });
       break;
 
-    case TerrainType.HILLS:
+    case BiomeType.HILLS:
       // Rolling hills
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#a3a3a3',

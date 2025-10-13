@@ -1,5 +1,5 @@
 import type { GameWorld, Player, NPC, Item, Terrain } from 'shared';
-import { TerrainType, PlayerClass, ItemType, ItemRarity } from 'shared';
+import { BiomeType, PlayerClass, ItemType, ItemRarity } from 'shared';
 import { GAME_CONFIG } from 'shared';
 
 // Mock terrain grid with varied terrain types
@@ -9,13 +9,13 @@ const createMockGrid = (): Terrain[][] => {
   for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
     grid[y] = [];
     for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-      let terrainType = TerrainType.PLAIN;
+      let terrainType = BiomeType.PLAIN;
 
       // Create some patterns for interesting terrain
       if ((x + y) % 7 === 0) {
-        terrainType = TerrainType.FOREST;
+        terrainType = BiomeType.FOREST;
       } else if (x % 8 === 0 && y % 6 === 0) {
-        terrainType = TerrainType.MOUNTAIN;
+        terrainType = BiomeType.MOUNTAIN;
       }
 
       const config = GAME_CONFIG.terrainConfig[terrainType];

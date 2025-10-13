@@ -1,4 +1,4 @@
-import { GameWorld, Player, NPC, Item, Building, TerrainType, Position, GAME_CONFIG, DEFAULT_WORLD_CONFIG } from 'shared';
+import { GameWorld, Player, NPC, Item, Building, BiomeType, Position, GAME_CONFIG, DEFAULT_WORLD_CONFIG } from 'shared';
 import { NPCManager } from './NPCManager';
 
 export class GameWorldManager {
@@ -19,7 +19,7 @@ export class GameWorldManager {
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
       grid[y] = [];
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-        const terrainType = worldType === 'test' ? TerrainType.PLAIN : this.generateTerrainType();
+        const terrainType = worldType === 'test' ? BiomeType.PLAIN : this.generateBiomeType();
         const config = GAME_CONFIG.terrainConfig[terrainType];
         
         grid[y][x] = {
@@ -67,18 +67,18 @@ export class GameWorldManager {
   /**
    * Generate terrain type based on spawn chances
    */
-  private generateTerrainType(): TerrainType {
+  private generateBiomeType(): BiomeType {
     const rand = Math.random();
     let cumulative = 0;
     
     for (const [terrainType, config] of Object.entries(GAME_CONFIG.terrainConfig)) {
       cumulative += config.spawnChance;
       if (rand <= cumulative) {
-        return terrainType as TerrainType;
+        return terrainType as BiomeType;
       }
     }
     
-    return TerrainType.PLAIN;
+    return BiomeType.PLAIN;
   }
 
   /**
@@ -174,7 +174,7 @@ export class GameWorldManager {
 
     // Check terrain
     const terrain = grid[y][x];
-    if (terrain.type === TerrainType.MOUNTAIN) {
+    if (terrain.type === BiomeType.MOUNTAIN) {
       return false;
     }
 
@@ -187,7 +187,7 @@ export class GameWorldManager {
       const checkY = y + dy;
       
       if (checkX >= 0 && checkX < grid[0].length && checkY >= 0 && checkY < grid.length) {
-        if (grid[checkY][checkX].type === TerrainType.MOUNTAIN) {
+        if (grid[checkY][checkX].type === BiomeType.MOUNTAIN) {
           adjacentMountains++;
         }
       }

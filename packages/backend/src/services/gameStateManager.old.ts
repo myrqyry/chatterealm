@@ -1,7 +1,7 @@
 // Consolidated GameStateManager
 // Preserves previous refactor (event queue, helper methods, cataclysm, NPCs, items, movement, combat)
 
-import { Player, NPC, Item, TerrainType, Position, GameWorld, ItemType, ItemRarity, GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared';
+import { Player, NPC, Item, BiomeType, Position, GameWorld, ItemType, ItemRarity, GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared';
 
 export interface GameActionResult {
   success: boolean;
@@ -74,52 +74,52 @@ export class GameStateManager {
       newGameWorld.grid[y] = [];
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
         newGameWorld.grid[y][x] = {
-          type: TerrainType.PLAIN,
+          type: BiomeType.PLAIN,
           position: { x, y },
-          movementCost: GAME_CONFIG.terrainConfig[TerrainType.PLAIN].movementCost,
-          defenseBonus: GAME_CONFIG.terrainConfig[TerrainType.PLAIN].defenseBonus,
-          visibilityModifier: GAME_CONFIG.terrainConfig[TerrainType.PLAIN].visibilityModifier
+          movementCost: GAME_CONFIG.terrainConfig[BiomeType.PLAIN].movementCost,
+          defenseBonus: GAME_CONFIG.terrainConfig[BiomeType.PLAIN].defenseBonus,
+          visibilityModifier: GAME_CONFIG.terrainConfig[BiomeType.PLAIN].visibilityModifier
         } as any;
       }
     }
 
     // Enhanced biome generation with compatibility rules and transition zones
-    const biomeCompatibility: Record<TerrainType, TerrainType[]> = {
-      [TerrainType.PLAIN]: [TerrainType.FOREST, TerrainType.GRASSLAND, TerrainType.HILLS, TerrainType.CLEARING],
-      [TerrainType.FOREST]: [TerrainType.PLAIN, TerrainType.DENSE_FOREST, TerrainType.MOUNTAIN, TerrainType.HILLS],
-      [TerrainType.MOUNTAIN]: [TerrainType.FOREST, TerrainType.HILLS, TerrainType.SNOW, TerrainType.ROUGH_TERRAIN],
-      [TerrainType.OCEAN]: [TerrainType.WATER, TerrainType.SAND, TerrainType.MARSH],
-      [TerrainType.SAND]: [TerrainType.OCEAN, TerrainType.DUNES, TerrainType.PLAIN],
-      [TerrainType.GRASSLAND]: [TerrainType.PLAIN, TerrainType.FOREST, TerrainType.FLOWER_FIELD],
-      [TerrainType.HILLS]: [TerrainType.PLAIN, TerrainType.MOUNTAIN, TerrainType.ROUGH_TERRAIN],
-      [TerrainType.SNOW]: [TerrainType.MOUNTAIN, TerrainType.ICE],
-      [TerrainType.WATER]: [TerrainType.OCEAN, TerrainType.RIVER, TerrainType.MARSH],
-      [TerrainType.RIVER]: [TerrainType.WATER, TerrainType.PLAIN, TerrainType.FOREST],
-      [TerrainType.DENSE_FOREST]: [TerrainType.FOREST, TerrainType.MOUNTAIN],
-      [TerrainType.CLEARING]: [TerrainType.FOREST, TerrainType.PLAIN],
-      [TerrainType.FLOWER_FIELD]: [TerrainType.GRASSLAND, TerrainType.PLAIN],
-      [TerrainType.ROUGH_TERRAIN]: [TerrainType.HILLS, TerrainType.MOUNTAIN],
-      [TerrainType.DUNES]: [TerrainType.SAND, TerrainType.PLAIN],
-      [TerrainType.MARSH]: [TerrainType.WATER, TerrainType.SWAMP],
-      [TerrainType.SWAMP]: [TerrainType.MARSH, TerrainType.WATER],
-      [TerrainType.ICE]: [TerrainType.SNOW, TerrainType.WATER],
-      [TerrainType.ANCIENT_RUINS]: [TerrainType.PLAIN, TerrainType.FOREST],
-      [TerrainType.MOUNTAIN_PEAK]: [TerrainType.MOUNTAIN],
-      [TerrainType.DENSE_JUNGLE]: [TerrainType.FOREST, TerrainType.JUNGLE],
-      [TerrainType.JUNGLE]: [TerrainType.DENSE_JUNGLE, TerrainType.FOREST],
-      [TerrainType.DEEP_WATER]: [TerrainType.OCEAN, TerrainType.WATER],
-      [TerrainType.OASIS]: [TerrainType.SAND, TerrainType.DUNES],
-      [TerrainType.ROLLING_HILLS]: [TerrainType.HILLS, TerrainType.PLAIN],
-      [TerrainType.SNOWY_HILLS]: [TerrainType.HILLS, TerrainType.SNOW]
+    const biomeCompatibility: Record<BiomeType, BiomeType[]> = {
+      [BiomeType.PLAIN]: [BiomeType.FOREST, BiomeType.GRASSLAND, BiomeType.HILLS, BiomeType.CLEARING],
+      [BiomeType.FOREST]: [BiomeType.PLAIN, BiomeType.DENSE_FOREST, BiomeType.MOUNTAIN, BiomeType.HILLS],
+      [BiomeType.MOUNTAIN]: [BiomeType.FOREST, BiomeType.HILLS, BiomeType.SNOW, BiomeType.ROUGH_TERRAIN],
+      [BiomeType.OCEAN]: [BiomeType.WATER, BiomeType.SAND, BiomeType.MARSH],
+      [BiomeType.SAND]: [BiomeType.OCEAN, BiomeType.DUNES, BiomeType.PLAIN],
+      [BiomeType.GRASSLAND]: [BiomeType.PLAIN, BiomeType.FOREST, BiomeType.FLOWER_FIELD],
+      [BiomeType.HILLS]: [BiomeType.PLAIN, BiomeType.MOUNTAIN, BiomeType.ROUGH_TERRAIN],
+      [BiomeType.SNOW]: [BiomeType.MOUNTAIN, BiomeType.ICE],
+      [BiomeType.WATER]: [BiomeType.OCEAN, BiomeType.RIVER, BiomeType.MARSH],
+      [BiomeType.RIVER]: [BiomeType.WATER, BiomeType.PLAIN, BiomeType.FOREST],
+      [BiomeType.DENSE_FOREST]: [BiomeType.FOREST, BiomeType.MOUNTAIN],
+      [BiomeType.CLEARING]: [BiomeType.FOREST, BiomeType.PLAIN],
+      [BiomeType.FLOWER_FIELD]: [BiomeType.GRASSLAND, BiomeType.PLAIN],
+      [BiomeType.ROUGH_TERRAIN]: [BiomeType.HILLS, BiomeType.MOUNTAIN],
+      [BiomeType.DUNES]: [BiomeType.SAND, BiomeType.PLAIN],
+      [BiomeType.MARSH]: [BiomeType.WATER, BiomeType.SWAMP],
+      [BiomeType.SWAMP]: [BiomeType.MARSH, BiomeType.WATER],
+      [BiomeType.ICE]: [BiomeType.SNOW, BiomeType.WATER],
+      [BiomeType.ANCIENT_RUINS]: [BiomeType.PLAIN, BiomeType.FOREST],
+      [BiomeType.MOUNTAIN_PEAK]: [BiomeType.MOUNTAIN],
+      [BiomeType.DENSE_JUNGLE]: [BiomeType.FOREST, BiomeType.JUNGLE],
+      [BiomeType.JUNGLE]: [BiomeType.DENSE_JUNGLE, BiomeType.FOREST],
+      [BiomeType.DEEP_WATER]: [BiomeType.OCEAN, BiomeType.WATER],
+      [BiomeType.OASIS]: [BiomeType.SAND, BiomeType.DUNES],
+      [BiomeType.ROLLING_HILLS]: [BiomeType.HILLS, BiomeType.PLAIN],
+      [BiomeType.SNOWY_HILLS]: [BiomeType.HILLS, BiomeType.SNOW]
     };
 
     // Enhanced cluster generation with different shapes and transition zones
-    const generateBiomeCluster = (centerX: number, centerY: number, primaryBiome: TerrainType, size: number) => {
-      const placed = new Map<string, TerrainType>();
+    const generateBiomeCluster = (centerX: number, centerY: number, primaryBiome: BiomeType, size: number) => {
+      const placed = new Map<string, BiomeType>();
       const transitionZone = new Set<string>();
 
       // Generate primary cluster with organic shape
-      const generateOrganicShape = (cx: number, cy: number, biome: TerrainType, clusterSize: number) => {
+      const generateOrganicShape = (cx: number, cy: number, biome: BiomeType, clusterSize: number) => {
         const localPlaced = new Set<string>();
         const seeds = [{ x: cx, y: cy }];
 
@@ -214,16 +214,16 @@ export class GameStateManager {
     // Generate biome clusters with strategic placement
     const biomeClusters = [
       // Core biomes with larger clusters
-      { biome: TerrainType.FOREST, count: Math.max(4, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 250)), sizeRange: [8, 18] },
-      { biome: TerrainType.MOUNTAIN, count: Math.max(3, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 400)), sizeRange: [6, 14] },
-      { biome: TerrainType.OCEAN, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 600)), sizeRange: [10, 20] },
-      { biome: TerrainType.SAND, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 500)), sizeRange: [7, 15] },
+      { biome: BiomeType.FOREST, count: Math.max(4, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 250)), sizeRange: [8, 18] },
+      { biome: BiomeType.MOUNTAIN, count: Math.max(3, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 400)), sizeRange: [6, 14] },
+      { biome: BiomeType.OCEAN, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 600)), sizeRange: [10, 20] },
+      { biome: BiomeType.SAND, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 500)), sizeRange: [7, 15] },
 
       // Secondary biomes with smaller clusters
-      { biome: TerrainType.GRASSLAND, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 800)), sizeRange: [5, 12] },
-      { biome: TerrainType.HILLS, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 700)), sizeRange: [4, 10] },
-      { biome: TerrainType.SNOW, count: Math.max(1, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 1200)), sizeRange: [3, 8] },
-      { biome: TerrainType.WATER, count: Math.max(1, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 1000)), sizeRange: [4, 12] },
+      { biome: BiomeType.GRASSLAND, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 800)), sizeRange: [5, 12] },
+      { biome: BiomeType.HILLS, count: Math.max(2, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 700)), sizeRange: [4, 10] },
+      { biome: BiomeType.SNOW, count: Math.max(1, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 1200)), sizeRange: [3, 8] },
+      { biome: BiomeType.WATER, count: Math.max(1, Math.floor((GAME_CONFIG.gridWidth * GAME_CONFIG.gridHeight) / 1000)), sizeRange: [4, 12] },
     ];
 
     // Place all biome clusters
@@ -244,7 +244,7 @@ export class GameStateManager {
       for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
         for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
           const tile = newGameWorld.grid[y][x];
-          if (tile.type === TerrainType.OCEAN || tile.type === TerrainType.WATER) {
+          if (tile.type === BiomeType.OCEAN || tile.type === BiomeType.WATER) {
             waterBodies.push({ x, y });
           }
         }
@@ -288,13 +288,13 @@ export class GameStateManager {
           if (tile.x >= 0 && tile.y >= 0 && tile.x < GAME_CONFIG.gridWidth && tile.y < GAME_CONFIG.gridHeight) {
             const currentType = newGameWorld.grid[tile.y][tile.x].type;
             // Only place river on plains or grasslands
-            if (currentType === TerrainType.PLAIN || currentType === TerrainType.GRASSLAND) {
+            if (currentType === BiomeType.PLAIN || currentType === BiomeType.GRASSLAND) {
               newGameWorld.grid[tile.y][tile.x] = {
-                type: TerrainType.RIVER,
+                type: BiomeType.RIVER,
                 position: { x: tile.x, y: tile.y },
-                movementCost: GAME_CONFIG.terrainConfig[TerrainType.RIVER].movementCost,
-                defenseBonus: GAME_CONFIG.terrainConfig[TerrainType.RIVER].defenseBonus,
-                visibilityModifier: GAME_CONFIG.terrainConfig[TerrainType.RIVER].visibilityModifier
+                movementCost: GAME_CONFIG.terrainConfig[BiomeType.RIVER].movementCost,
+                defenseBonus: GAME_CONFIG.terrainConfig[BiomeType.RIVER].defenseBonus,
+                visibilityModifier: GAME_CONFIG.terrainConfig[BiomeType.RIVER].visibilityModifier
               } as any;
             }
           }
@@ -308,7 +308,7 @@ export class GameStateManager {
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
         const terrainType = newGameWorld.grid[y][x].type;
-        if (terrainType !== TerrainType.MOUNTAIN) {
+        if (terrainType !== BiomeType.MOUNTAIN) {
           this.availableSpawnPoints.add(`${x},${y}`);
         }
       }
@@ -381,7 +381,7 @@ export class GameStateManager {
 
         // Skip mountains as impassable
         const terrain = this.gameWorld.grid[n.y][n.x];
-        if (!terrain || terrain.type === TerrainType.MOUNTAIN) continue;
+        if (!terrain || terrain.type === BiomeType.MOUNTAIN) continue;
 
         // Avoid occupied tiles (except if it's the target)
         if (nKey !== targetKey && this.isPositionOccupied(n)) continue;
@@ -751,7 +751,7 @@ export class GameStateManager {
     const dy = Math.abs(to.y - from.y);
     if (!((dx === 1 && dy === 0) || (dx === 0 && dy === 1))) return false;
     const terrain = this.gameWorld.grid[to.y][to.x];
-    if (terrain.type === TerrainType.MOUNTAIN) return false;
+    if (terrain.type === BiomeType.MOUNTAIN) return false;
     return true;
   }
 
@@ -803,8 +803,8 @@ export class GameStateManager {
     if (isCritical) damage *= COMBAT_CONSTANTS.CRITICAL_DAMAGE_MULTIPLIER;
 
     const defenderTerrain = this.gameWorld.grid[defender.position.y][defender.position.x];
-    if (defenderTerrain.type === TerrainType.FOREST) damage *= 0.9;
-    if (defenderTerrain.type === TerrainType.MOUNTAIN) damage *= 0.85;
+    if (defenderTerrain.type === BiomeType.FOREST) damage *= 0.9;
+    if (defenderTerrain.type === BiomeType.MOUNTAIN) damage *= 0.85;
 
     const randomFactor = 0.9 + Math.random() * 0.2;
     damage *= randomFactor;
@@ -943,7 +943,7 @@ export class GameStateManager {
         // If this tile is in the affected zone (between old and new radius)
         if (distance <= oldRadius && distance > newRadius) {
           // Regenerate terrain with some cataclysm effects
-          const terrainType = this.generateTerrainType();
+          const terrainType = this.generateBiomeType();
           const config = GAME_CONFIG.terrainConfig[terrainType];
 
           // Apply cataclysm transformation - make terrain more chaotic
@@ -951,17 +951,17 @@ export class GameStateManager {
           if (Math.random() < 0.3) { // 30% chance of transformation
             // Transform some terrain types to more dangerous/chaotic versions
             switch (terrainType) {
-              case TerrainType.FOREST:
-                transformedType = Math.random() < 0.5 ? TerrainType.DENSE_FOREST : TerrainType.ANCIENT_RUINS;
+              case BiomeType.FOREST:
+                transformedType = Math.random() < 0.5 ? BiomeType.DENSE_FOREST : BiomeType.ANCIENT_RUINS;
                 break;
-              case TerrainType.PLAIN:
-                transformedType = Math.random() < 0.4 ? TerrainType.ROUGH_TERRAIN : TerrainType.ANCIENT_RUINS;
+              case BiomeType.PLAIN:
+                transformedType = Math.random() < 0.4 ? BiomeType.ROUGH_TERRAIN : BiomeType.ANCIENT_RUINS;
                 break;
-              case TerrainType.GRASSLAND:
-                transformedType = Math.random() < 0.3 ? TerrainType.SWAMP : TerrainType.FLOWER_FIELD;
+              case BiomeType.GRASSLAND:
+                transformedType = Math.random() < 0.3 ? BiomeType.SWAMP : BiomeType.FLOWER_FIELD;
                 break;
-              case TerrainType.MOUNTAIN:
-                transformedType = Math.random() < 0.5 ? TerrainType.MOUNTAIN_PEAK : TerrainType.ROUGH_TERRAIN;
+              case BiomeType.MOUNTAIN:
+                transformedType = Math.random() < 0.5 ? BiomeType.MOUNTAIN_PEAK : BiomeType.ROUGH_TERRAIN;
                 break;
             }
           }
@@ -1008,7 +1008,7 @@ export class GameStateManager {
 
         if (x >= 0 && x < GAME_CONFIG.gridWidth && y >= 0 && y < GAME_CONFIG.gridHeight &&
             !this.occupiedPositions.has(`${x},${y}`) &&
-            this.gameWorld.grid[y][x].type !== TerrainType.MOUNTAIN) {
+            this.gameWorld.grid[y][x].type !== BiomeType.MOUNTAIN) {
           position = { x, y };
         }
         attempts++;
@@ -1074,7 +1074,7 @@ export class GameStateManager {
   }
 
   // Generate terrain-based loot with enhanced properties
-  private generateTerrainBasedLoot(position: Position, terrainType: TerrainType, isCataclysmLoot: boolean = false): Item | null {
+  private generateTerrainBasedLoot(position: Position, terrainType: BiomeType, isCataclysmLoot: boolean = false): Item | null {
     const rarityChances: Record<string, number> = isCataclysmLoot ? 
       { common: 30, uncommon: 35, rare: 25, epic: 8, legendary: 2 } : // Enhanced for cataclysm
       { common: 60, uncommon: 30, rare: 9, epic: 1 }; // Normal terrain loot
@@ -1101,18 +1101,18 @@ export class GameStateManager {
   }
 
   // Enhanced item name generation with terrain context
-  private generateEnhancedItemName(type: ItemType, rarity: ItemRarity, terrainType: TerrainType): string {
-    const terrainModifiers: Record<TerrainType, string[]> = {
-      [TerrainType.ANCIENT_RUINS]: ['Ancient', 'Ruined', 'Lost', 'Forgotten'],
-      [TerrainType.FOREST]: ['Wooden', 'Natural', 'Forest', 'Wild'],
-      [TerrainType.MOUNTAIN]: ['Stone', 'Mountain', 'Rocky', 'Dwarven'],
-      [TerrainType.SWAMP]: ['Murky', 'Bog', 'Swamp', 'Poisonous'],
-      [TerrainType.ICE]: ['Frozen', 'Ice', 'Crystal', 'Arctic'],
-      [TerrainType.SNOW]: ['Snow-touched', 'Frigid', 'Winter', 'Frost'],
-      [TerrainType.SAND]: ['Desert', 'Sand-worn', 'Nomad', 'Sun-bleached'],
-      [TerrainType.DEEP_WATER]: ['Sunken', 'Waterlogged', 'Coral', 'Deep'],
-      [TerrainType.RIVER]: ['River-blessed', 'Flowing', 'Current-touched', 'Stream']
-    } as Record<TerrainType, string[]>;
+  private generateEnhancedItemName(type: ItemType, rarity: ItemRarity, terrainType: BiomeType): string {
+    const terrainModifiers: Record<BiomeType, string[]> = {
+      [BiomeType.ANCIENT_RUINS]: ['Ancient', 'Ruined', 'Lost', 'Forgotten'],
+      [BiomeType.FOREST]: ['Wooden', 'Natural', 'Forest', 'Wild'],
+      [BiomeType.MOUNTAIN]: ['Stone', 'Mountain', 'Rocky', 'Dwarven'],
+      [BiomeType.SWAMP]: ['Murky', 'Bog', 'Swamp', 'Poisonous'],
+      [BiomeType.ICE]: ['Frozen', 'Ice', 'Crystal', 'Arctic'],
+      [BiomeType.SNOW]: ['Snow-touched', 'Frigid', 'Winter', 'Frost'],
+      [BiomeType.SAND]: ['Desert', 'Sand-worn', 'Nomad', 'Sun-bleached'],
+      [BiomeType.DEEP_WATER]: ['Sunken', 'Waterlogged', 'Coral', 'Deep'],
+      [BiomeType.RIVER]: ['River-blessed', 'Flowing', 'Current-touched', 'Stream']
+    } as Record<BiomeType, string[]>;
 
     const rarityPrefixes: Record<ItemRarity, string[]> = {
       [ItemRarity.COMMON]: ['Worn', 'Simple', 'Basic', 'Crude'],
@@ -1138,22 +1138,22 @@ export class GameStateManager {
   }
 
   // Generate terrain-specific item descriptions
-  private generateTerrainItemDescription(type: ItemType, rarity: ItemRarity, terrainType: TerrainType): string {
-    const terrainContext: Record<TerrainType, string> = {
-      [TerrainType.ANCIENT_RUINS]: 'discovered among ancient ruins',
-      [TerrainType.FOREST]: 'found deep in the forest',
-      [TerrainType.MOUNTAIN]: 'carved from mountain stone',
-      [TerrainType.SWAMP]: 'recovered from murky swamplands',
-      [TerrainType.ICE]: 'preserved in eternal ice',
-      [TerrainType.SAND]: 'buried in desert sands'
-    } as Record<TerrainType, string>;
+  private generateTerrainItemDescription(type: ItemType, rarity: ItemRarity, terrainType: BiomeType): string {
+    const terrainContext: Record<BiomeType, string> = {
+      [BiomeType.ANCIENT_RUINS]: 'discovered among ancient ruins',
+      [BiomeType.FOREST]: 'found deep in the forest',
+      [BiomeType.MOUNTAIN]: 'carved from mountain stone',
+      [BiomeType.SWAMP]: 'recovered from murky swamplands',
+      [BiomeType.ICE]: 'preserved in eternal ice',
+      [BiomeType.SAND]: 'buried in desert sands'
+    } as Record<BiomeType, string>;
 
     const context = terrainContext[terrainType] || 'found in the wilderness';
     return `A ${rarity} ${type} ${context}.`;
   }
 
   // Enhanced item stats with terrain and cataclysm bonuses
-  private generateEnhancedItemStats(type: ItemType, rarity: ItemRarity, terrainType: TerrainType, isCataclysmLoot: boolean): any {
+  private generateEnhancedItemStats(type: ItemType, rarity: ItemRarity, terrainType: BiomeType, isCataclysmLoot: boolean): any {
     const rarityMultipliers: Record<ItemRarity, number> = {
       [ItemRarity.COMMON]: 1,
       [ItemRarity.UNCOMMON]: 1.5,
@@ -1165,11 +1165,11 @@ export class GameStateManager {
     let multiplier = rarityMultipliers[rarity];
     
     // Terrain bonuses
-    const terrainBonuses: Record<TerrainType, number> = {
-      [TerrainType.ANCIENT_RUINS]: 1.3,
-      [TerrainType.MOUNTAIN]: 1.1,
-      [TerrainType.MOUNTAIN_PEAK]: 1.2
-    } as Record<TerrainType, number>;
+    const terrainBonuses: Record<BiomeType, number> = {
+      [BiomeType.ANCIENT_RUINS]: 1.3,
+      [BiomeType.MOUNTAIN]: 1.1,
+      [BiomeType.MOUNTAIN_PEAK]: 1.2
+    } as Record<BiomeType, number>;
 
     multiplier *= (terrainBonuses[terrainType] || 1.0);
     
@@ -1234,7 +1234,7 @@ export class GameStateManager {
     this.gameWorld.npcs = [];
     for (let y = 0; y < GAME_CONFIG.gridHeight; y++) {
       for (let x = 0; x < GAME_CONFIG.gridWidth; x++) {
-        const terrainType = this.generateTerrainType();
+        const terrainType = this.generateBiomeType();
         const config = GAME_CONFIG.terrainConfig[terrainType];
         this.gameWorld.grid[y][x] = { type: terrainType, position: { x,y }, movementCost: config.movementCost, defenseBonus: config.defenseBonus, visibilityModifier: config.visibilityModifier } as any;
       }
@@ -1242,14 +1242,14 @@ export class GameStateManager {
     this.generateNPCs();
   }
 
-  private generateTerrainType(): TerrainType {
+  private generateBiomeType(): BiomeType {
     const rand = Math.random();
     let cumulative = 0;
     for (const [terrainType, config] of Object.entries(GAME_CONFIG.terrainConfig)) {
       cumulative += config.spawnChance;
-      if (rand <= cumulative) return terrainType as TerrainType;
+      if (rand <= cumulative) return terrainType as BiomeType;
     }
-    return TerrainType.PLAIN;
+    return BiomeType.PLAIN;
   }
 
   private generateNPCs(): void {
@@ -1291,7 +1291,7 @@ export class GameStateManager {
     const key = `${x},${y}`;
     if (x < 0 || y < 0 || x >= GAME_CONFIG.gridWidth || y >= GAME_CONFIG.gridHeight) return false;
     const terrain = this.gameWorld.grid[y]?.[x];
-    return !!terrain && terrain.type !== TerrainType.MOUNTAIN && !this.occupiedPositions.has(key);
+    return !!terrain && terrain.type !== BiomeType.MOUNTAIN && !this.occupiedPositions.has(key);
   }
 
   // Diagnostic helpers

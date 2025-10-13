@@ -1,5 +1,5 @@
 import { GameStateManager } from '../gameStateManager';
-import { GameWorld, Player, TerrainType, PlayerClass, Position, GAME_CONFIG } from 'shared';
+import { GameWorld, Player, BiomeType, PlayerClass, Position, GAME_CONFIG } from 'shared';
 import { createMockGameWorld, createMockPlayer } from '../../testUtils/mockGameWorld';
 
 describe('GameStateManager', () => {

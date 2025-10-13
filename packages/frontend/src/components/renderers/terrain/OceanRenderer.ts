@@ -1,13 +1,13 @@
 import type { AnimationSettings } from 'shared';
-import { TerrainType } from 'shared'; // Import from shared
+import { BiomeType } from 'shared'; // Import from shared
 
-export const drawOcean = (rc: any, startX: number, startY: number, gridSize: number, terrainType: TerrainType, time: number, settings: AnimationSettings) => {
+export const drawOcean = (rc: any, startX: number, startY: number, gridSize: number, terrainType: BiomeType, time: number, settings: AnimationSettings) => {
   const roughness = settings?.roughness || 1.5;
   const bowing = settings?.bowing || 1.2;
 
   switch (terrainType) {
-    case TerrainType.WATER:
-    case TerrainType.OCEAN:
+    case BiomeType.WATER:
+    case BiomeType.OCEAN:
       // Ocean/deep water with wave animation
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#1e40af',
@@ -29,7 +29,7 @@ export const drawOcean = (rc: any, startX: number, startY: number, gridSize: num
       }
       break;
 
-    case TerrainType.RIVER:
+    case BiomeType.RIVER:
       // Flowing river with current animation
       rc.rectangle(startX, startY, gridSize, gridSize, {
         fill: '#3b82f6',
