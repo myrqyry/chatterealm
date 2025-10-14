@@ -70,7 +70,7 @@ describe('WebSocketServer Race Conditions', () => {
         await Promise.all(joinPromises);
 
         const room = gameService.getRoom('main_room');
-        const playersInGame = room ? room.getAllPlayers() : [];
+        const playersInGame = room ? room.getPlayers() : [];
 
         // Assertions
         expect(successCount).toBe(1);

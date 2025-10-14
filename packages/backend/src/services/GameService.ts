@@ -34,12 +34,6 @@ class GameService {
     return room;
   }
 
-  public leaveRoom(roomId: string, playerId: string): import('../models/Player').Player | undefined {
-    const room = this.getRoom(roomId);
-    if (room) {
-      return room.removePlayer(playerId);
-    }
-  }
 }
 
 export const gameService = GameService.getInstance();

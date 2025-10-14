@@ -4,7 +4,7 @@ import { LootManager } from './LootManager';
 import { TwitchService } from './twitchService';
 import { Player, Item, Position, LootingSession, LootResult } from 'shared/src/types/game';
 
-export class TarkovLootService extends LootManager {
+export class LootService extends LootManager {
   private lootingPlayers: Map<string, LootingSession> = new Map();
   private gameStateManager: GameStateManager;
 

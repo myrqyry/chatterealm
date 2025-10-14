@@ -1,6 +1,12 @@
 import { GameWorld, Player as PlayerData, NPC, Item } from 'shared';
 import { GameStateManager } from '../services/gameStateManager';
 import { Player } from './Player';
+import { PlayerService } from '../services/PlayerService';
+import { CombatService } from '../services/CombatService';
+import { LootService } from '../services/LootService';
+import { PlayerMovementService } from '../services/PlayerMovementService';
+import { GameWorldManager } from '../services/GameWorldManager';
+import { NPCManager } from '../services/NPCManager';
 
 // A simple deep-clone function for this use case.
 // For a real-world app, a more robust library like lodash.cloneDeep would be better.
@@ -15,13 +21,23 @@ export class GameRoom {
   id: string;
   private players: Map<string, Player> = new Map();
   private gameStateManager: GameStateManager;
+  private playerService: PlayerService;
+  private combatService: CombatService;
+  private lootService: LootService;
+  private movementService: PlayerMovementService;
   private lastGameState: GameWorld;
 
   constructor(roomId: string) {
     this.id = roomId;
-    // GameStateManager now creates and manages its own GameWorld instance.
     this.gameStateManager = new GameStateManager();
-    this.lastGameState = clone(this.gameStateManager.getGameWorld());
+    const gameWorld = this.gameStateManager.getGameWorld();
+    const npcManager = new NPCManager(new Set());
+    const gameWorldManager = new GameWorldManager(npcManager);
+    this.playerService = new PlayerService(gameWorld, gameWorldManager, new Set(), new Set());
+    this.combatService = new CombatService();
+    this.lootService = new LootService(this.gameStateManager);
+    this.movementService = new PlayerMovementService(gameWorld);
+    this.lastGameState = clone(gameWorld);
   }
 
   /**
@@ -35,34 +51,25 @@ export class GameRoom {
    * Adds a player to the game room and to the underlying game state.
    */
   public addPlayer(playerData: PlayerData): Player {
-    const player = new Player(playerData);
+    const player = this.playerService.addPlayer(playerData);
     this.players.set(player.id, player);
-    // Delegate adding the player data to the game state manager.
-    this.gameStateManager.addPlayer(playerData);
     return player;
   }
 
   /**
    * Removes a player from the game room and the underlying game state.
    */
-  public removePlayer(playerId: string): Player | undefined {
+  public removePlayer(playerId: string): PlayerData | null {
     const player = this.players.get(playerId);
     if (player) {
       player.disconnect();
-      // Delegate removing the player data to the game state manager.
-      this.gameStateManager.removePlayer(playerId);
       this.players.delete(playerId);
-      return player;
     }
-    return undefined;
+    return this.playerService.removePlayer(playerId);
   }
 
-  public getPlayer(playerId: string): Player | undefined {
-    return this.players.get(playerId);
-  }
-
-  public getAllPlayers(): Player[] {
-    return Array.from(this.players.values());
+  public getPlayers(): PlayerData[] {
+    return this.playerService.getPlayers();
   }
 
   /**
@@ -73,23 +80,31 @@ export class GameRoom {
   }
 
   public movePlayer(playerId: string, newPosition: { x: number; y: number }): any {
-    return this.gameStateManager.movePlayer(playerId, newPosition);
+    return this.movementService.movePlayer(playerId, newPosition, this.gameStateManager.getGameWorld());
   }
 
   public attackEnemy(playerId: string, targetPosition: { x: number; y: number }): any {
-    return this.gameStateManager.attackEnemy(playerId, targetPosition);
+    const player = this.playerService.getPlayer(playerId);
+    if (!player) {
+      return { success: false, message: 'Player not found.' };
+    }
+    const enemy = this.combatService.getEnemyAtPosition(this.gameStateManager.getGameWorld().npcs, targetPosition);
+    if (!enemy) {
+      return { success: false, message: 'No enemy found at target position.' };
+    }
+    return this.combatService.processAttack(player, enemy, player.position, targetPosition);
   }
 
   public pickupItem(playerId: string, itemId: string): any {
-    return this.gameStateManager.pickupItem(playerId, itemId);
+    return this.lootService.pickupItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
   }
 
   public lootItem(playerId: string, itemId: string): any {
-    return this.gameStateManager.lootItem(playerId, itemId);
+    return this.lootService.lootItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
   }
 
   public inspectItem(playerId: string, itemId: string): any {
-    return this.gameStateManager.inspectItem(playerId, itemId);
+    return this.lootService.inspectItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
   }
 
   /**
