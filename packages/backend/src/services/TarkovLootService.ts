@@ -6,13 +6,10 @@ import { Player, Item, Position, LootingSession, LootResult } from 'shared/src/t
 
 export class TarkovLootService extends LootManager {
   private lootingPlayers: Map<string, LootingSession> = new Map();
-  private gameStateManager!: GameStateManager;
+  private gameStateManager: GameStateManager;
 
-  constructor(private io: Server, private twitchService: TwitchService) {
+  constructor(gameStateManager: GameStateManager) {
     super();
-  }
-
-  public setGameStateManager(gameStateManager: GameStateManager): void {
     this.gameStateManager = gameStateManager;
   }
 
@@ -39,11 +36,6 @@ export class TarkovLootService extends LootManager {
     };
 
     this.lootingPlayers.set(playerId, session);
-
-    this.twitchService.sendStreamMessage(
-      `📦 ${player.displayName} begins searching a ${building.type}... ` +
-      `This could take ${Math.ceil(lootingTime / 1000)}s. Hope nothing dangerous shows up! 😰`
-    );
 
     return { success: true, message: `Started looting ${building.type}` };
   }
@@ -76,15 +68,6 @@ export class TarkovLootService extends LootManager {
           if (item) {
             session.revealedItems.push(item);
             if (item.rarity === 'legendary' || item.rarity === 'epic') {
-              this.twitchService.sendStreamMessage(
-                `✨ ${this.getPlayerDisplayName(session.playerId)} found something special... ` +
-                `${item.name} (${item.rarity})! 🎉`
-              );
-              this.io.emit('rare_item_found', {
-                playerId: session.playerId,
-                item: item,
-                rarity: item.rarity
-              });
             }
           }
         }
@@ -116,18 +99,10 @@ export class TarkovLootService extends LootManager {
 
     if (nearbyEnemies.length > 0) {
       const enemy = nearbyEnemies[0];
-      this.twitchService.sendStreamMessage(
-        `⚠️ ${player.displayName}'s looting interrupted by a ${enemy.type}! ` +
-        `Fight or flight? 🏃‍♂️⚔️`
-      );
       return true;
     }
 
     if (this.gameStateManager.isInCataclysm(player.position)) {
-        this.twitchService.sendStreamMessage(
-            `🔥 The infection spreads toward ${player.displayName}! ` +
-            `Looting interrupted by the approaching chaos! 💀`
-          );
           return true;
     }
 
@@ -141,7 +116,6 @@ export class TarkovLootService extends LootManager {
     // For now, let's assume they are dropped.
     const player = this.gameStateManager.getGameWorld().players.find(p => p.id === session.playerId);
     if (player) {
-        this.twitchService.sendStreamMessage(`😱 ${player.displayName} was interrupted and dropped all found items!`);
     }
   }
 
@@ -152,7 +126,6 @@ export class TarkovLootService extends LootManager {
       session.revealedItems.forEach(item => {
         if(item) player.inventory.push(item);
       });
-      this.twitchService.sendStreamMessage(`✅ ${player.displayName} finished looting and found ${session.revealedItems.length} items!`);
     }
   }
 

@@ -14,7 +14,7 @@ describe('Authentication Race Condition Tests', () => {
     // Create HTTP server
     server = require('http').createServer();
     gameStateManager = new GameStateManager();
-    webSocketServer = new WebSocketServer(server, gameStateManager);
+    webSocketServer = new WebSocketServer(server);
 
     server.listen(0, () => {
       port = (server.address() as AddressInfo).port;

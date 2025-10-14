@@ -11,7 +11,7 @@ export interface ClientData {
 }
 
 export interface PlayerCommand {
-  type: 'move' | 'move_to' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
+  type: 'move' | 'move_to' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm' | 'loot_item' | 'inspect_item';
   playerId: string;
   data?: any;
 }
@@ -109,13 +109,25 @@ export class WebSocketServer {
 
       // Tarkov-style looting commands
       socket.on('inspect_item', (itemId: string) => {
-        console.log(`[INSPECT_ITEM] Socket ${socket.id} inspecting item:`, itemId);
-        this.handleInspectItem(socket, itemId);
+        const clientData = this.connectedClients.get(socket.id);
+        if (clientData) {
+          this.handlePlayerCommand(socket, {
+            type: 'inspect_item',
+            playerId: clientData.playerId,
+            data: { itemId },
+          });
+        }
       });
 
       socket.on('loot_item', (itemId: string) => {
-        console.log(`[LOOT_ITEM] Socket ${socket.id} looting item:`, itemId);
-        this.handleLootItem(socket, itemId);
+        const clientData = this.connectedClients.get(socket.id);
+        if (clientData) {
+          this.handlePlayerCommand(socket, {
+            type: 'loot_item',
+            playerId: clientData.playerId,
+            data: { itemId },
+          });
+        }
       });
 
       // Handle client disconnect
@@ -133,6 +145,12 @@ export class WebSocketServer {
 
   private handlePlayerJoin(socket: Socket, playerData: JoinGameData): void {
     try {
+      if (this.isPlayerOnline(playerData.id)) {
+        socket.emit('error', { message: 'Player is already online.' });
+        console.warn(`[JOIN_REJECTED] Player ${playerData.id} is already online. Rejecting join request for socket ${socket.id}.`);
+        return;
+      }
+
       console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
       console.log(`[JOIN_START] ConnectedClients before join: ${this.connectedClients.size}`);
 
@@ -277,7 +295,39 @@ export class WebSocketServer {
         return;
       }
 
-      // TODO: Implement command handling with gameService
+      const room = gameService.getRoom('main_room');
+      if (!room) {
+        socket.emit('error', { message: 'Game room not found.' });
+        return;
+      }
+
+      const { playerId, type, data } = command;
+      let result;
+
+      switch (type) {
+        case 'move':
+          result = room.movePlayer(playerId, data.position);
+          break;
+        case 'attack':
+          result = room.attackEnemy(playerId, data.targetPosition);
+          break;
+        case 'pickup':
+          result = room.pickupItem(playerId, data.itemId);
+          break;
+        case 'loot_item':
+          result = room.lootItem(playerId, data.itemId);
+          break;
+        case 'inspect_item':
+          result = room.inspectItem(playerId, data.itemId);
+          break;
+        default:
+          socket.emit('error', { message: `Unknown command type: ${type}` });
+          return;
+      }
+
+      if (result && !result.success) {
+        socket.emit('action_failed', { message: result.message });
+      }
 
     } catch (error) {
       console.error('Error handling player command:', error);
@@ -351,8 +401,10 @@ export class WebSocketServer {
         return;
       }
 
-      // TODO: Implement game loop with gameService
-      // this.gameStateManager.update();
+      const room = gameService.getRoom('main_room');
+      if (room) {
+        room.update();
+      }
 
       // Broadcast only deltas (state changes)
       this.broadcastGameDeltas();

@@ -2,23 +2,16 @@ import { createServer, Server as HTTPServer } from 'http';
 import { AddressInfo } from 'net';
 import { io as ioc, Socket as ClientSocket } from 'socket.io-client';
 import { WebSocketServer } from '../webSocketServer';
-import { GameStateManager } from '../gameStateManager';
-import { Player, PlayerClass } from 'shared';
-
-// Mock GameStateManager
-jest.mock('../gameStateManager');
+import { gameService } from '../GameService';
 
 describe('WebSocketServer Race Conditions', () => {
     let httpServer: HTTPServer;
     let wsServer: WebSocketServer;
     let port: number;
-    let gameStateManager: jest.Mocked<GameStateManager>;
 
     beforeAll((done) => {
         httpServer = createServer();
-        // @ts-ignore
-        gameStateManager = new GameStateManager() as jest.Mocked<GameStateManager>;
-        wsServer = new WebSocketServer(httpServer, gameStateManager);
+        wsServer = new WebSocketServer(httpServer);
 
         httpServer.listen(() => {
             port = (httpServer.address() as AddressInfo).port;
@@ -38,16 +31,6 @@ describe('WebSocketServer Race Conditions', () => {
 
         let successCount = 0;
         let errorCount = 0;
-
-        // Mock addPlayer to be more realistic for a race condition
-        const playersInGame: Player[] = [];
-        gameStateManager.addPlayer.mockImplementation((player: Player) => {
-            if (playersInGame.some(p => p.id === player.id)) {
-                return { success: false, message: 'Player already exists' };
-            }
-            playersInGame.push(player);
-            return { success: true, message: 'Player added' };
-        });
 
         const connectionPromises = [];
         for (let i = 0; i < numClients; i++) {
@@ -75,7 +58,7 @@ describe('WebSocketServer Race Conditions', () => {
                     resolve();
                 });
                 client.on('error', (error) => {
-                    if (error.message === 'Player already exists') {
+                    if (error.message === 'Player is already online.') {
                         errorCount++;
                     }
                     resolve();
@@ -85,6 +68,9 @@ describe('WebSocketServer Race Conditions', () => {
         });
 
         await Promise.all(joinPromises);
+
+        const room = gameService.getRoom('main_room');
+        const playersInGame = room ? room.getAllPlayers() : [];
 
         // Assertions
         expect(successCount).toBe(1);
