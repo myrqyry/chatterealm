@@ -13,7 +13,6 @@ describe('Authentication Race Condition Tests', () => {
   beforeAll((done) => {
     // Create HTTP server
     server = require('http').createServer();
-    gameStateManager = new GameStateManager();
     webSocketServer = new WebSocketServer(server);
 
     server.listen(0, () => {
@@ -49,7 +48,7 @@ describe('Authentication Race Condition Tests', () => {
       clientSocket.emit('player_command', {
         type: 'move',
         playerId: data.player.id,
-        data: { direction: 'up' }
+        data: { position: { x: 0, y: -1 } }
       });
     });
 

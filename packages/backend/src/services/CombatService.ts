@@ -9,7 +9,7 @@ export interface CombatResult {
   lootDropped?: Item[];
 }
 
-export class CombatSystem {
+export class CombatService {
   /**
    * Process an attack between a player and an enemy NPC
    */

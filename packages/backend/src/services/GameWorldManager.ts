@@ -119,10 +119,10 @@ export class GameWorldManager {
   /**
    * Remove a player from the game world
    */
-  public removePlayer(gameWorld: GameWorld, playerId: string, occupiedPositions: Set<string>, availableSpawnPoints: Set<string>): boolean {
+  public removePlayer(gameWorld: GameWorld, playerId: string, occupiedPositions: Set<string>, availableSpawnPoints: Set<string>): Player | null {
     const playerIndex = gameWorld.players.findIndex(p => p.id === playerId);
     if (playerIndex === -1) {
-      return false;
+      return null;
     }
 
     const player = gameWorld.players[playerIndex];
@@ -135,7 +135,7 @@ export class GameWorldManager {
     // Remove from game world
     gameWorld.players.splice(playerIndex, 1);
 
-    return true;
+    return player;
   }
 
   /**

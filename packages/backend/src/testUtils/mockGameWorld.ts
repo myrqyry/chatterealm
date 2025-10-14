@@ -67,3 +67,17 @@ export const createMockPlayer = (id: string, displayName: string, position: { x:
   connected: true,
   lastActive: Date.now(),
 });
+
+export const createMockNpc = (id: string, name: string, position: { x: number, y: number } = { x: 0, y: 0 }): any => ({
+    id,
+    name,
+    position,
+    stats: {
+        hp: 50,
+        maxHp: 50,
+        attack: 5,
+        defense: 2,
+        speed: 3,
+    },
+    isAlive: true,
+});

@@ -1,6 +1,9 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
-import { GameActionResult, MoveResult, CombatResult, ItemResult } from './gameStateManager';
+import { GameActionResult } from './CataclysmService';
+import { MoveResult } from './PlayerMovementService';
+import { CombatResult } from './CombatService';
+import { ItemResult } from './LootManager';
 import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from 'shared';
 import { CharacterHandler } from '../handlers/CharacterHandler';
 
@@ -87,7 +90,10 @@ export class WebSocketServer {
 
           console.log(`[LEAVE_GAME] Received leave request for player ${pid} from socket ${socket.id}`);
           const roomId = 'main_room';
-          gameService.leaveRoom(roomId, pid);
+          const room = gameService.getRoom(roomId);
+          if(room) {
+            room.removePlayer(pid);
+          }
 
           this.io.to(roomId).emit('player_left', { playerId: pid });
 
@@ -341,14 +347,16 @@ export class WebSocketServer {
       const clientData = this.connectedClients.get(socket.id);
       if (clientData) {
         const roomId = 'main_room';
-        const player = gameService.leaveRoom(roomId, clientData.playerId);
-
-        if (player) {
-          // Broadcast player disconnected to all clients in the room
-          this.io.to(roomId).emit(SocketEvents.PLAYER_DISCONNECTED, {
-            playerId: clientData.playerId,
-            player: player.getData(),
-          });
+        const room = gameService.getRoom(roomId);
+        if (room) {
+            const player = room.removePlayer(clientData.playerId);
+            if (player) {
+              // Broadcast player disconnected to all clients in the room
+              this.io.to(roomId).emit(SocketEvents.PLAYER_DISCONNECTED, {
+                playerId: clientData.playerId,
+                player: player,
+              });
+            }
         }
 
         // Ensure explicit cleanup of mappings from connectedClients and playerSockets
