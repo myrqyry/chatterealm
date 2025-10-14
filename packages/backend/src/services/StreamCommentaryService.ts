@@ -12,21 +12,12 @@ export class StreamCommentaryService {
   private recentCombats: CombatEvent[] = [];
   private commentaryTemplates: Map<string, string[]> = new Map();
 
-  constructor(private twitchService: TwitchService) {
+  constructor() {
     this.initializeCommentaryTemplates();
   }
 
   public announceCombat(attacker: Player, defender: NPC, result: CombatResult): void {
     const commentary = this.generateCombatCommentary(attacker, defender, result);
-
-    // Send to Twitch chat with appropriate drama
-    if (result.damage && result.damage > defender.stats.maxHp * 0.5) {
-      this.twitchService.sendStreamMessage(`💥 MASSIVE HIT! ${commentary}`);
-    } else if (!result.success) {
-      this.twitchService.sendStreamMessage(`😅 ${commentary}`);
-    } else {
-      this.twitchService.sendStreamMessage(`⚔️ ${commentary}`);
-    }
 
     // Track for potential combo commentary
     this.recentCombats.push({
@@ -35,7 +26,6 @@ export class StreamCommentaryService {
       result
     });
 
-    this.checkForComboCombat();
   }
 
   private generateCombatCommentary(attacker: Player, defender: NPC, result: CombatResult): string {
@@ -47,19 +37,6 @@ export class StreamCommentaryService {
       .replace('{defender}', defender.type)
       .replace('{damage}', result.damage?.toString() || '0')
       .replace('{weapon}', attacker.equipment.weapon?.name || 'bare hands');
-  }
-
-  private checkForComboCombat(): void {
-    const recentWindow = Date.now() - 5000; // 5 second window
-    const recent = this.recentCombats.filter(c => c.timestamp > recentWindow);
-
-    if (recent.length >= 3) {
-      const players = [...new Set(recent.map(c => c.attacker))];
-      this.twitchService.sendStreamMessage(
-        `🔥 COMBAT FRENZY! ${players.length} players engaged in rapid combat! ` +
-        `The wasteland erupts in violence! 💀⚔️💀`
-      );
-    }
   }
 
   private initializeCommentaryTemplates(): void {

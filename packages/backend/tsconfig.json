@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "shared/*": ["../shared/src*"]
+      "shared": ["../shared/src"],
+      "shared/*": ["../shared/src/*"]
     }
   },
   "include": ["src/**/*.ts"],

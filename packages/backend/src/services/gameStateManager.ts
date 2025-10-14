@@ -40,9 +40,9 @@ export class GameStateManager {
   private gameWorldManager: GameWorldManager;
   
   // Injected services
-  private streamCommentaryService!: StreamCommentaryService;
-  private autoWanderService!: AutoWanderService;
-  private tarkovLootService!: TarkovLootService;
+  private streamCommentaryService: StreamCommentaryService;
+  private autoWanderService: AutoWanderService;
+  private tarkovLootService: TarkovLootService;
 
   // Shared state
   private occupiedPositions: Set<string> = new Set();
@@ -58,20 +58,15 @@ export class GameStateManager {
     // Initialize world
     this.gameWorld = this.gameWorldManager.initializeGameWorld(options);
     this.playerMovementService = new PlayerMovementService(this.gameWorld);
+
+    // Initialize services
+    this.tarkovLootService = new TarkovLootService(this);
+    this.streamCommentaryService = new StreamCommentaryService();
+    this.autoWanderService = new AutoWanderService(this);
+    this.cataclysmService = new CataclysmService(this.tarkovLootService, this.npcManager, this.occupiedPositions);
     
     // Update all modules with current state
     this.updateModuleReferences();
-  }
-
-  public setServices(
-    streamCommentaryService: StreamCommentaryService,
-    autoWanderService: AutoWanderService,
-    tarkovLootService: TarkovLootService
-  ): void {
-    this.streamCommentaryService = streamCommentaryService;
-    this.autoWanderService = autoWanderService;
-    this.tarkovLootService = tarkovLootService;
-    this.cataclysmService = new CataclysmService(this.tarkovLootService, this.npcManager, this.occupiedPositions);
   }
 
   /**

@@ -50,10 +50,29 @@ export class Player {
   public getData(): PlayerData {
     // This method is useful for sending player data to the client
     return {
-      ...this,
+      id: this.id,
       displayName: this.name,
-      // Ensure all required PlayerData fields are here
-      // This is a simplified example
-    } as PlayerData;
+      position: this.position,
+      stats: this.stats,
+      class: this.class,
+      connected: this.connected,
+      lastActive: this.lastActive,
+      twitchUsername: '', // Add missing properties with default values
+      avatar: '',
+      health: this.stats.hp,
+      mana: 0,
+      stamina: 0,
+      hunger: 0,
+      thirst: 0,
+      level: 1,
+      experience: 0,
+      inventory: [],
+      equipment: {},
+      achievements: [],
+      titles: [],
+      isAlive: this.stats.hp > 0,
+      lastMoveTime: 0,
+      spawnTime: 0,
+    };
   }
 }

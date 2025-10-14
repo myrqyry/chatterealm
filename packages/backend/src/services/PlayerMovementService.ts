@@ -318,6 +318,9 @@ export class PlayerMovementService {
    * Check if a move is valid
    */
   private isValidMove(from: Position, to: Position, grid: any[][]): boolean {
+    if (!from) {
+      return false;
+    }
     // Check bounds
     if (to.x < 0 || to.x >= grid[0].length || to.y < 0 || to.y >= grid.length) {
       return false;

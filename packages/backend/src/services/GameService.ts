@@ -1,28 +1,5 @@
 import { GameRoom } from '../models/GameRoom';
-import { GameWorld, Player as PlayerData } from 'shared';
-
-// This is a simplified mock for world generation
-const createNewWorld = (): GameWorld => {
-  return {
-    id: `world_${Date.now()}`,
-    grid: [],
-    players: [],
-    npcs: [],
-    items: [],
-    buildings: [],
-    cataclysmCircle: {
-      center: { x: 50, y: 50 },
-      radius: 100,
-      isActive: false,
-      shrinkRate: 0,
-      nextShrinkTime: 0,
-    },
-    cataclysmRoughnessMultiplier: 1,
-    worldAge: 0,
-    lastResetTime: Date.now(),
-    phase: 'exploration',
-  };
-};
+import { Player as PlayerData } from 'shared';
 
 class GameService {
   private rooms: Map<string, GameRoom> = new Map();
@@ -41,8 +18,8 @@ class GameService {
     if (this.rooms.has(roomId)) {
       return this.rooms.get(roomId)!;
     }
-    const newWorld = createNewWorld();
-    const room = new GameRoom(roomId, newWorld);
+    // The GameRoom now initializes its own GameStateManager and GameWorld.
+    const room = new GameRoom(roomId);
     this.rooms.set(roomId, room);
     return room;
   }
