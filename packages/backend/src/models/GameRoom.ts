@@ -1,16 +1,27 @@
-import { GameWorld, Player as PlayerData } from 'shared';
+import { GameWorld, Player as PlayerData, NPC, Item } from 'shared';
 import { GameStateManager } from '../services/gameStateManager';
 import { Player } from './Player';
+
+// A simple deep-clone function for this use case.
+// For a real-world app, a more robust library like lodash.cloneDeep would be better.
+const clone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
+
+export interface GameStateDelta {
+  type: 'players' | 'npcs' | 'items';
+  data: any;
+}
 
 export class GameRoom {
   id: string;
   private players: Map<string, Player> = new Map();
   private gameStateManager: GameStateManager;
+  private lastGameState: GameWorld;
 
   constructor(roomId: string) {
     this.id = roomId;
     // GameStateManager now creates and manages its own GameWorld instance.
     this.gameStateManager = new GameStateManager();
+    this.lastGameState = clone(this.gameStateManager.getGameWorld());
   }
 
   /**
@@ -79,5 +90,31 @@ export class GameRoom {
 
   public inspectItem(playerId: string, itemId: string): any {
     return this.gameStateManager.inspectItem(playerId, itemId);
+  }
+
+  /**
+   * Calculates the difference between the current and last game state.
+   */
+  public getGameStateDelta(): GameStateDelta[] {
+    const currentState = this.gameStateManager.getGameWorld();
+    const deltas: GameStateDelta[] = [];
+
+    // A simple and inefficient way to check for changes.
+    // In a real application, you'd want a more granular check,
+    // perhaps by comparing object hashes or versions.
+    if (JSON.stringify(currentState.players) !== JSON.stringify(this.lastGameState.players)) {
+      deltas.push({ type: 'players', data: currentState.players });
+    }
+    if (JSON.stringify(currentState.npcs) !== JSON.stringify(this.lastGameState.npcs)) {
+      deltas.push({ type: 'npcs', data: currentState.npcs });
+    }
+    if (JSON.stringify(currentState.items) !== JSON.stringify(this.lastGameState.items)) {
+      deltas.push({ type: 'items', data: currentState.items });
+    }
+
+    // After calculating the delta, update the last known state.
+    this.lastGameState = clone(currentState);
+
+    return deltas;
   }
 }

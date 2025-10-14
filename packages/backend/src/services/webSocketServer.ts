@@ -370,9 +370,11 @@ export class WebSocketServer {
     try {
       const room = gameService.getRoom('main_room');
       if (room) {
-        // In a more advanced implementation, we would have deltas.
-        // For now, we broadcast the full game state.
-        this.io.to('main_room').emit('game_state_update', room.getGameState());
+        const delta = room.getGameStateDelta();
+        // Only broadcast if there are actual changes
+        if (Object.keys(delta).length > 0) {
+          this.io.to('main_room').emit('game_state_delta', delta);
+        }
       }
     } catch (error) {
       console.error('Error broadcasting game deltas:', error);
