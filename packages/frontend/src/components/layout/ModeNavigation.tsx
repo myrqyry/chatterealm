@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MaterialButton, MaterialChip, MaterialPaper, MaterialIcon } from './index';
+import MaterialButton from '../ui/MaterialButton';
+import MaterialChip from '../ui/MaterialChip';
+import MaterialPaper from '../ui/MaterialPaper';
+import MaterialIcon from '../ui/MaterialIcon';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../utils/designSystem';
 
 interface ModeNavigationProps {

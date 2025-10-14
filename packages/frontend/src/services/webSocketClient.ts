@@ -97,46 +97,36 @@ export class WebSocketClient {
     this.hasJoinedGame = true;
   });    this.socket.on('game_state_delta', (deltas: any[]) => {
       // Handle delta updates by applying them to the current game world
-      const currentWorld = useGameStore.getState().gameWorld;
+      const gameStore = useGameStore.getState();
+      const currentWorld = gameStore.gameWorld;
       if (!currentWorld) return;
+
+      const newWorld = { ...currentWorld };
 
       // Apply deltas to update the game world
       for (const delta of deltas) {
         switch (delta.type) {
-          case 'player_joined':
-            if (!currentWorld.players.find(p => p.id === delta.data.player.id)) {
-              currentWorld.players.push(delta.data.player);
-            }
+          case 'players':
+            newWorld.players = delta.data;
             break;
-          case 'player_left':
-            currentWorld.players = currentWorld.players.filter(p => p.id !== delta.data.playerId);
+          case 'npcs':
+            newWorld.npcs = delta.data;
             break;
-          case 'player_moved':
-            const player = currentWorld.players.find(p => p.id === delta.data.playerId);
-            if (player) {
-              player.position = delta.data.newPosition;
-            }
+          case 'items':
+            newWorld.items = delta.data;
             break;
-          case 'cataclysm_started':
-            currentWorld.phase = 'cataclysm';
-            currentWorld.cataclysmCircle.isActive = true;
-            break;
-          case 'cataclysm_shrunk':
-            currentWorld.cataclysmCircle.radius = delta.data.newRadius;
-            break;
-          // Add more delta types as needed
         }
       }
 
       // Update the store with the modified world
-      useGameStore.getState().setGameWorld({ ...currentWorld });
+      gameStore.setGameWorld(newWorld);
 
       // Update current player if it was affected
-      const currentPlayerId = useGameStore.getState().currentPlayer?.id;
+      const currentPlayerId = gameStore.currentPlayer?.id;
       if (currentPlayerId) {
-        const updatedPlayer = currentWorld.players.find(p => p.id === currentPlayerId);
+        const updatedPlayer = newWorld.players.find(p => p.id === currentPlayerId);
         if (updatedPlayer) {
-          useGameStore.getState().setCurrentPlayer(updatedPlayer);
+          gameStore.setCurrentPlayer(updatedPlayer);
         }
       }
     });
