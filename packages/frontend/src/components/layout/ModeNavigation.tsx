@@ -4,7 +4,7 @@ import MaterialButton from '../ui/MaterialButton';
 import MaterialChip from '../ui/MaterialChip';
 import MaterialPaper from '../ui/MaterialPaper';
 import MaterialIcon from '../ui/MaterialIcon';
-import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../utils/designSystem';
+import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../../utils/designSystem';
 
 interface ModeNavigationProps {
   compact?: boolean;

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useGameStore } from '../stores/gameStore';
+import { useGameStore } from '../../stores/gameStore';
 import {
   SettingSlider,
   SettingCheckbox,
   SettingDropdown,
   SettingGroup,
   MaterialMultiSelect,
-} from './shared/settings';
+} from '../shared/settings';
 import { DropdownOption } from './shared/settings/SettingDropdown';
 import { MovementStyle, Theme, PlayerClass } from 'shared';
 

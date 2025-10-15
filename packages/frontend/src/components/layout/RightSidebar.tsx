@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGameStore } from '../stores/gameStore';
+import { useGameStore } from '../../stores/gameStore';
 import { PlayerClass } from 'shared';
 import {
   CategoryNavigation,
@@ -12,7 +12,7 @@ import {
   WorldSettings,
   ActionsPanel,
   PlayerStatusPanel
-} from './sidebar';
+} from '../sidebar';
 import { MaterialCard, MaterialChip, MaterialPaper } from './index';
 
 const RightSidebar: React.FC = () => {

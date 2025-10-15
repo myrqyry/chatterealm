@@ -8,14 +8,14 @@ import {
   GameWorld
 } from 'shared';
 import { GAME_CONFIG } from 'shared';
-import { useGameStore } from '../stores/gameStore';
-import { renderGame } from './renderers/canvas/RenderCoordinator';
+import { useGameStore } from '../../stores/gameStore';
+import { renderGame } from '../renderers/canvas/RenderCoordinator';
 import { CanvasDrawEffectComponent, createCanvasCirclePath, createCanvasStarPath, createCanvasLightningPath } from './animations/CanvasDrawEffect';
-import { useContainerResize } from './GameCanvas/hooks/useContainerResize';
-import { useCanvasSetup } from './GameCanvas/hooks/useCanvasSetup';
-import { useParticleManager } from './GameCanvas/managers/ParticleManager';
-import { useEffectManager } from './GameCanvas/managers/EffectManager';
-import { useRegenerationManager } from './GameCanvas/managers/RegenerationManager';
+import { useContainerResize } from './hooks/useContainerResize';
+import { useCanvasSetup } from './hooks/useCanvasSetup';
+import { useParticleManager } from './managers/ParticleManager';
+import { useEffectManager } from './managers/EffectManager';
+import { useRegenerationManager } from './managers/RegenerationManager';
 import { webSocketClient } from '../services/webSocketClient';
 import { CataclysmVisualizer } from './CataclysmVisualizer';
 import { Position } from 'shared';

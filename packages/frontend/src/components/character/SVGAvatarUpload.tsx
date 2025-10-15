@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { MaterialCard, MaterialButton, MaterialChip } from './index';
-import { assetConverter } from '../services/assetConverter';
+import { MaterialCard, MaterialButton, MaterialChip } from '../index';
+import { assetConverter } from '../../services/assetConverter';
 
 interface SVGAvatarUploadProps {
   onAvatarSelect: (svg: string, roughSvg: string) => void;

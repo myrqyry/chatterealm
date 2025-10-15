@@ -23,7 +23,7 @@ export { default as DevSidebar } from './sidebar/DevSidebar';
 export { default as Sidebar } from './sidebar/Sidebar';
 export { default as UnifiedSettingsMenu } from './settings/UnifiedSettingsMenu';
 export { default as ModeNavigation } from './layout/ModeNavigation';
-export { default as CharacterBuilder } from './character/CharacterBuilder';
+export { default as CharacterBuilder } from './CharacterBuilder';
 export { default as SVGAssetDemo } from './SVGAssetDemo';
 export { default as SVGAvatarUpload } from './character/SVGAvatarUpload';
 

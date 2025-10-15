@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PlayerClass, Stats } from 'shared';
 import { CLASS_INFO, GAME_CONFIG } from 'shared';
 import { MaterialCard, MaterialButton, MaterialDialog } from './index';
-import SVGAvatarUpload from './SVGAvatarUpload';
+import SVGAvatarUpload from './character/SVGAvatarUpload';
 // EmojiPicker removed per request: full svgmoji handling will be used via server
 import { gsap } from 'gsap';
 import { useRef } from 'react';

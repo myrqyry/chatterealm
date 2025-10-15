@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import NotificationContainer from './notifications/NotificationContainer';
-import { useNotifications } from '../hooks/useNotifications';
-import { notificationQueue } from '../services/notification/NotificationQueue';
-import { createNotification } from '../services/notification/NotificationFactory';
+import NotificationContainer from './NotificationContainer';
+import { useNotifications } from '../../hooks/useNotifications';
+import { notificationQueue } from '../../services/notification/NotificationQueue';
+import { createNotification } from '../../services/notification/NotificationFactory';
 import { NotificationData } from '../types/notification';
 
 interface NotificationSystemProps {

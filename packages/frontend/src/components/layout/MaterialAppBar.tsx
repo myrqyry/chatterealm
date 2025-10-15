@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Box } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
-import { Z_INDEX, COMMON_STYLES, TYPOGRAPHY, SPACING } from '../utils/designSystem';
+import { Z_INDEX, COMMON_STYLES, TYPOGRAPHY, SPACING } from '../../utils/designSystem';
 
 interface MaterialAppBarProps {
   title?: string;

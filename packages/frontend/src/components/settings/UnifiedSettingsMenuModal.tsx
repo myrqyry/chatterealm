@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { useGameStore } from '../stores/gameStore';
-import { MaterialButton, MaterialPopover, MaterialCard } from './index';
+import { useGameStore } from '../../stores/gameStore';
+import { MaterialButton, MaterialPopover, MaterialCard } from '../index';
 import CategoryButton from './shared/CategoryButton';
 import {
   Info as InfoIcon,
