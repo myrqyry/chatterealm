@@ -1,6 +1,5 @@
 import React from 'react';
 import GameCanvas from '../GameCanvas';
-import DevSidebar from '../sidebars/DevSidebar';
 import { MaterialChip, MaterialPaper } from '../index'; // Removed MaterialAppBar
 import { useGameStore } from '../../stores/gameStore';
 import { TYPOGRAPHY, SPACING, COMMON_STYLES } from '../../utils/designSystem'; // Import design system tokens
@@ -186,8 +185,7 @@ const DevLayout: React.FC<DevLayoutProps> = ({ children }) => {
           )}
         </div>
 
-        {/* Developer Sidebar */}
-        <DevSidebar />
+  {/* Sidebar is rendered by BaseLayout */}
       </div>
     </>
   );

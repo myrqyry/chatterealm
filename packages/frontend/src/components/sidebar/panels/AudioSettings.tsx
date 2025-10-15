@@ -20,9 +20,7 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
   return (
     <div className="py-4">
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Master Volume: {unifiedSettings.audio.audioMasterVolume}%
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Master Volume: {unifiedSettings.audio.audioMasterVolume}%</label>
         <input
           type="range"
           min="0"
@@ -34,9 +32,7 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          SFX Volume: {unifiedSettings.audio.sfxVolume}%
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">SFX Volume: {unifiedSettings.audio.sfxVolume}%</label>
         <input
           type="range"
           min="0"
@@ -48,9 +44,7 @@ const AudioSettings: React.FC<AudioSettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Music Volume: {unifiedSettings.audio.musicVolume}%
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Music Volume: {unifiedSettings.audio.musicVolume}%</label>
         <input
           type="range"
           min="0"

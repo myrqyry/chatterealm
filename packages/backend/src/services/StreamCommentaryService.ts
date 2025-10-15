@@ -1,6 +1,6 @@
 import { TwitchService } from './twitchService';
 import { Player, NPC } from 'shared/src/types/game';
-import { CombatResult } from './CombatSystem';
+import { CombatResult } from './CombatService';
 
 interface CombatEvent {
     timestamp: number;

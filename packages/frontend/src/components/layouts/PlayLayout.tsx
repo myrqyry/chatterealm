@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from '../GameCanvas';
-import PlayerSidebar from '../sidebars/PlayerSidebar';
 import CharacterBuilder from '../CharacterBuilder';
 import { MaterialButton, MaterialCard, MaterialChip } from '../index'; // Removed MaterialAppBar, MaterialPaper
 import { useGameStore } from '../../stores/gameStore';
@@ -175,8 +174,7 @@ const PlayLayout: React.FC = () => {
           )}
         </div>
 
-        {/* Player Sidebar - Only show when player exists */}
-        {currentPlayer && <PlayerSidebar />}
+  {/* Sidebar is rendered by BaseLayout */}
       </div>
 
       {/* Character Builder Modal */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import GameCanvas from '../GameCanvas/GameCanvas';
 import NotificationSystem from '../notifications/NotificationSystem';
-import PlayerSidebar from '../sidebars/PlayerSidebar';
+import { PlayerSidebar } from '../index';
 import MaterialCard from '../ui/MaterialCard';
 import MaterialChip from '../ui/MaterialChip';
 import MaterialPaper from '../ui/MaterialPaper';

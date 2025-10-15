@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import { PlayerClass } from 'shared';
 import { MaterialButton, MaterialCard, MaterialChip } from '../index';
-import EnhancedPlayerStatus from '../EnhancedPlayerStatus';
+import EnhancedPlayerStatus from '../player/EnhancedPlayerStatus';
 import {
   PlayArrow as PlayIcon,
   Settings as SettingsIcon,
@@ -22,7 +22,7 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
   const {
     currentPlayer,
     joinGame,
-    regenerateWorld,
+    handleRegenerateWorld,
     startCataclysm,
     movePlayer,
     pickupItem,
@@ -53,7 +53,7 @@ const PlayerSidebar: React.FC<PlayerSidebarProps> = ({ className }) => {
   };
 
   const handleRegenerate = () => {
-    regenerateWorld();
+    handleRegenerateWorld();
   };
 
   const handleCataclysm = () => {

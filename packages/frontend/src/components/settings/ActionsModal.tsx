@@ -10,7 +10,7 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     movePlayer,
     pickupItem,
     startCataclysm,
-    regenerateWorld
+    handleRegenerateWorld
   } = useGameStore();
 
   const handleJoin = () => joinGame({
@@ -22,7 +22,7 @@ const ActionsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleMove = (dir: 'up' | 'down' | 'left' | 'right') => movePlayer(dir);
   const handlePickup = () => pickupItem('nearest');
   const handleCataclysm = () => startCataclysm();
-  const handleRegenerate = () => regenerateWorld();
+  const handleRegenerate = () => handleRegenerateWorld();
 
   return (
     <div className="p-6 h-full overflow-auto font-mono bg-gradient-to-br from-background-primary/95 to-surface/90">

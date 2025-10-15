@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import AppHeader from './AppHeader';
 import GameLegend from './GameLegend';
+import Sidebar from '../sidebar/Sidebar';
+import { useGameStore } from '../../stores/gameStore';
 import { LAYOUT, COMMON_STYLES, Z_INDEX, BREAKPOINTS } from '../../utils/designSystem';
 import useResponsive from '../../hooks/useResponsive'; // Import the new hook
 
@@ -24,6 +26,8 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
   className = '',
 }) => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  const sidebarCollapsed = useGameStore(state => state.sidebarCollapsed);
+  const setSidebarCollapsed = useGameStore(state => state.setSidebarCollapsed);
 
   const getSidebarWidth = () => {
     if (isMobile) return LAYOUT.sidebarWidth.sm;
@@ -39,6 +43,26 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
     }
     return '100vw';
   };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      // Toggle sidebar with Ctrl+B (Windows/Linux) or Meta+B (Mac)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        // avoid toggling when user is typing
+        const active = document.activeElement as HTMLElement | null;
+        if (active) {
+          const tag = active.tagName?.toLowerCase();
+          if (tag === 'input' || tag === 'textarea' || active.isContentEditable) return;
+        }
+        // toggle via the store setter
+        setSidebarCollapsed(prev => !prev);
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [setSidebarCollapsed]);
 
   return (
     <div
@@ -103,22 +127,52 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
           )}
         </main>
 
-        {/* Sidebar */}
-        {sidebar && (
-          <aside
-            style={{
-              width: isMobile ? '100%' : getSidebarWidth(), // Full width on mobile, dynamic on others
-              height: isMobile ? LAYOUT.sidebarHeight.mobile : 'auto', // Fixed height on mobile
-              background: 'var(--color-surface-variant)',
-              borderLeft: isMobile ? 'none' : '1px solid var(--color-outline)',
-              borderTop: isMobile ? '1px solid var(--color-outline)' : 'none', // Top border on mobile
-              overflow: 'auto',
-              order: isMobile ? 1 : 0, // Order sidebar below main content on mobile
-            }}
-          >
-            {sidebar}
-          </aside>
-        )}
+        {/* Sidebar - use explicitly passed sidebar if provided; otherwise render the default Sidebar for the current mode */}
+        <aside
+          id="app-sidebar"
+          role="complementary"
+          aria-label="Main sidebar"
+          style={{
+            width: isMobile ? '100%' : getSidebarWidth(), // Full width on mobile, dynamic on others
+            height: isMobile ? LAYOUT.sidebarHeight.mobile : 'auto', // Fixed height on mobile
+            background: 'var(--color-surface-variant)',
+            borderLeft: isMobile ? 'none' : '1px solid var(--color-outline)',
+            borderTop: isMobile ? '1px solid var(--color-outline)' : 'none', // Top border on mobile
+            overflow: 'auto',
+            order: isMobile ? 1 : 0, // Order sidebar below main content on mobile
+          }}
+        >
+          {sidebarCollapsed ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '8px' }}>
+              <button
+                aria-label="Open sidebar (Ctrl+B)"
+                aria-controls="app-sidebar"
+                aria-expanded={false}
+                aria-keyshortcuts="Ctrl+B"
+                onClick={() => setSidebarCollapsed(false)}
+                style={{ background: 'transparent', border: 'none', color: 'var(--color-text-primary)', fontSize: '1.1rem', cursor: 'pointer' }}
+              >
+                ▶
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 8px' }}>
+                <button
+                  aria-label="Collapse sidebar (Ctrl+B)"
+                  aria-controls="app-sidebar"
+                  aria-expanded={true}
+                  aria-keyshortcuts="Ctrl+B"
+                  onClick={() => setSidebarCollapsed(true)}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--color-text-secondary)', fontSize: '0.9rem', cursor: 'pointer' }}
+                >
+                  ⇤
+                </button>
+              </div>
+              {sidebar || <Sidebar mode={mode} />}
+            </div>
+          )}
+        </aside>
       </div>
     </div>
   );

@@ -4,6 +4,10 @@ interface UnifiedSettings {
   world: {
     worldWidth: number;
     worldHeight: number;
+    grassWaveSpeed: number;
+    treeSwaySpeed: number;
+    flowerSpawnRate: number;
+    windSpeed: number;
   };
 }
 
@@ -19,9 +23,7 @@ const WorldSettings: React.FC<WorldSettingsProps> = ({
   return (
     <div className="py-4">
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          World Width: {unifiedSettings.world.worldWidth}
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">World Width: {unifiedSettings.world.worldWidth}</label>
         <input
           type="range"
           min="20"
@@ -34,9 +36,7 @@ const WorldSettings: React.FC<WorldSettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          World Height: {unifiedSettings.world.worldHeight}
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">World Height: {unifiedSettings.world.worldHeight}</label>
         <input
           type="range"
           min="15"

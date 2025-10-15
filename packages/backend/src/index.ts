@@ -25,18 +25,24 @@ import { EmojiService } from './services/EmojiService';
 import { StreamOptimizedTwitchService } from './services/StreamOptimizedTwitchService';
 import { StreamCommentaryService } from './services/StreamCommentaryService';
 import { AutoWanderService } from './services/AutoWanderService';
-import { TarkovLootService } from './services/TarkovLootService';
+import { LootService } from './services/LootService';
+import { PlayerMovementService } from './services/PlayerMovementService';
+import { CombatService } from './services/CombatService';
 import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
 import { GAME_CONFIG } from 'shared';
 
 const app = express();
 const httpServer = createServer(app);
-const PORT = process.env.PORT || 8080;
+const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8081;
 
 const gameStateManager = new GameStateManager();
 const emojiService = new EmojiService();
-const webSocketServer = new WebSocketServer(httpServer, gameStateManager);
+const webSocketServer = new WebSocketServer(httpServer);
 const handDrawnBuildingService = new HandDrawnBuildingService();
+
+// Lower-level services instantiated and wired for compatibility
+const playerMovementService = new PlayerMovementService(gameStateManager.getGameWorld());
+const combatService = new CombatService();
 
 // Instantiate the Twitch service
 const twitchService = new StreamOptimizedTwitchService(
@@ -48,14 +54,17 @@ const twitchService = new StreamOptimizedTwitchService(
 );
 
 // Instantiate remaining services
-const streamCommentaryService = new StreamCommentaryService(twitchService);
-const autoWanderService = new AutoWanderService(twitchService);
-const tarkovLootService = new TarkovLootService(webSocketServer.getIO(), twitchService);
+// Services
+const streamCommentaryService = new StreamCommentaryService();
+const autoWanderService = new AutoWanderService(gameStateManager);
+const lootService = new LootService(gameStateManager);
 
-// Set circular dependencies
-gameStateManager.setServices(streamCommentaryService, autoWanderService, tarkovLootService);
-autoWanderService.setGameStateManager(gameStateManager);
-tarkovLootService.setGameStateManager(gameStateManager);
+// Wire cross-service references back into the GameStateManager so older APIs still work
+gameStateManager.setServices({
+  playerMovementService,
+  combatService,
+  lootService,
+});
 
 // Connect to Twitch
 twitchService.connect().catch(err => {
@@ -189,7 +198,7 @@ process.on('SIGTERM', () => {
   });
 });
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 ChatterRealm Backend running on http://localhost:${PORT}`);
   console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
   console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);

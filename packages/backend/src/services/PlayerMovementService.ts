@@ -369,6 +369,20 @@ export class PlayerMovementService {
   }
 
   /**
+   * Expose internal occupied positions set for coordination with other services
+   */
+  public getOccupiedPositions(): Set<string> {
+    return this.occupiedPositions;
+  }
+
+  /**
+   * Expose internal available spawn points set for coordination with other services
+   */
+  public getAvailableSpawnPoints(): Set<string> {
+    return this.availableSpawnPoints;
+  }
+
+  /**
    * Remove a player from position tracking
    */
   public removePlayerPosition(position: Position): void {

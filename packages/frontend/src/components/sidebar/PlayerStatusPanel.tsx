@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player } from 'shared';
-import EnhancedPlayerStatus from '../EnhancedPlayerStatus';
+import EnhancedPlayerStatus from '../player/EnhancedPlayerStatus';
 
 interface PlayerStatusPanelProps {
   currentPlayer: Player | null;

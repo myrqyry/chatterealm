@@ -6,7 +6,7 @@ const BottomSettingsBar: React.FC = () => {
   const {
     currentPlayer,
     joinGame,
-    regenerateWorld,
+  handleRegenerateWorld,
     startCataclysm,
     movePlayer,
     gameMessage
@@ -24,7 +24,7 @@ const BottomSettingsBar: React.FC = () => {
   };
 
   const handleRegenerate = () => {
-    regenerateWorld();
+    handleRegenerateWorld();
   };
 
   const handleCataclysm = () => {

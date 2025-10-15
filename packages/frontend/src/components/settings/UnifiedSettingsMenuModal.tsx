@@ -41,7 +41,7 @@ const UnifiedSettingsMenuModal: React.FC = () => {
     movePlayer,
     startCataclysm,
     pickupItem,
-    regenerateWorld,
+  handleRegenerateWorld,
     gameMessage,
   } = useGameStore();
 

@@ -57,6 +57,10 @@ interface GameState {
   updateAnimationSettings: (settings: Partial<UnifiedSettings['animations']>) => void;
   updateUnifiedSettings: (settings: Partial<UnifiedSettings>) => void;
 
+  // Sidebar UI state
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+
   // Notification actions
   addNotification: (notification: Omit<NotificationData, 'id'>) => void;
   removeNotification: (id: string) => void;
@@ -241,6 +245,8 @@ export const useGameStore = create<GameState>()(
 
         // Unified settings state with defaults
         unifiedSettings: createDefaultUnifiedSettings(),
+          // UI state: whether sidebar is collapsed (for responsive layouts)
+          sidebarCollapsed: false,
 
         // Game actions
         joinGame: (playerData) => {
@@ -331,6 +337,9 @@ export const useGameStore = create<GameState>()(
         setShowDevPanel: (show) => set({ showDevPanel: show }),
         setLoading: (loading) => set({ isLoading: loading }),
         setError: (error) => set({ error, lastUpdate: Date.now() }),
+  // Sidebar toggle
+  sidebarCollapsed: false,
+  setSidebarCollapsed: (collapsed: boolean) => set({ sidebarCollapsed: collapsed }),
 
         // Notification actions
         addNotification: (notification) => set((state) => ({
@@ -628,13 +637,22 @@ export const useGameStore = create<GameState>()(
         partialize: (state) => ({
           unifiedSettings: state.unifiedSettings,
           selectedTab: state.selectedTab,
-          showDevPanel: state.showDevPanel
+          showDevPanel: state.showDevPanel,
+          // Persist the sidebar collapsed state so user preference survives reloads
+          sidebarCollapsed: state.sidebarCollapsed,
         }),
-        // Migration logic for upgrading from old format
+        // Migration logic for upgrading from old format and to ensure defaults
         onRehydrateStorage: () => (state) => {
-          if (state && !state.unifiedSettings) {
+          if (state) {
+            // Ensure sidebarCollapsed exists in persisted snapshot
+            if (typeof (state as any).sidebarCollapsed === 'undefined') {
+              (state as any).sidebarCollapsed = false;
+            }
+
             // If no unifiedSettings, create from defaults (old storage will be migrated via import logic)
-            state.unifiedSettings = createDefaultUnifiedSettings();
+            if (!state.unifiedSettings) {
+              state.unifiedSettings = createDefaultUnifiedSettings();
+            }
           }
         }
       }

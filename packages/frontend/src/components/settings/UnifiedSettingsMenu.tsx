@@ -38,7 +38,7 @@ const UnifiedSettingsMenu: React.FC = () => {
     movePlayer,
     startCataclysm,
     pickupItem,
-    regenerateWorld,
+  handleRegenerateWorld,
     gameMessage,
   } = useGameStore();
 
@@ -119,7 +119,7 @@ const UnifiedSettingsMenu: React.FC = () => {
   const handleMove = (dir: 'up' | 'down' | 'left' | 'right') => movePlayer(dir);
   const handlePickup = () => pickupItem('nearest'); // Assuming backend interprets 'nearest'
   const handleCataclysm = () => startCataclysm();
-  const handleRegenerate = () => regenerateWorld();
+  const handleRegenerate = () => handleRegenerateWorld();
 
   const notificationTypeOptions = [
     { value: 'desktop', label: 'Desktop' },

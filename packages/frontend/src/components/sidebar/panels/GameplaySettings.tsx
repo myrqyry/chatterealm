@@ -20,9 +20,7 @@ const GameplaySettings: React.FC<GameplaySettingsProps> = ({
   return (
     <div className="py-4">
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Auto-Save
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Auto-Save</label>
         <input
           type="checkbox"
           checked={unifiedSettings.game.autoSaveEnabled}
@@ -32,9 +30,7 @@ const GameplaySettings: React.FC<GameplaySettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Show Damage Numbers
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Show Damage Numbers</label>
         <input
           type="checkbox"
           checked={unifiedSettings.game.showDamageNumbers}
@@ -44,9 +40,7 @@ const GameplaySettings: React.FC<GameplaySettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Mini-map
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Mini-map</label>
         <input
           type="checkbox"
           checked={unifiedSettings.game.minimapEnabled}

@@ -4,6 +4,8 @@ import { PlayerClass } from 'shared';
 import {
   CategoryNavigation,
   OverviewPanel,
+  // Player specific overview panel
+  PlayerSummaryPanel,
   GameplaySettings,
   AudioSettings,
   VisualSettings,
@@ -15,9 +17,9 @@ import { MaterialCard, MaterialChip, MaterialPaper } from './index';
 
 const RightSidebar: React.FC = () => {
   const {
-    currentPlayer,
-    joinGame,
-    regenerateWorld,
+  currentPlayer,
+  joinGame,
+  handleRegenerateWorld,
     startCataclysm,
     movePlayer,
     pickupItem,
@@ -36,6 +38,7 @@ const RightSidebar: React.FC = () => {
 
   const categories = [
     { id: 'overview', label: 'Overview', icon: '🧭' },
+    { id: 'player', label: 'Player', icon: '🧑' },
     { id: 'gameplay', label: 'Gameplay', icon: '🎮' },
     { id: 'audio', label: 'Audio', icon: '🎵' },
     { id: 'visual', label: 'Visual', icon: '👁️' },
@@ -53,7 +56,7 @@ const RightSidebar: React.FC = () => {
   };
 
   const handleRegenerate = () => {
-    regenerateWorld();
+    handleRegenerateWorld();
   };
 
   const handleCataclysm = () => {
@@ -76,6 +79,13 @@ const RightSidebar: React.FC = () => {
             gameWorld={gameWorld}
             currentPlayer={currentPlayer}
             gameMessage={gameMessage}
+          />
+        );
+
+      case 'player':
+        return (
+          <PlayerSummaryPanel
+            player={currentPlayer}
           />
         );
 

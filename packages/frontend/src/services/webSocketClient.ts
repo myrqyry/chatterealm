@@ -31,7 +31,7 @@ export class WebSocketClient {
   private connect(): void {
     try {
       // Use environment variable for the backend URL
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8081';
       this.socket = io(backendUrl, {
         autoConnect: true,
         reconnection: true,

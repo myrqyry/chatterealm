@@ -1,6 +1,5 @@
 import React from 'react';
 import GameCanvas from '../GameCanvas';
-import SpectatorSidebar from '../sidebars/SpectatorSidebar';
 import { MaterialChip, MaterialPaper } from '../index'; // Removed MaterialAppBar
 import { useGameStore } from '../../stores/gameStore';
 import { TYPOGRAPHY, SPACING, COMMON_STYLES } from '../../utils/designSystem'; // Import design system tokens
@@ -154,8 +153,7 @@ const SpectateLayout: React.FC = () => {
           </MaterialPaper>
         </div>
 
-        {/* Spectator Sidebar */}
-        <SpectatorSidebar />
+  {/* Sidebar is rendered by BaseLayout */}
       </div>
     </>
   );

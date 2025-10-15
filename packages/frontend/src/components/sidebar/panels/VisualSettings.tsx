@@ -24,9 +24,7 @@ const VisualSettings: React.FC<VisualSettingsProps> = ({
   return (
     <div className="py-4">
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Show Grid
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Show Grid</label>
         <input
           type="checkbox"
           checked={unifiedSettings.visual.showGrid}
@@ -36,9 +34,7 @@ const VisualSettings: React.FC<VisualSettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Show Particles
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Show Particles</label>
         <input
           type="checkbox"
           checked={unifiedSettings.visual.showParticles}
@@ -48,9 +44,7 @@ const VisualSettings: React.FC<VisualSettingsProps> = ({
       </div>
 
       <div className="mb-4">
-        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">
-          Animation Speed: {unifiedSettings.animations.animationSpeed}x
-        </label>
+        <label className="block mb-2 text-[var(--color-text-primary)] text-sm font-medium">Animation Speed: {unifiedSettings.animations.animationSpeed}x</label>
         <input
           type="range"
           min="0.1"
