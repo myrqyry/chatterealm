@@ -6,6 +6,7 @@ import { CombatResult } from './CombatService';
 import { ItemResult } from './LootManager';
 import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from 'shared';
 import { CharacterHandler } from '../handlers/CharacterHandler';
+import { RateLimiter } from './RateLimiter';
 
 export interface ClientData {
   playerId: string;
@@ -31,6 +32,7 @@ export class WebSocketServer {
   private gameLoopInterval: NodeJS.Timeout | null = null;
   private isGameLoopRunning: boolean = false;
   private cleanupInterval: NodeJS.Timeout | null = null; // Add cleanup interval for stale entries
+  private rateLimiter: RateLimiter;
   private gameLoopStats = {
     totalUpdates: 0,
     lastUpdateTime: 0,
@@ -52,6 +54,7 @@ export class WebSocketServer {
     });
 
     this.characterHandler = new CharacterHandler(this.io);
+    this.rateLimiter = new RateLimiter({ maxEvents: 20, windowMs: 1000 });
     this.setupEventHandlers();
     this.startGameLoop();
     this.startCleanupInterval(); // Start periodic stale client cleanup
@@ -263,6 +266,10 @@ export class WebSocketServer {
   }
 
   private handlePlayerCommand(socket: Socket, command: PlayerCommand): void {
+    if (this.rateLimiter.isRateLimited(socket.id)) {
+      socket.emit('rate_limit', { message: 'Too many commands. Please slow down.' });
+      return;
+    }
     if (socket.data.isAuthenticated) {
       // Proceed to process the command
     } else if (socket.data.isAuthenticating) {
@@ -343,6 +350,7 @@ export class WebSocketServer {
 
 
   private handlePlayerDisconnect(socket: Socket): void {
+    this.rateLimiter.cleanup(socket.id);
     try {
       const clientData = this.connectedClients.get(socket.id);
       if (clientData) {

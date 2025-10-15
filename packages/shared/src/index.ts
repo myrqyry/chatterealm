@@ -2,6 +2,7 @@
 export * from './types/game';
 export * from './types/characterClasses';
 export * from './types/biomes';
+export * from './types/network';
 
 // Export all constants
 export * from './constants/gameConstants';
