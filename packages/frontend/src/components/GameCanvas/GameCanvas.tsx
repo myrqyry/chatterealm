@@ -10,14 +10,14 @@ import {
 import { GAME_CONFIG } from 'shared';
 import { useGameStore } from '../../stores/gameStore';
 import { renderGame } from '../renderers/canvas/RenderCoordinator';
-import { CanvasDrawEffectComponent, createCanvasCirclePath, createCanvasStarPath, createCanvasLightningPath } from './animations/CanvasDrawEffect';
+import { CanvasDrawEffectComponent, createCanvasCirclePath, createCanvasStarPath, createCanvasLightningPath } from '../animations/CanvasDrawEffect';
 import { useContainerResize } from './hooks/useContainerResize';
 import { useCanvasSetup } from './hooks/useCanvasSetup';
 import { useParticleManager } from './managers/ParticleManager';
 import { useEffectManager } from './managers/EffectManager';
 import { useRegenerationManager } from './managers/RegenerationManager';
-import { webSocketClient } from '../services/webSocketClient';
-import { CataclysmVisualizer } from './CataclysmVisualizer';
+import { webSocketClient } from '../../services/webSocketClient';
+import { CataclysmVisualizer } from '../CataclysmVisualizer';
 import { Position } from 'shared';
 
 /**
@@ -224,9 +224,9 @@ const GameCanvas: React.FC = () => {
 
   const handleItemInteraction = (item: Item, player: Player) => {
     // Check distance to item
-    const distance = Math.sqrt(
-      Math.pow(item.position!.x - player.position.x, 2) + 
-      Math.pow(item.position!.y - player.position.y, 2)
+    const distance = Math.max(
+      Math.abs(item.position!.x - player.position.x),
+      Math.abs(item.position!.y - player.position.y)
     );
 
     if (distance > GAME_CONFIG.lootInteractionRadius) {

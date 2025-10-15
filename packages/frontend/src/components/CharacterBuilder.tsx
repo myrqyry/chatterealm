@@ -8,6 +8,7 @@ import { gsap } from 'gsap';
 import { useRef } from 'react';
 import { assetConverter } from '../services/assetConverter';
 import { COLORS } from '../utils/tokens';
+import isUnicodeSupported from 'is-unicode-supported';
 
 interface CharacterBuilderProps {
   isOpen: boolean;
@@ -499,7 +500,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
                     onChange={(e) => {
                       const value = e.target.value;
                       // Allow single emoji or empty string
-                      if (value.length <= 2) {
+                      if (isUnicodeSupported(value) || value === '') {
                         setSelectedAvatar(value);
                       }
                     }}
@@ -510,7 +511,6 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({
                       color: COLORS.text.primary,
                       borderColor: COLORS.borderGray
                     }}
-                    maxLength={2}
                   />
                   <div className="w-12 h-10 rounded-lg flex items-center justify-center text-xl border-2"
                        style={{
