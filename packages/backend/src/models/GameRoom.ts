@@ -7,6 +7,8 @@ import { LootService } from '../services/LootService';
 import { PlayerMovementService } from '../services/PlayerMovementService';
 import { GameWorldManager } from '../services/GameWorldManager';
 import { NPCManager } from '../services/NPCManager';
+import { CataclysmService } from '../services/CataclysmService';
+import { LootManager } from '../services/LootManager';
 
 // A simple deep-clone function for this use case.
 // For a real-world app, a more robust library like lodash.cloneDeep would be better.
@@ -25,6 +27,7 @@ export class GameRoom {
   private combatService: CombatService;
   private lootService: LootService;
   private movementService: PlayerMovementService;
+  private cataclysmService: CataclysmService;
   private lastGameState: GameWorld;
 
   constructor(roomId: string) {
@@ -35,7 +38,8 @@ export class GameRoom {
     const gameWorldManager = new GameWorldManager(npcManager);
     this.playerService = new PlayerService(gameWorld, gameWorldManager, new Set(), new Set());
     this.combatService = new CombatService();
-    this.lootService = new LootService(this.gameStateManager);
+    this.cataclysmService = new CataclysmService(new LootManager(), npcManager, new Set());
+    this.lootService = new LootService(this.gameStateManager, this.cataclysmService);
     this.movementService = new PlayerMovementService(gameWorld);
     this.lastGameState = clone(gameWorld);
   }

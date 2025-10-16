@@ -151,12 +151,4 @@ export class GameStateManager {
            !!this.gameWorld.npcs.find(n => n.position.x === position.x && n.position.y === position.y);
   }
 
-  public isInCataclysm(position: any): boolean {
-    if (!this.gameWorld.cataclysmCircle.isActive) return false;
-    const center = this.gameWorld.cataclysmCircle.center;
-    const distance = Math.sqrt(
-      Math.pow(position.x - center.x, 2) + Math.pow(position.y - center.y, 2)
-    );
-    return distance >= this.gameWorld.cataclysmCircle.radius;
-  }
 }

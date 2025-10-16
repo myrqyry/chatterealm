@@ -3,14 +3,17 @@ import { GameStateManager } from './gameStateManager';
 import { LootManager } from './LootManager';
 import { TwitchService } from './twitchService';
 import { Player, Item, Position, LootingSession, LootResult } from 'shared/src/types/game';
+import { CataclysmService } from './CataclysmService';
 
 export class LootService extends LootManager {
   private lootingPlayers: Map<string, LootingSession> = new Map();
   private gameStateManager: GameStateManager;
+  private cataclysmService: CataclysmService;
 
-  constructor(gameStateManager: GameStateManager) {
+  constructor(gameStateManager: GameStateManager, cataclysmService: CataclysmService) {
     super();
     this.gameStateManager = gameStateManager;
+    this.cataclysmService = cataclysmService;
   }
 
   public startLooting(playerId: string, buildingId: string): LootResult {
@@ -102,7 +105,7 @@ export class LootService extends LootManager {
       return true;
     }
 
-    if (this.gameStateManager.isInCataclysm(player.position)) {
+    if (this.cataclysmService.isInCataclysmCircle(player.position, this.gameStateManager.getGameWorld())) {
           return true;
     }
 
