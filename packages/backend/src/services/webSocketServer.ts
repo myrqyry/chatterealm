@@ -523,7 +523,10 @@ export class WebSocketServer {
 
           // Remove mappings
           this.connectedClients.delete(socketId);
-          this.playerSockets.delete(clientData.playerId);
+          // CRITICAL: Only remove player socket mapping if it still points to the stale socket
+          if (this.playerSockets.get(clientData.playerId) === socketId) {
+            this.playerSockets.delete(clientData.playerId);
+          }
 
           // The player is intentionally left in the game world as "disconnected"
           // This allows for potential reconnection logic in the future.
