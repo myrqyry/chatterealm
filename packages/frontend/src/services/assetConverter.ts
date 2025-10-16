@@ -1,4 +1,5 @@
 import { Svg2Roughjs, OutputType } from 'svg2roughjs';
+import emojiData from 'svgmoji/emoji.json';
 
 export interface AssetConversionOptions {
   roughness?: number;
@@ -16,6 +17,12 @@ export interface ConvertedAsset {
   originalSvg: string;
   options: AssetConversionOptions;
 }
+
+// Create a lookup map for faster emoji access
+const emojiLookup = new Map<string, any>();
+emojiData.forEach(emoji => {
+  emojiLookup.set(emoji.emoji, emoji);
+});
 
 export class AssetConverterService {
   private converter: Svg2Roughjs | null = null;
@@ -86,19 +93,24 @@ export class AssetConverterService {
   }
 
   /**
-   * Fetch an emoji SVG from a collection (default: Noto Emoji via @svgmoji/noto CDN)
-   * Currently supports 'svgmoji' collection via CDN URLs.
+   * Fetch an emoji SVG using local emoji database for validation
    */
   async fetchEmojiSvg(emoji: string, collection: 'svgmoji' = 'svgmoji', opts?: { rough?: boolean; preset?: 'sketch' | 'cartoon' | 'technical' | 'wild'; options?: AssetConversionOptions }): Promise<string> {
     try {
-      // First, try the backend API if available (helps centralize fetching + caching)
+      // First, validate emoji using local database
+      const emojiInfo = emojiLookup.get(emoji);
+      if (!emojiInfo) {
+        console.warn(`Emoji ${emoji} not found in database, using fallback`);
+        return this.getFallbackSvg(emoji);
+      }
+
+      // Try backend API first (for centralized caching)
       try {
         const apiBase = (import.meta as any)?.env?.VITE_API_BASE || 'http://localhost:3001';
         let url = `${apiBase.replace(/\/$/, '')}/api/emoji?char=${encodeURIComponent(emoji)}`;
         if (opts?.rough) {
           url += '&rough=true';
           if (opts?.preset) {
-            // Map preset to query params for the backend
             const mapping = this.getPresetOptions(opts.preset);
             Object.entries(mapping).forEach(([k, v]) => {
               if (v !== undefined && v !== null) url += `&${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`;
@@ -115,78 +127,55 @@ export class AssetConverterService {
           if (text && text.trim().startsWith('<svg')) return text;
         }
       } catch (e) {
-        // ignore backend fetch errors and fall back to local resolution
+        // Backend not available, continue to local resolution
       }
 
-      // Use @svgmoji/noto CDN URLs for emoji SVGs
+      // Use local emoji data to construct CDN URL
+      const hexCode = emojiInfo.hexcode;
+      const cdnUrl = `https://cdn.jsdelivr.net/npm/@svgmoji/noto@latest/svg/${hexCode}.svg`;
+
       try {
-        // Generate CDN URL using the correct format for @svgmoji/noto
-        const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).padStart(4, '0').toLowerCase());
-        const hexCode = codepoints.join('-');
-        const cdnUrl = `https://cdn.jsdelivr.net/npm/@svgmoji/noto@latest/svg/${hexCode}.svg`;
-        
-        console.log(`Trying CDN URL for ${emoji}: ${cdnUrl}`);
         const response = await fetch(cdnUrl);
         if (response.ok) {
           const svgText = await response.text();
-          console.log(`Successfully fetched emoji ${emoji} from CDN`);
           if (opts?.rough) {
-            // Convert to rough version if requested
             const roughOptions = opts.preset ? this.getPresetOptions(opts.preset) : (opts.options || {});
             const converted = await this.convertSvgToRough(svgText, roughOptions);
             return converted.svg;
           }
           return svgText;
-        } else {
-          console.warn(`CDN fetch failed for ${emoji}: ${response.status} ${response.statusText}`);
         }
       } catch (cdnError) {
-        console.warn(`CDN fetch error for ${emoji}:`, cdnError);
+        console.warn(`CDN fetch failed for ${emoji}:`, cdnError);
       }
 
-      // Fallback: Try GitHub raw URLs for Noto Emoji
-      try {
-        const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
-        const filename = `emoji_u${codepoints.join('_')}.svg`;
-        const githubUrl = `https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/${filename}`;
-        
-        console.log(`Trying GitHub fallback for ${emoji}: ${githubUrl}`);
-        const response = await fetch(githubUrl);
-        if (response.ok) {
-          const svgText = await response.text();
-          console.log(`Successfully fetched emoji ${emoji} from GitHub fallback`);
-          if (opts?.rough) {
-            // Convert to rough version if requested
-            const roughOptions = opts.preset ? this.getPresetOptions(opts.preset) : (opts.options || {});
-            const converted = await this.convertSvgToRough(svgText, roughOptions);
-            return converted.svg;
-          }
-          return svgText;
-        } else {
-          console.warn(`GitHub fallback failed for ${emoji}: ${response.status} ${response.statusText}`);
-        }
-      } catch (githubError) {
-        console.warn(`GitHub fallback error for ${emoji}:`, githubError);
-      }
-
-      // Last resort: Return a simple SVG with the emoji character
-      console.log(`All fetch methods failed for ${emoji}, using fallback SVG`);
-      const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">${emoji}</text></svg>`;
-      
-      if (opts?.rough) {
-        // Convert fallback to rough version if requested
-        const roughOptions = opts.preset ? this.getPresetOptions(opts.preset) : (opts.options || {});
-        const converted = await this.convertSvgToRough(fallbackSvg, roughOptions);
-        return converted.svg;
-      }
-      
-      return fallbackSvg;
+      // Fallback to generic SVG
+      return await this.getFallbackSvg(emoji, opts?.rough, opts?.preset, opts?.options);
     } catch (err) {
       console.error('fetchEmojiSvg error:', err);
-      // Always return a fallback SVG, never throw
-      const emergencyFallback = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">❓</text></svg>`;
-      return emergencyFallback;
+      return await this.getFallbackSvg(emoji);
     }
+  }
+
+  /**
+   * Get fallback SVG for emoji
+   */
+  private async getFallbackSvg(emoji: string, rough?: boolean, preset?: string, options?: AssetConversionOptions): Promise<string> {
+    const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">${emoji}</text></svg>`;
+
+    if (rough) {
+      // Convert fallback to rough version if requested
+      const roughOptions = preset ? this.getPresetOptions(preset as any) : (options || {});
+      try {
+        const converted = await this.convertSvgToRough(fallbackSvg, roughOptions);
+        return converted.svg;
+      } catch (error) {
+        console.warn('Failed to convert fallback SVG to rough:', error);
+        return fallbackSvg;
+      }
+    }
+
+    return fallbackSvg;
   }
 
   /**

@@ -1,6 +1,171 @@
 import { JSDOM } from 'jsdom';
 import { Svg2Roughjs } from 'svg2roughjs';
 
+// Simple emoji validation data (subset of common emojis)
+const emojiHexMap: Record<string, string> = {
+  '😀': '1F600',
+  '😃': '1F603',
+  '😄': '1F604',
+  '😁': '1F601',
+  '😆': '1F606',
+  '😅': '1F605',
+  '😂': '1F602',
+  '🤣': '1F923',
+  '😊': '1F60A',
+  '😇': '1F607',
+  '🙂': '1F642',
+  '🙃': '1F643',
+  '😉': '1F609',
+  '😌': '1F60C',
+  '😍': '1F60D',
+  '🥰': '1F970',
+  '😘': '1F618',
+  '😗': '1F617',
+  '😙': '1F619',
+  '😚': '1F61A',
+  '😋': '1F60B',
+  '😛': '1F61B',
+  '😝': '1F61D',
+  '😜': '1F61C',
+  '🤪': '1F92A',
+  '🤨': '1F928',
+  '🧐': '1F9D0',
+  '🤓': '1F913',
+  '😎': '1F60E',
+  '🤩': '1F929',
+  '🥳': '1F973',
+  '😏': '1F60F',
+  '😒': '1F612',
+  '😞': '1F61E',
+  '😔': '1F614',
+  '😟': '1F61F',
+  '😕': '1F615',
+  '🙁': '1F641',
+  '☹️': '2639-FE0F',
+  '😣': '1F623',
+  '😖': '1F616',
+  '😫': '1F62B',
+  '😩': '1F629',
+  '🥺': '1F97A',
+  '😢': '1F622',
+  '😭': '1F62D',
+  '😤': '1F624',
+  '😠': '1F620',
+  '😡': '1F621',
+  '🤬': '1F92C',
+  '🤯': '1F92F',
+  '😳': '1F633',
+  '🥵': '1F975',
+  '🥶': '1F976',
+  '😱': '1F631',
+  '😨': '1F628',
+  '😰': '1F630',
+  '😥': '1F625',
+  '😓': '1F613',
+  '🤗': '1F917',
+  '🤔': '1F914',
+  '🤭': '1F92D',
+  '🤫': '1F92B',
+  '🤥': '1F925',
+  '😶': '1F636',
+  '😐': '1F610',
+  '😑': '1F611',
+  '😬': '1F62C',
+  '🙄': '1F644',
+  '😯': '1F62F',
+  '😦': '1F626',
+  '😧': '1F627',
+  '😮': '1F62E',
+  '😲': '1F632',
+  '🥱': '1F971',
+  '😴': '1F634',
+  '🤤': '1F924',
+  '😪': '1F62A',
+  '😵': '1F635',
+  '🤐': '1F910',
+  '🥴': '1F974',
+  '🤢': '1F922',
+  '🤮': '1F92E',
+  '🤧': '1F927',
+  '😷': '1F637',
+  '🤒': '1F912',
+  '🤕': '1F915',
+  '🤑': '1F911',
+  '🤠': '1F920',
+  '😈': '1F608',
+  '👿': '1F47F',
+  '👹': '1F479',
+  '👺': '1F47A',
+  '🤡': '1F921',
+  '💩': '1F4A9',
+  '👻': '1F47B',
+  '💀': '1F480',
+  '☠️': '2620-FE0F',
+  '👽': '1F47D',
+  '👾': '1F47E',
+  '🤖': '1F916',
+  '🎃': '1F383',
+  '😺': '1F63A',
+  '😸': '1F638',
+  '😹': '1F639',
+  '😻': '1F63B',
+  '😼': '1F63C',
+  '😽': '1F63D',
+  '🙀': '1F640',
+  '😿': '1F63F',
+  '😾': '1F63E',
+  '👋': '1F44B',
+  '🤚': '1F91A',
+  '🖐️': '1F590-FE0F',
+  '✋': '270B',
+  '🖖': '1F596',
+  '👌': '1F44C',
+  '🤏': '1F90F',
+  '✌️': '270C-FE0F',
+  '🤞': '1F91E',
+  '🤟': '1F91F',
+  '🤘': '1F918',
+  '🤙': '1F919',
+  '👈': '1F448',
+  '👉': '1F449',
+  '👆': '1F446',
+  '🖕': '1F595',
+  '👇': '1F447',
+  '☝️': '261D-FE0F',
+  '👍': '1F44D',
+  '👎': '1F44E',
+  '👊': '1F44A',
+  '✊': '270A',
+  '👏': '1F44F',
+  '🙌': '1F64C',
+  '👐': '1F450',
+  '🤲': '1F932',
+  '🤝': '1F91D',
+  '🙏': '1F64F',
+  '✍️': '270D-FE0F',
+  '💅': '1F485',
+  '🤳': '1F933',
+  '💪': '1F4AA',
+  '🦾': '1F9BE',
+  '🦿': '1F9BF',
+  '🦵': '1F9B5',
+  '🦶': '1F9B6',
+  '👂': '1F442',
+  '🦻': '1F9BB',
+  '👃': '1F443',
+  '🧠': '1F9E0',
+  '🫀': '1F9E1',
+  '🫁': '1F9E2',
+  '🦷': '1F9B7',
+  '🦴': '1F9B4',
+  '👀': '1F440',
+  '👁️': '1F441-FE0F',
+  '👅': '1F445',
+  '👄': '1F444',
+  '💋': '1F48B',
+  '🩸': '1F9E7'
+};
+
 type CachedEmoji = {
     svg: string;
     fetchedAt: number;
@@ -17,64 +182,33 @@ export class EmojiService {
             return cached.svg;
         }
 
-        const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
-        const filename = `emoji_u${codepoints.join('_')}.svg`;
+        // Validate emoji using local map
+        const hexCode = emojiHexMap[emoji];
+        if (!hexCode) {
+            console.warn(`Emoji ${emoji} not supported, using fallback`);
+            return this.getFallbackSvg(emoji);
+        }
 
         try {
-            const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).padStart(4, '0').toLowerCase());
-            const hexCode = codepoints.join('-');
             const cdnUrl = `https://cdn.jsdelivr.net/npm/@svgmoji/noto@latest/svg/${hexCode}.svg`;
-
-            console.log(`Backend: Trying CDN URL for ${emoji}: ${cdnUrl}`);
             const response = await fetch(cdnUrl);
             if (response.ok) {
                 const svgText = await response.text();
-                console.log(`Backend: Successfully fetched emoji ${emoji} from CDN`);
                 this.emojiCache.set(cacheKey, { svg: svgText, fetchedAt: Date.now() });
                 return svgText;
             } else {
-                console.warn(`Backend: CDN fetch failed for ${emoji}: ${response.status} ${response.statusText}`);
+                console.warn(`CDN fetch failed for ${emoji}: ${response.status}`);
             }
         } catch (cdnError) {
-            console.warn('Backend: CDN fetch error:', cdnError);
+            console.warn('CDN fetch error:', cdnError);
         }
 
-        try {
-            const codepoints = Array.from(emoji).map(c => c.codePointAt(0)!.toString(16).toLowerCase());
-            const candidates = [
-                `emoji_u${codepoints.join('_')}.svg`,
-                `emoji_u${codepoints.join('-')}.svg`,
-                `emoji_${codepoints.join('_')}.svg`,
-            ];
+        // Fallback SVG
+        return this.getFallbackSvg(emoji);
+    }
 
-            for (const candidate of candidates) {
-                const url = `https://raw.githubusercontent.com/googlefonts/noto-emoji/main/svg/${candidate}`;
-                try {
-                    const resp = await fetch(url);
-                    if (resp.ok) {
-                        const svgText = await resp.text();
-                        this.emojiCache.set(cacheKey, { svg: svgText, fetchedAt: Date.now() });
-                        return svgText;
-                    }
-                } catch (e) {
-                    // try next candidate
-                }
-            }
-        } catch (err) {
-            // network fetch failed or not available; continue to fallback
-        }
-
-        try {
-            console.log(`All fetch methods failed for ${emoji}, using fallback SVG`);
-            const safeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">${emoji}</text></svg>`;
-            this.emojiCache.set(cacheKey, { svg: safeSvg, fetchedAt: Date.now() });
-            return safeSvg;
-        } catch (err) {
-            console.error(`Failed to create fallback SVG for ${emoji}:`, err);
-            const emergencyFallback = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">❓</text></svg>`;
-            this.emojiCache.set(cacheKey, { svg: emergencyFallback, fetchedAt: Date.now() });
-            return emergencyFallback;
-        }
+    private getFallbackSvg(emoji: string): string {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><rect width="100%" height="100%" fill="transparent"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="72">${emoji}</text></svg>`;
     }
 
     async convertToRoughSvg(svg: string, options: any, emoji: string): Promise<string> {

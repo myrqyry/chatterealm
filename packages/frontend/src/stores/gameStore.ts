@@ -245,8 +245,8 @@ export const useGameStore = create<GameState>()(
 
         // Unified settings state with defaults
         unifiedSettings: createDefaultUnifiedSettings(),
-          // UI state: whether sidebar is collapsed (for responsive layouts)
-          sidebarCollapsed: false,
+        // UI state: whether sidebar is collapsed (for responsive layouts)
+        sidebarCollapsed: false,
 
         // Game actions
         joinGame: (playerData) => {
@@ -337,10 +337,7 @@ export const useGameStore = create<GameState>()(
         setShowDevPanel: (show) => set({ showDevPanel: show }),
         setLoading: (loading) => set({ isLoading: loading }),
         setError: (error) => set({ error, lastUpdate: Date.now() }),
-  // Sidebar toggle
-  sidebarCollapsed: false,
-  setSidebarCollapsed: (collapsed: boolean) => set({ sidebarCollapsed: collapsed }),
-
+        setSidebarCollapsed: (collapsed: boolean) => set({ sidebarCollapsed: collapsed }),
         // Notification actions
         addNotification: (notification) => set((state) => ({
           notifications: [...state.notifications, {

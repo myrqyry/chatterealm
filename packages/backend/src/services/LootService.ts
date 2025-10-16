@@ -8,12 +8,12 @@ import { CataclysmService } from './CataclysmService';
 export class LootService extends LootManager {
   private lootingPlayers: Map<string, LootingSession> = new Map();
   private gameStateManager: GameStateManager;
-  private cataclysmService: CataclysmService;
+  private cataclysmService: CataclysmService | null;
 
-  constructor(gameStateManager: GameStateManager, cataclysmService: CataclysmService) {
+  constructor(gameStateManager: GameStateManager, cataclysmService?: CataclysmService) {
     super();
     this.gameStateManager = gameStateManager;
-    this.cataclysmService = cataclysmService;
+    this.cataclysmService = cataclysmService || null;
   }
 
   public startLooting(playerId: string, buildingId: string): LootResult {
@@ -105,7 +105,7 @@ export class LootService extends LootManager {
       return true;
     }
 
-    if (this.cataclysmService.isInCataclysmCircle(player.position, this.gameStateManager.getGameWorld())) {
+    if (this.cataclysmService && this.cataclysmService.isInCataclysmCircle(player.position, this.gameStateManager.getGameWorld())) {
           return true;
     }
 
