@@ -52,4 +52,39 @@ describe('WebSocketServer', () => {
         });
         clientSocket.disconnect();
     });
+
+    describe('Stale Connection Cleanup', () => {
+        it('should not remove an active player if their old socket is cleaned up', (done) => {
+            const playerId = 'player-1';
+            const oldSocketId = 'stale-socket-id';
+
+            // Manually add a stale entry to connectedClients
+            const connectedClients = wsServer['connectedClients'];
+            connectedClients.set(oldSocketId, {
+                playerId,
+                socketId: oldSocketId,
+                connectedAt: Date.now() - 70000, // 70 seconds ago
+            });
+
+            // Manually add the NEW, ACTIVE socket entry for the player
+            const playerSockets = wsServer['playerSockets'];
+            if (clientSocket.id) {
+                playerSockets.set(playerId, clientSocket.id);
+            } else {
+                return done(new Error('Client socket ID is not available'));
+            }
+
+            // Manually trigger the cleanup
+            wsServer['cleanupStaleClientData']();
+
+            // Assert that the active player's socket is still tracked
+            expect(playerSockets.has(playerId)).toBe(true);
+            expect(playerSockets.get(playerId)).toBe(clientSocket.id);
+
+            // Assert that the stale socket entry was removed
+            expect(connectedClients.has(oldSocketId)).toBe(false);
+
+            done();
+        });
+    });
 });
