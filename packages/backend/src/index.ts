@@ -44,14 +44,29 @@ const handDrawnBuildingService = new HandDrawnBuildingService();
 const playerMovementService = new PlayerMovementService(gameStateManager.getGameWorld());
 const combatService = new CombatService();
 
-// Instantiate the Twitch service
-const twitchService = new StreamOptimizedTwitchService(
-  webSocketServer.getIO(),
-  process.env.TWITCH_CLIENT_ID!,
-  process.env.TWITCH_CLIENT_SECRET!,
-  process.env.TWITCH_CHANNEL_NAME!,
-  gameStateManager,
-);
+// Conditionally instantiate the Twitch service
+let twitchService: StreamOptimizedTwitchService | null = null;
+const twitchClientId = process.env.TWITCH_CLIENT_ID;
+const twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
+const twitchChannelName = process.env.TWITCH_CHANNEL_NAME;
+
+if (twitchClientId && twitchClientSecret && twitchChannelName) {
+  twitchService = new StreamOptimizedTwitchService(
+    webSocketServer.getIO(),
+    twitchClientId,
+    twitchClientSecret,
+    twitchChannelName,
+    gameStateManager,
+  );
+
+  // Connect to Twitch
+  twitchService.connect().catch(err => {
+      console.error("Failed to connect to Twitch:", err);
+  });
+  console.log('🔌 Twitch integration enabled.');
+} else {
+  console.warn('⚠️ Twitch credentials not provided in environment variables (TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_CHANNEL_NAME). Twitch integration is disabled.');
+}
 
 // Instantiate remaining services
 // Services
@@ -64,11 +79,6 @@ gameStateManager.setServices({
   playerMovementService,
   combatService,
   lootService,
-});
-
-// Connect to Twitch
-twitchService.connect().catch(err => {
-    console.error("Failed to connect to Twitch:", err);
 });
 
 // Middleware
@@ -182,6 +192,9 @@ app.use((req, res) => {
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('\n🛑 Received SIGINT, shutting down gracefully...');
+  if (twitchService) {
+    twitchService.destroy();
+  }
   webSocketServer.shutdown();
   httpServer.close(() => {
     console.log('✅ HTTP server closed');
@@ -191,6 +204,9 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
   console.log('\n🛑 Received SIGTERM, shutting down gracefully...');
+  if (twitchService) {
+    twitchService.destroy();
+  }
   webSocketServer.shutdown();
   httpServer.close(() => {
     console.log('✅ HTTP server closed');
@@ -198,15 +214,18 @@ process.on('SIGTERM', () => {
   });
 });
 
-httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 ChatterRealm Backend running on http://localhost:${PORT}`);
-  console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
-  console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
-  console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
-  console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
-  console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
-  console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
-});
+// Start the server only if this file is run directly
+if (require.main === module) {
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 ChatterRealm Backend running on http://localhost:${PORT}`);
+    console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
+    console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
+    console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
+    console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
+    console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
+    console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
+  });
+}
 
 // Endpoint to fetch emoji SVG (query param: char)
 app.get('/api/emoji', async (req, res) => {
@@ -214,17 +233,10 @@ app.get('/api/emoji', async (req, res) => {
     const q = req.query.char as string | undefined;
 
     // Input validation
-    if (!q) {
+    if (!q || typeof q !== 'string' || q.length === 0) {
       return res.status(400).json({
         error: 'Missing required parameter: char',
         message: 'Please provide an emoji character via the "char" query parameter'
-      });
-    }
-
-    if (typeof q !== 'string' || q.length === 0) {
-      return res.status(400).json({
-        error: 'Invalid parameter: char',
-        message: 'The "char" parameter must be a non-empty string'
       });
     }
 
@@ -311,3 +323,6 @@ app.get('/api/emoji', async (req, res) => {
     });
   }
 });
+
+// Export the app and server for testing purposes
+export { app, httpServer };
