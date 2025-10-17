@@ -7,12 +7,20 @@ export class StreamOptimizedTwitchService extends TwitchService {
   private processingBatch = false;
   private readonly BATCH_SIZE = 10;
   private readonly BATCH_INTERVAL = 2000; // Process every 2 seconds for stream pacing
+  private batchProcessingInterval?: NodeJS.Timeout;
 
   constructor(io: Server, clientId: string, clientSecret: string, channelName: string, gameStateManager: GameStateManager) {
     super(io, clientId, clientSecret, channelName, gameStateManager);
 
     // Process commands in batches to maintain stream watchability
-    setInterval(() => this.processBatchedCommands(), this.BATCH_INTERVAL);
+    this.batchProcessingInterval = setInterval(() => this.processBatchedCommands(), this.BATCH_INTERVAL);
+  }
+
+  public destroy(): void {
+    if (this.batchProcessingInterval) {
+      clearInterval(this.batchProcessingInterval);
+      this.batchProcessingInterval = undefined;
+    }
   }
 
   private async processBatchedCommands(): Promise<void> {

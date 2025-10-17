@@ -1,4 +1,4 @@
-import { BuildingType, HandDrawnBuilding } from 'shared/src/types/game';
+import { BuildingType, HandDrawnBuilding } from 'shared/types/game';
 
 export class HandDrawnBuildingService {
   public generateBuilding(type: BuildingType, size: { width: number; height: number }): HandDrawnBuilding {
