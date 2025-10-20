@@ -31,7 +31,12 @@ export class WebSocketClient {
   private connect(): void {
     try {
       // Use environment variable for the backend URL
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8081';
+      // Prefer an explicit WebSocket URL if provided, otherwise use the backend URL or connect to same-origin
+      const backendUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_BACKEND_URL || undefined;
+      // Log resolved URL so runtime mismatches (e.g., localhost:3001) are visible in console
+      // eslint-disable-next-line no-console
+      console.debug('[WS] Resolved backend URL:', backendUrl);
+
       this.socket = io(backendUrl, {
         autoConnect: true,
         reconnection: true,
@@ -80,7 +85,9 @@ export class WebSocketClient {
     });
 
     this.socket.on('connect_error', (error) => {
-      throttledError('WS_CONNECT_ERROR', `Connection error: ${error.message}`);
+      // The error object may be a plain Error or a string; normalize for logging
+      const msg = (error && (error.message || error.toString())) || String(error);
+      throttledError('WS_CONNECT_ERROR', `Connection error: ${msg}`);
       this.reconnectAttempts++;
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         throttledError('WS_MAX_ATTEMPTS', 'Max reconnection attempts reached - giving up');

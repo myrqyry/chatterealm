@@ -8,6 +8,11 @@
     "build": "tsc --listEmittedFiles",
     "dev": "tsc --watch"
   },
+  "exports": {
+    "./*": "./dist/*",
+    "./types/*": "./dist/types/*.js",
+    ".": "./dist/index.js"
+  },
   "devDependencies": {
     "typescript": "^5.9.2"
   },
