@@ -29,6 +29,7 @@ export class WebSocketServer {
   private characterHandler: CharacterHandler;
   private connectedClients: Map<string, ClientData> = new Map();
   private playerSockets: Map<string, string> = new Map(); // playerId -> socketId
+  private authenticationLocks: Set<string> = new Set();
   private gameLoopInterval: NodeJS.Timeout | null = null;
   private isGameLoopRunning: boolean = false;
   private cleanupInterval: NodeJS.Timeout | null = null; // Add cleanup interval for stale entries
@@ -153,6 +154,13 @@ export class WebSocketServer {
   }
 
   private handlePlayerJoin(socket: Socket, playerData: JoinGameData): void {
+    if (this.authenticationLocks.has(playerData.id)) {
+      socket.emit('error', { message: 'Authentication already in progress for this player.' });
+      return;
+    }
+
+    this.authenticationLocks.add(playerData.id);
+
     try {
       if (this.isPlayerOnline(playerData.id)) {
         socket.emit('error', { message: 'Player is already online.' });
@@ -262,6 +270,8 @@ export class WebSocketServer {
     } catch (error) {
       console.error('Error handling player join:', error);
       socket.emit('error', { message: 'Failed to join game' });
+    } finally {
+      this.authenticationLocks.delete(playerData.id);
     }
   }
 
