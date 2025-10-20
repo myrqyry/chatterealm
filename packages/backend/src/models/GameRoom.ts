@@ -34,8 +34,9 @@ export class GameRoom {
     this.id = roomId;
     this.gameStateManager = new GameStateManager();
     const gameWorld = this.gameStateManager.getGameWorld();
-    const npcManager = new NPCManager(new Set());
-    const gameWorldManager = new GameWorldManager(npcManager);
+    // Reuse managers from the authoritative GameStateManager to avoid divergent state
+    const npcManager = this.gameStateManager.getNPCManager();
+    const gameWorldManager = this.gameStateManager.getGameWorldManager();
     this.playerService = new PlayerService(gameWorld, gameWorldManager, new Set(), new Set());
     this.combatService = new CombatService();
     this.cataclysmService = new CataclysmService(new LootManager(), npcManager, new Set());

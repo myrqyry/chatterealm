@@ -213,14 +213,24 @@ export class PlayerMovementService {
     startNode.fCost = startNode.gCost + startNode.hCost;
 
     openSet.push(startNode);
+    const openSetMap: Map<string, PathfindingNode> = new Map();
+    openSetMap.set(`${start.x},${start.y}`, startNode);
     let nodesProcessed = 0;
 
     while (openSet.length > 0 && nodesProcessed < maxNodes) {
       nodesProcessed++;
 
-      // Find node with lowest fCost
-      openSet.sort((a, b) => a.fCost - b.fCost);
-      const currentNode = openSet.shift()!;
+      // Find node with lowest fCost using linear scan (avoid full sort)
+      let bestIndex = 0;
+      for (let i = 1; i < openSet.length; i++) {
+        const a = openSet[i];
+        const b = openSet[bestIndex];
+        if (a.fCost < b.fCost || (a.fCost === b.fCost && a.hCost < b.hCost)) {
+          bestIndex = i;
+        }
+      }
+      const currentNode = openSet.splice(bestIndex, 1)[0];
+      openSetMap.delete(`${currentNode.position.x},${currentNode.position.y}`);
 
       const currentKey = `${currentNode.position.x},${currentNode.position.y}`;
       closedSet.add(currentKey);
@@ -269,9 +279,8 @@ export class PlayerMovementService {
         const gCost = currentNode.gCost + (movementCost * terrainCost);
 
         // Check if this neighbor is already in the open set
-        const existingNode = openSet.find(node => 
-          node.position.x === neighborPos.x && node.position.y === neighborPos.y
-        );
+        const neighborKey = `${neighborPos.x},${neighborPos.y}`;
+        const existingNode = openSetMap.get(neighborKey);
 
         if (existingNode) {
           if (gCost < existingNode.gCost) {
@@ -289,6 +298,7 @@ export class PlayerMovementService {
           };
           neighborNode.fCost = neighborNode.gCost + neighborNode.hCost;
           openSet.push(neighborNode);
+          openSetMap.set(neighborKey, neighborNode);
         }
       }
     }
@@ -308,8 +318,8 @@ export class PlayerMovementService {
       currentNode = currentNode.parent;
     }
 
-    // Remove the starting position
-    path.shift();
+    // Remove the starting position only when there's more than one step
+    if (path.length > 1) path.shift();
     return path;
   }
 
@@ -317,7 +327,10 @@ export class PlayerMovementService {
    * Calculate distance between two positions (Manhattan distance)
    */
   private getDistance(pos1: Position, pos2: Position): number {
-    return Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+    // Use Chebyshev distance (max of dx,dy) which is admissible for 8-directional movement
+    const dx = Math.abs(pos1.x - pos2.x);
+    const dy = Math.abs(pos1.y - pos2.y);
+    return Math.max(dx, dy);
   }
 
   /**

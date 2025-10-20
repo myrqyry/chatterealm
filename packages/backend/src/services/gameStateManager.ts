@@ -50,6 +50,15 @@ export class GameStateManager {
     return this.gameWorld;
   }
 
+  // Expose internal managers so other parts of the server can reuse the same instances
+  public getGameWorldManager(): GameWorldManager {
+    return this.gameWorldManager;
+  }
+
+  public getNPCManager(): NPCManager {
+    return this.npcManager;
+  }
+
   public getBuildingAt(position: any): any {
     return this.gameWorld.buildings.find(
       b => b.position.x === position.x && b.position.y === position.y

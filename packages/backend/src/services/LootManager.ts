@@ -28,6 +28,7 @@ export class LootManager {
       position: { ...position },
       stats: this.generateEnhancedItemStats(itemType, rarity, terrainType, isCataclysmLoot),
       isHidden: true,
+      revealStartTime: Date.now(),
       revealDuration: GAME_CONFIG.itemRevealTimes[rarity],
       revealProgress: 0.0,
       canBeLooted: false
@@ -170,6 +171,7 @@ export class LootManager {
         position: { ...defeated.position },
         stats: this.generateItemStats(itemType as string, rarity as string),
         isHidden: true,
+        revealStartTime: Date.now(),
         revealDuration: GAME_CONFIG.itemRevealTimes[rarity as ItemRarity],
         revealProgress: 0.0,
         canBeLooted: false

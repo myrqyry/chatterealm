@@ -24,6 +24,9 @@ export interface PlayerCommand {
 
 import { gameService } from './GameService';
 
+// Central socket room name used across this module
+const SOCKET_MAIN_ROOM = 'main_room';
+
 export class WebSocketServer {
   private io: SocketIOServer;
   private characterHandler: CharacterHandler;
@@ -212,8 +215,7 @@ export class WebSocketServer {
         lastActive: Date.now()
       };
 
-      const roomId = 'main_room';
-      const room = gameService.joinRoom(roomId, player);
+      const room = gameService.joinRoom(SOCKET_MAIN_ROOM, playerData);
 
       if (!room) {
         console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${roomId}`);
@@ -223,15 +225,23 @@ export class WebSocketServer {
 
       console.log(`[JOIN_REGISTERING] About to register socket ${socket.id} in connectedClients`);
 
-      // Track client connection
+      // Use authoritative player instance created by the room
+      const addedPlayer = room.getPlayers().find(p => p.id === playerData.id);
+      if (!addedPlayer) {
+        console.error(`[SPAWN_ERROR] Player added but authoritative instance not found for id ${playerData.id}`);
+        socket.emit('error', { message: 'Failed to join room (internal)' });
+        return;
+      }
+
+      // Track client connection using authoritative player id
       const clientData: ClientData = {
-        playerId: player.id,
+        playerId: addedPlayer.id,
         socketId: socket.id,
         connectedAt: Date.now()
       };
 
       this.connectedClients.set(socket.id, clientData);
-      this.playerSockets.set(player.id, socket.id);
+      this.playerSockets.set(addedPlayer.id, socket.id);
 
       console.log(`[JOIN_REGISTERED] Socket ${socket.id} registered in connectedClients`);
       console.log(`[JOIN_REGISTERED] ConnectedClients after join: ${this.connectedClients.size}`);
@@ -249,21 +259,21 @@ export class WebSocketServer {
       }
 
       // Join player to their personal room for targeted updates
-      socket.join(`player_${player.id}`);
+      socket.join(`player_${addedPlayer.id}`);
 
-      // Send success response with initial game state
+      // Send success response with initial game state using authoritative player
       socket.emit(SocketEvents.GAME_JOINED, {
-        player: player,
+        player: addedPlayer,
         gameWorld: room.getGameState(),
       });
 
-      // Broadcast player joined to all other clients
-      socket.to('game_room').emit(SocketEvents.PLAYER_JOINED, {
-        player: player
+      // Broadcast player joined to all other clients in the main room
+      socket.to(SOCKET_MAIN_ROOM).emit(SocketEvents.PLAYER_JOINED, {
+        player: addedPlayer
       });
 
       // Join the main game room
-      socket.join('game_room');
+      socket.join(SOCKET_MAIN_ROOM);
 
       socket.emit('join_acknowledged', { status: 'success' });
 
@@ -386,6 +396,9 @@ export class WebSocketServer {
           this.playerSockets.delete(clientData.playerId);
         }
 
+        // Ensure any authentication locks are cleared for this player
+        this.authenticationLocks.delete(clientData.playerId);
+
         console.log(`Client disconnected: ${socket.id}`);
       }
     } catch (error) {
@@ -398,10 +411,10 @@ export class WebSocketServer {
     try {
       const room = gameService.getRoom('main_room');
       if (room) {
-        const delta = room.getGameStateDelta();
+        const deltas = room.getGameStateDelta();
         // Only broadcast if there are actual changes
-        if (Object.keys(delta).length > 0) {
-          this.io.to('game_room').emit('game_state_delta', delta);
+        if (Array.isArray(deltas) && deltas.length > 0) {
+          this.io.to(SOCKET_MAIN_ROOM).emit('game_state_delta', deltas);
         }
       }
     } catch (error) {
@@ -583,7 +596,7 @@ export class WebSocketServer {
   }
 
   public broadcast(event: string, data: any): void {
-    this.io.to('game_room').emit(event, data);
+    this.io.to(SOCKET_MAIN_ROOM).emit(event, data);
   }
 
   // Graceful shutdown
