@@ -81,6 +81,12 @@ export class PlayerMovementService {
       return { success: false, message: 'Cannot move while defeated.' };
     }
 
+    // Instant validation for distance
+    const distance = this.getDistance(player.position, target);
+    if (distance > 20) { // A reasonable limit for a single move request
+      return { success: false, message: 'Target is too far.' };
+    }
+
     // Check if target is within world bounds
     if (target.x < 0 || target.x >= gameWorld.grid[0].length || 
         target.y < 0 || target.y >= gameWorld.grid.length) {
