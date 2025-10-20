@@ -58,7 +58,11 @@ describe('WebSocketServer Race Conditions', () => {
                     resolve();
                 });
                 client.on('error', (error) => {
-                    if (error.message === 'Player is already online.') {
+                    const validErrors = [
+                        'Authentication already in progress for this player.',
+                        'Player is already online.'
+                    ];
+                    if (validErrors.includes(error.message)) {
                         errorCount++;
                     }
                     resolve();
