@@ -57,6 +57,7 @@ export class GameRoom {
   public addPlayer(playerData: PlayerData): Player {
     const player = this.playerService.addPlayer(playerData);
     this.players.set(player.id, player);
+    this.lastGameState = clone(this.gameStateManager.getGameWorld());
     return player;
   }
 
@@ -118,22 +119,37 @@ export class GameRoom {
     const currentState = this.gameStateManager.getGameWorld();
     const deltas: GameStateDelta[] = [];
 
-    // A simple and inefficient way to check for changes.
-    // In a real application, you'd want a more granular check,
-    // perhaps by comparing object hashes or versions.
-    if (JSON.stringify(currentState.players) !== JSON.stringify(this.lastGameState.players)) {
-      deltas.push({ type: 'players', data: currentState.players });
+    const changedPlayers = this.findChangedEntities(this.lastGameState.players, currentState.players);
+    if (changedPlayers.length > 0) {
+      deltas.push({ type: 'players', data: changedPlayers });
     }
-    if (JSON.stringify(currentState.npcs) !== JSON.stringify(this.lastGameState.npcs)) {
-      deltas.push({ type: 'npcs', data: currentState.npcs });
+
+    const changedNpcs = this.findChangedEntities(this.lastGameState.npcs, currentState.npcs);
+    if (changedNpcs.length > 0) {
+      deltas.push({ type: 'npcs', data: changedNpcs });
     }
-    if (JSON.stringify(currentState.items) !== JSON.stringify(this.lastGameState.items)) {
-      deltas.push({ type: 'items', data: currentState.items });
+
+    const changedItems = this.findChangedEntities(this.lastGameState.items, currentState.items);
+    if (changedItems.length > 0) {
+      deltas.push({ type: 'items', data: changedItems });
     }
 
     // After calculating the delta, update the last known state.
     this.lastGameState = clone(currentState);
 
     return deltas;
+  }
+
+  private findChangedEntities<T extends { id: string }>(oldEntities: T[], newEntities: T[]): T[] {
+    const oldEntityMap = new Map(oldEntities.map(e => [e.id, e]));
+    const changed: T[] = [];
+
+    for (const newEntity of newEntities) {
+      const oldEntity = oldEntityMap.get(newEntity.id);
+      if (!oldEntity || JSON.stringify(oldEntity) !== JSON.stringify(newEntity)) {
+        changed.push(newEntity);
+      }
+    }
+    return changed;
   }
 }

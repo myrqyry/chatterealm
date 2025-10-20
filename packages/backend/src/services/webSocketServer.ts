@@ -265,6 +265,8 @@ export class WebSocketServer {
       // Join the main game room
       socket.join('game_room');
 
+      socket.emit('join_acknowledged', { status: 'success' });
+
       console.log(`[JOIN_SUCCESS] Player ${player.displayName} fully joined the game`);
 
     } catch (error) {
@@ -399,7 +401,7 @@ export class WebSocketServer {
         const delta = room.getGameStateDelta();
         // Only broadcast if there are actual changes
         if (Object.keys(delta).length > 0) {
-          this.io.to('main_room').emit('game_state_delta', delta);
+          this.io.to('game_room').emit('game_state_delta', delta);
         }
       }
     } catch (error) {
