@@ -16,6 +16,7 @@ import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
 import EmojiSvgSmokeTest from './components/dev/EmojiSvgSmokeTest';
 import { CharacterCreator } from './components/character/CharacterCreator';
+import PlayerProfileWrapper from './components/player/PlayerProfile/PlayerProfileWrapper';
 
 // Import mode-specific layouts
 import PlayLayout from './components/layouts/PlayLayout';
@@ -78,6 +79,16 @@ function App() {
             element={
               <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
                 <CharacterCreator />
+              </BaseLayout>
+            }
+          />
+
+          {/* Player Profile */}
+          <Route
+            path="/profile/:playerId"
+            element={
+              <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
+                <PlayerProfileWrapper />
               </BaseLayout>
             }
           />

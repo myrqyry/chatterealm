@@ -153,6 +153,14 @@ export class WebSocketServer {
         console.error(`Socket error for ${socket.id}:`, error);
         this.handlePlayerDisconnect(socket);
       });
+
+      socket.on('get_player_profile', (playerId: string) => {
+        const room = gameService.getRoom('main_room');
+        if (room) {
+          const profile = room.getPlayerProfile(playerId);
+          socket.emit('player_profile', profile);
+        }
+      });
     });
   }
 

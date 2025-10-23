@@ -1,4 +1,4 @@
-import { GameWorld, Player as PlayerData, NPC, Item } from 'shared';
+import { GameWorld, Player as PlayerData, NPC, Item, PlayerProfile } from 'shared';
 import { GameStateManager } from '../services/gameStateManager';
 import { Player } from './Player';
 import { PlayerService } from '../services/PlayerService';
@@ -76,6 +76,10 @@ export class GameRoom {
 
   public getPlayers(): PlayerData[] {
     return this.playerService.getPlayers();
+  }
+
+  public getPlayerProfile(playerId: string): PlayerProfile | null {
+    return this.playerService.getPlayerProfile(playerId);
   }
 
   /**
