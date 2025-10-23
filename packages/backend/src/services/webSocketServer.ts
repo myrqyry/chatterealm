@@ -146,17 +146,22 @@ export class WebSocketServer {
       socket.on(
         'npc_message',
         async (data: { npcId: string; message: string }) => {
-          const clientData = this.connectedClients.get(socket.id);
-          if (clientData) {
-            const room = gameService.getRoom('main_room');
-            if (room) {
-              const response = await room.handleNpcInteraction(
-                clientData.playerId,
-                data.npcId,
-                data.message
-              );
-              socket.emit('npc_response', { success: true, message: response });
+          try {
+            const clientData = this.connectedClients.get(socket.id);
+            if (clientData) {
+              const room = gameService.getRoom('main_room');
+              if (room) {
+                const response = await room.handleNpcInteraction(
+                  clientData.playerId,
+                  data.npcId,
+                  data.message
+                );
+                socket.emit('npc_response', { success: true, message: response });
+              }
             }
+          } catch (error) {
+            console.error('Error handling npc_message:', error);
+            socket.emit('npc_response', { success: false, message: 'An error occurred while processing your message.' });
           }
         }
       );

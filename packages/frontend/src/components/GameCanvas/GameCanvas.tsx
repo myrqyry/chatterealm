@@ -267,6 +267,7 @@ const GameCanvas: React.FC = () => {
 
     // For now, just log the interaction
     console.log(`Interacting with ${npc.name}`);
+    setSelectedNpc(npc);
   };
 
   const getInfectedAreas = (): Position[] => {

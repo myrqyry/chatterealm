@@ -203,7 +203,7 @@ export interface NPC {
   lootTable: Item[];
   isAlive: boolean;
   lastMoveTime: number;
-  personality?: string;
+  personality: string;
 }
 
 export interface BoundingBox {

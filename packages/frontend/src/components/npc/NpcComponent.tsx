@@ -1,5 +1,5 @@
 import React from 'react';
-import { NPC } from '@shared/types/CoveNPC';
+import { NPC } from 'shared';
 
 interface NpcComponentProps {
   npc: NPC;

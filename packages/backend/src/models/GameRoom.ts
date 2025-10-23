@@ -43,7 +43,7 @@ export class GameRoom {
     this.combatService = new CombatService();
     this.cataclysmService = new CataclysmService(new LootManager(), npcManager, new Set());
     this.lootService = new LootService(this.gameStateManager, this.cataclysmService);
-    this.npcService = new NpcService(this.gameStateManager);
+    this.npcService = new NpcService();
     this.movementService = new PlayerMovementService(gameWorld);
     this.lastGameState = clone(gameWorld);
   }

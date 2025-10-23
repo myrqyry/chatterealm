@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NPC } from '@shared/types/CoveNPC';
+import { NPC } from 'shared';
 import { webSocketClient } from '../../services/webSocketClient';
 
 interface DialogueComponentProps {
