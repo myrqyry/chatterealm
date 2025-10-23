@@ -138,15 +138,6 @@ export const CLASS_INFO = {
   }
 };
 
-// Item rarity colors for UI
-export const RARITY_COLORS = {
-  common: '#9CA3AF',
-  uncommon: '#10B981',
-  rare: '#3B82F6',
-  epic: '#8B5CF6',
-  legendary: '#F59E0B'
-};
-
 // Chat command prefixes
 export const CHAT_COMMANDS = {
   SPAWN: '!spawn',
