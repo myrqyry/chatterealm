@@ -279,8 +279,8 @@ export class PlayerMovementService {
         const gCost = currentNode.gCost + (movementCost * terrainCost);
 
         // Check if this neighbor is already in the open set
-        const neighborKey = `${neighborPos.x},${neighborPos.y}`;
-        const existingNode = openSetMap.get(neighborKey);
+        const existingNeighborKey = `${neighborPos.x},${neighborPos.y}`;
+        const existingNode = openSetMap.get(existingNeighborKey);
 
         if (existingNode) {
           if (gCost < existingNode.gCost) {

@@ -215,10 +215,10 @@ export class WebSocketServer {
         lastActive: Date.now()
       };
 
-      const room = gameService.joinRoom(SOCKET_MAIN_ROOM, playerData);
+      const room = gameService.joinRoom(SOCKET_MAIN_ROOM, player);
 
       if (!room) {
-        console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${roomId}`);
+        console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${SOCKET_MAIN_ROOM}`);
         socket.emit('error', { message: 'Failed to join room' });
         return;
       }
