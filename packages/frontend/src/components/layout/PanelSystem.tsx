@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Responsive, WidthProvider, Layout, Layouts } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { layoutManagerService } from '../../services/LayoutManagerService';
+import { useLayoutStore } from '../../stores/layoutStore';
 import ChatPanel from '../panels/ChatPanel';
 import FriendsPanel from '../panels/FriendsPanel';
 
@@ -23,10 +23,9 @@ const panelRegistry: { [key: string]: React.ComponentType } = {
 };
 
 const PanelSystem: React.FC = ({ children }) => {
-  const [layouts, setLayouts] = useState<Layouts | undefined>(layoutManagerService.getLayout('default'));
+  const { layouts, setLayouts } = useLayoutStore();
 
   const onLayoutChange = (newLayout: Layout[], newLayouts: Layouts) => {
-    layoutManagerService.updateLayout('default', newLayouts);
     setLayouts(newLayouts);
   };
 
