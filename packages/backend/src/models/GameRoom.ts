@@ -53,6 +53,17 @@ export class GameRoom {
   }
 
   /**
+   * Cleans up the game state.
+   */
+  public cleanup(): void {
+    const now = Date.now();
+    const disconnectedPlayers = this.playerService.getPlayers().filter(p => !p.connected && (now - p.lastActive > 60000));
+    for (const player of disconnectedPlayers) {
+      this.removePlayer(player.id);
+    }
+  }
+
+  /**
    * Adds a player to the game room and to the underlying game state.
    */
   public addPlayer(playerData: PlayerData): Player {

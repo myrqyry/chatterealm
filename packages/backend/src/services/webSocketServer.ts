@@ -48,8 +48,17 @@ export class WebSocketServer {
     // Initialize Socket.IO server with CORS configuration
     this.io = new SocketIOServer(httpServer, {
       cors: {
-        // Allow all origins to simplify local testing and CLI test clients
-        origin: true,
+        origin: (origin, callback) => {
+          const allowedOrigins = process.env.NODE_ENV === 'production'
+            ? ['https://chatterrealm.com', 'https://www.chatterrealm.com']
+            : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173'];
+
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
         methods: ["GET", "POST"],
         credentials: true
       },
@@ -164,19 +173,21 @@ export class WebSocketServer {
     });
   }
 
-  private handlePlayerJoin(socket: Socket, playerData: JoinGameData): void {
-    if (this.authenticationLocks.has(playerData.id)) {
-      socket.emit('error', { message: 'Authentication already in progress for this player.' });
+  private async handlePlayerJoin(socket: Socket, playerData: JoinGameData): Promise<void> {
+    const lockKey = `join_${playerData.id}`;
+
+    if (this.authenticationLocks.has(lockKey)) {
+      socket.emit('error', { message: 'Join already in progress' });
       return;
     }
 
-    this.authenticationLocks.add(playerData.id);
+    this.authenticationLocks.add(lockKey);
 
     try {
-      if (this.isPlayerOnline(playerData.id)) {
-        socket.emit('error', { message: 'Player is already online.' });
-        console.warn(`[JOIN_REJECTED] Player ${playerData.id} is already online. Rejecting join request for socket ${socket.id}.`);
-        return;
+      // Add atomic check-and-set operation
+      const existingSocket = this.playerSockets.get(playerData.id);
+      if (existingSocket && this.io.sockets.sockets.has(existingSocket)) {
+        throw new Error('Player already connected');
       }
 
       console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
@@ -288,10 +299,12 @@ export class WebSocketServer {
       console.log(`[JOIN_SUCCESS] Player ${player.displayName} fully joined the game`);
 
     } catch (error) {
-      console.error('Error handling player join:', error);
-      socket.emit('error', { message: 'Failed to join game' });
+      console.error('Player join failed:', error);
+      socket.emit('join_failed', {
+        message: error instanceof Error ? error.message : 'Join failed'
+      });
     } finally {
-      this.authenticationLocks.delete(playerData.id);
+      this.authenticationLocks.delete(lockKey);
     }
   }
 
@@ -446,9 +459,13 @@ export class WebSocketServer {
     const startTime = Date.now();
 
     try {
-      // Only run game updates if there are active players
-      if (this.getPlayerCount() === 0) {
-        // Skip updates when no players are online to save resources
+      // Completely pause game loop when no players
+      const playerCount = this.getPlayerCount();
+      if (playerCount === 0) {
+        // Reduce update frequency when empty
+        if (this.gameLoopStats.totalUpdates % 10 === 0) {
+          this.cleanupGameState(); // Clean up stale data
+        }
         return;
       }
 
@@ -457,30 +474,32 @@ export class WebSocketServer {
         room.update();
       }
 
-      // Broadcast only deltas (state changes)
+      // Only broadcast if there are changes and active players
       this.broadcastGameDeltas();
 
-      // Update performance statistics
       const updateTime = Date.now() - startTime;
       this.updateGameLoopStats(updateTime);
 
-      // Log performance metrics every 60 seconds
+      // Performance monitoring with memory usage
       if (this.gameLoopStats.totalUpdates % 60 === 0) {
         this.logGameLoopStats();
-      }
 
+        // Force garbage collection in development
+        if (process.env.NODE_ENV === 'development' && global.gc) {
+          global.gc();
+        }
+      }
     } catch (error) {
       this.gameLoopStats.errorCount++;
       console.error('❌ Error in game loop execution:', error);
+    }
+  }
 
-      // Log detailed error information
-      console.error('Game loop error details:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        playerCount: this.getPlayerCount(),
-        totalUpdates: this.gameLoopStats.totalUpdates,
-        errorCount: this.gameLoopStats.errorCount
-      });
+  private cleanupGameState(): void {
+    // Add game state cleanup logic here
+    const room = gameService.getRoom('main_room');
+    if (room) {
+      room.cleanup(); // Implement this method in GameService
     }
   }
 

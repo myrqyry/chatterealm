@@ -30,8 +30,10 @@ import { PlayerMovementService } from './services/PlayerMovementService';
 import { CombatService } from './services/CombatService';
 import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
 import { GAME_CONFIG } from 'shared';
+import { validateEnv } from './config/env';
 
 const app = express();
+const env = validateEnv();
 const httpServer = createServer(app);
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8081;
 
@@ -113,6 +115,20 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  const originalSend = res.send;
+
+  res.send = function(data) {
+    const duration = Date.now() - start;
+    console.log(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+    return originalSend.call(this, data);
+  };
+
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -132,15 +148,26 @@ app.use('/api/', apiLimiter);
 
 // Health check endpoint
 app.get('/', (req, res) => {
+  const uptime = process.uptime();
+  const memUsage = process.memoryUsage();
+
   res.json({
     status: 'ok',
     message: 'ChatterRealm Backend API',
     version: '1.0.0',
+    uptime: `${Math.floor(uptime / 60)}m ${Math.floor(uptime % 60)}s`,
+    memory: {
+      used: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+      total: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`
+    },
     world: {
       players: gameStateManager.getGameWorld().players.length,
       npcs: gameStateManager.getGameWorld().npcs.length,
       items: gameStateManager.getGameWorld().items.length,
       phase: gameStateManager.getGameWorld().phase
+    },
+    websocket: {
+      connections: webSocketServer.getPlayerCount()
     }
   });
 });
@@ -229,6 +256,7 @@ if (require.main === module) {
 
 // Endpoint to fetch emoji SVG (query param: char)
 app.get('/api/emoji', async (req, res) => {
+  const EMOJI_REGEX = /^[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]+$/u;
   try {
     const q = req.query.char as string | undefined;
 
@@ -247,6 +275,13 @@ app.get('/api/emoji', async (req, res) => {
       return res.status(400).json({
         error: 'Invalid parameter: char',
         message: 'The "char" parameter contains invalid URL encoding'
+      });
+    }
+
+    if (!EMOJI_REGEX.test(emoji)) {
+      return res.status(400).json({
+        error: 'Invalid emoji character',
+        message: 'Only valid Unicode emoji characters are allowed'
       });
     }
 
