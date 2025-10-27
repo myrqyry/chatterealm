@@ -38,11 +38,15 @@ if (_isDev) {
   })
 }
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
     </ThemeProvider>
   </React.StrictMode>,
 )
