@@ -5,6 +5,7 @@ import Sidebar from '../sidebar/Sidebar';
 import { useGameStore } from '../../stores/gameStore';
 import { LAYOUT, COMMON_STYLES, Z_INDEX, BREAKPOINTS } from '../../utils/designSystem';
 import useResponsive from '../../hooks/useResponsive'; // Import the new hook
+import PanelSystem from './PanelSystem';
 
 interface BaseLayoutProps {
   mode: 'play' | 'spectate' | 'dev';
@@ -118,7 +119,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
               position: 'relative',
             }}
           >
-            {children}
+            <PanelSystem>{children}</PanelSystem>
           </div>
 
           {/* Game Legend */}
