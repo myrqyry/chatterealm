@@ -40,8 +40,8 @@ describe('LootService', () => {
     };
 
     // Mock GameStateManager
-    mockGameStateManager = new (GameStateManager as any)();
-    mockGameStateManager.getGameWorld = jest.fn().mockReturnValue(mockGameWorld);
+    mockGameStateManager = new (GameStateManager as any)({ options: { generateNPCs: false, worldType: 'test' } });
+    (mockGameStateManager.getGameWorld as jest.Mock).mockReturnValue(mockGameWorld);
 
     // Mock CataclysmService
     const mockLootManager = new LootManager();

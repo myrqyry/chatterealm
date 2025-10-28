@@ -17,7 +17,9 @@ process.on('unhandledRejection', (reason, promise) => {
     process.exit(1);
   }
 });
+import compression from 'compression';
 import cors from 'cors';
+import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { WebSocketServer } from './services/webSocketServer';
 import { GameStateManager } from './services/gameStateManager';
@@ -35,22 +37,19 @@ import { validateEnv } from './config/env';
 const app = express();
 const env = validateEnv();
 const httpServer = createServer(app);
-const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8081;
 
 const gameStateManager = new GameStateManager();
 const emojiService = new EmojiService();
 const webSocketServer = new WebSocketServer(httpServer);
 const handDrawnBuildingService = new HandDrawnBuildingService();
 
-// Lower-level services instantiated and wired for compatibility
-const playerMovementService = new PlayerMovementService(gameStateManager.getGameWorld());
-const combatService = new CombatService();
+// No longer needed, as services are instantiated within GameStateManager
 
 // Conditionally instantiate the Twitch service
 let twitchService: StreamOptimizedTwitchService | null = null;
-const twitchClientId = process.env.TWITCH_CLIENT_ID;
-const twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
-const twitchChannelName = process.env.TWITCH_CHANNEL_NAME;
+const twitchClientId = env.TWITCH_CLIENT_ID;
+const twitchClientSecret = env.TWITCH_CLIENT_SECRET;
+const twitchChannelName = env.TWITCH_CHANNEL_NAME;
 
 if (twitchClientId && twitchClientSecret && twitchChannelName) {
   twitchService = new StreamOptimizedTwitchService(
@@ -70,22 +69,13 @@ if (twitchClientId && twitchClientSecret && twitchChannelName) {
   console.warn('⚠️ Twitch credentials not provided in environment variables (TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_CHANNEL_NAME). Twitch integration is disabled.');
 }
 
-// Instantiate remaining services
-// Services
-const streamCommentaryService = new StreamCommentaryService();
-const autoWanderService = new AutoWanderService(gameStateManager);
-const lootService = new LootService(gameStateManager);
+// The remaining services are instantiated within GameStateManager or are not used.
 
-// Wire cross-service references back into the GameStateManager so older APIs still work
-gameStateManager.setServices({
-  playerMovementService,
-  combatService,
-  lootService,
-});
+// All services are now injected into GameStateManager via its constructor.
 
 // Middleware
 // CORS Configuration
-const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
+const allowedOriginsEnv = env.ALLOWED_ORIGINS;
 const allowedOrigins = allowedOriginsEnv 
   ? allowedOriginsEnv.split(',').map(origin => origin.trim())
   : process.env.NODE_ENV === 'production'
@@ -94,37 +84,56 @@ const allowedOrigins = allowedOriginsEnv
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, curl, etc.)
+    // Stricter origin validation for all environments
     if (!origin) {
-      // In production, be more strict
-      if (process.env.NODE_ENV === 'production') {
-        callback(new Error('Origin header is required in production'));
-      } else {
-        callback(null, true);
-      }
+      callback(new Error('Origin header is required'));
       return;
     }
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn(`Blocked request from unauthorized origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST'], // Remove unnecessary methods
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400 // Cache preflight responses
+}));
+
+app.use((req: any, res, next) => {
+  req.id = crypto.randomUUID();
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
+
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  threshold: 1024
 }));
 
 // Request logging middleware
-app.use((req, res, next) => {
+app.use((req: any, res, next) => {
   const start = Date.now();
   const originalSend = res.send;
 
   res.send = function(data) {
-    const duration = Date.now() - start;
-    console.log(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
-    return originalSend.call(this, data);
+    try {
+      const duration = Date.now() - start;
+      console.log(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+      return originalSend.call(this, data);
+    } catch (error) {
+      console.error('Error in response logging:', error);
+      // Ensure response is still sent
+      return originalSend.call(this, data);
+    }
   };
 
   next();
@@ -133,8 +142,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting with configurable values
-const rateLimitWindowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes default
-const rateLimitMaxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10); // 100 requests default
+const rateLimitWindowMs = env.RATE_LIMIT_WINDOW_MS;
+const rateLimitMaxRequests = env.RATE_LIMIT_MAX_REQUESTS;
 
 const apiLimiter = rateLimit({
   windowMs: rateLimitWindowMs,
@@ -243,8 +252,8 @@ process.on('SIGTERM', () => {
 
 // Start the server only if this file is run directly
 if (require.main === module) {
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 ChatterRealm Backend running on http://localhost:${PORT}`);
+  httpServer.listen(env.PORT, '0.0.0.0', () => {
+    console.log(`🚀 ChatterRealm Backend running on http://localhost:${env.PORT}`);
     console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
     console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
     console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
@@ -256,40 +265,30 @@ if (require.main === module) {
 
 // Endpoint to fetch emoji SVG (query param: char)
 app.get('/api/emoji', async (req, res) => {
-  const EMOJI_REGEX = /^[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]+$/u;
+  // Enhanced validation with stricter controls
+  const SAFE_EMOJI_REGEX = /^[\p{Emoji_Presentation}\p{Emoji}\uFE0F]{1,4}$/u;
   try {
     const q = req.query.char as string | undefined;
 
     // Input validation
-    if (!q || typeof q !== 'string' || q.length === 0) {
+    if (!q || typeof q !== 'string' || q.length > 20) {
       return res.status(400).json({
-        error: 'Missing required parameter: char',
-        message: 'Please provide an emoji character via the "char" query parameter'
+        error: 'Invalid emoji parameter',
+        message: 'Please provide a valid, URL-encoded emoji character via the "char" query parameter.'
       });
     }
 
     let emoji: string;
     try {
       emoji = decodeURIComponent(q);
-    } catch (decodeError) {
+      // Additional validation after decoding
+      if (!SAFE_EMOJI_REGEX.test(emoji)) {
+        throw new Error('Invalid emoji format');
+      }
+    } catch (error) {
       return res.status(400).json({
-        error: 'Invalid parameter: char',
-        message: 'The "char" parameter contains invalid URL encoding'
-      });
-    }
-
-    if (!EMOJI_REGEX.test(emoji)) {
-      return res.status(400).json({
-        error: 'Invalid emoji character',
-        message: 'Only valid Unicode emoji characters are allowed'
-      });
-    }
-
-    // Validate emoji is a single character or valid emoji sequence
-    if (emoji.length > 10) {
-      return res.status(400).json({
-        error: 'Invalid parameter: char',
-        message: 'Emoji character is too long (max 10 characters)'
+        error: 'Invalid emoji encoding or format',
+        message: 'The provided emoji is either not a valid emoji or is improperly encoded.'
       });
     }
 

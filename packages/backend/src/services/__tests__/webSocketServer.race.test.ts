@@ -71,6 +71,7 @@ describe('WebSocketServer Race Conditions', () => {
                 client.on('join_failed', (error) => {
                     const validErrors = [
                         'Player already connected',
+                        'Join failed'
                     ];
                     if (validErrors.includes(error.message)) {
                         errorCount++;

@@ -1,43 +1,39 @@
 import { GameWorld, GAME_CONFIG, BiomeType } from 'shared';
-// Lightweight event type used by legacy callers (CataclysmService, etc.)
-export interface GameEvent {
-  type: string;
-  data?: any;
-}
-import type { PlayerMovementService, MoveResult } from './PlayerMovementService';
-import type { CombatService, CombatResult } from './CombatService';
-import type { LootService } from './LootService';
-import type { ItemResult } from './LootManager';
+import { PlayerMovementService, MoveResult } from './PlayerMovementService';
+import { CombatService, CombatResult } from './CombatService';
+import { LootService } from './LootService';
+import { ItemResult } from './LootManager';
 import { GameWorldManager } from './GameWorldManager';
 import { NPCManager } from './NPCManager';
+
+interface GameServices {
+  playerMovement: PlayerMovementService;
+  combat: CombatService;
+  loot: LootService;
+}
+
+interface GameStateManagerConfig {
+  services?: Partial<GameServices>;
+  options?: { generateNPCs?: boolean; worldType?: 'test' | 'default' };
+}
 
 export class GameStateManager {
   private gameWorld: GameWorld;
   private gameWorldManager: GameWorldManager;
   private npcManager: NPCManager;
-  // Optional references to other services for compatibility wrappers
-  private playerMovementService?: PlayerMovementService;
-  private combatService?: CombatService;
-  private lootService?: LootService;
+  private services: GameServices;
 
-  constructor(options?: { generateNPCs?: boolean; worldType?: 'test' | 'default' }) {
+  constructor(config: GameStateManagerConfig = {}) {
     this.npcManager = new NPCManager(new Set());
     this.gameWorldManager = new GameWorldManager(this.npcManager);
-    this.gameWorld = this.gameWorldManager.initializeGameWorld(options);
-  }
+    this.gameWorld = this.gameWorldManager.initializeGameWorld(config.options);
 
-  /**
-   * Wire other services into this manager to preserve the legacy API surface.
-   * Accepts type-only references to avoid runtime circular imports.
-   */
-  public setServices(services: {
-    playerMovementService?: PlayerMovementService;
-    combatService?: CombatService;
-    lootService?: LootService;
-  }): void {
-    this.playerMovementService = services.playerMovementService;
-    this.combatService = services.combatService;
-    this.lootService = services.lootService;
+    // Dependency injection with defaults
+    this.services = {
+      playerMovement: config.services?.playerMovement || new PlayerMovementService(this.gameWorld),
+      combat: config.services?.combat || new CombatService(),
+      loot: config.services?.loot || new LootService(this),
+    };
   }
 
   public update(): void {
@@ -77,70 +73,37 @@ export class GameStateManager {
     return this.gameWorld.grid[position.y][position.x];
   }
 
-  /**
-   * Compatibility: request a player movement via the MovementService
-   */
   public movePlayer(playerId: string, newPosition: any): MoveResult {
-    if (!this.playerMovementService) {
-      return { success: false, message: 'Movement subsystem not configured' } as MoveResult;
-    }
-    return this.playerMovementService.movePlayer(playerId, newPosition, this.gameWorld);
+    return this.services.playerMovement.movePlayer(playerId, newPosition, this.gameWorld);
   }
 
-  /**
-   * Compatibility: proxy combat interactions to the CombatService
-   */
   public attackEnemy(playerId: string, enemyPosition: any): CombatResult {
-    if (!this.combatService) {
-      return { success: false, message: 'Combat subsystem not configured' } as CombatResult;
-    }
     const attacker = this.gameWorld.players.find(p => p.id === playerId);
     const defender = this.gameWorld.npcs.find(n => n.position.x === enemyPosition.x && n.position.y === enemyPosition.y);
     if (!attacker || !defender) {
       return { success: false, message: 'Attacker or defender not found' } as CombatResult;
     }
-    return this.combatService.processAttack(attacker as any, defender as any, attacker.position, defender.position);
+    return this.services.combat.processAttack(attacker as any, defender as any, attacker.position, defender.position);
   }
 
-  /**
-   * Compatibility: delegate pickup to the LootService
-   */
   public pickupItem(playerId: string, itemId: string): ItemResult {
-    if (!this.lootService) {
-      return { success: false, message: 'Loot subsystem not configured' } as ItemResult;
-    }
-    return this.lootService.pickupItem(playerId, itemId, this.gameWorld.items, this.gameWorld.players as any[]);
+    return this.services.loot.pickupItem(playerId, itemId, this.gameWorld.items, this.gameWorld.players as any[]);
   }
 
-  /**
-   * Compatibility: delegate use-item to the LootService
-   */
   public useItem(playerId: string, itemId: string): ItemResult {
-    if (!this.lootService) {
-      return { success: false, message: 'Loot subsystem not configured' } as ItemResult;
-    }
-    return this.lootService.useItem(playerId, itemId, this.gameWorld.players as any[]);
+    return this.services.loot.useItem(playerId, itemId, this.gameWorld.players as any[]);
   }
 
-  /**
-   * Compatibility: add a player into the world and update movement tracking
-   */
   public addPlayer(player: any): { success: boolean; player?: any; message?: string } {
-    if (this.playerMovementService) {
-      const occupied = this.playerMovementService.getOccupiedPositions();
-      const available = this.playerMovementService.getAvailableSpawnPoints();
-      const ok = this.gameWorldManager.addPlayer(this.gameWorld, player, occupied, available);
-      if (ok) {
-        // Ensure movement tracking is updated
-        this.playerMovementService.addPlayerPosition(player.position);
-        return { success: true, player, message: 'Player added' };
-      }
-      return { success: false, message: 'Failed to add player' };
+    const occupied = this.services.playerMovement.getOccupiedPositions();
+    const available = this.services.playerMovement.getAvailableSpawnPoints();
+    const ok = this.gameWorldManager.addPlayer(this.gameWorld, player, occupied, available);
+    if (ok) {
+      // Ensure movement tracking is updated
+      this.services.playerMovement.addPlayerPosition(player.position);
+      return { success: true, player, message: 'Player added' };
     }
-
-    // Fallback: naive push (legacy compatibility)
-    this.gameWorld.players.push(player);
-    return { success: true, player, message: 'Player added (no movement service)' };
+    return { success: false, message: 'Failed to add player' };
   }
 
   /**
@@ -155,9 +118,7 @@ export class GameStateManager {
   }
 
   public isPositionOccupied(position: any): boolean {
-    if (this.playerMovementService) return this.playerMovementService.isPositionOccupied(position as any);
-    return !!this.gameWorld.players.find(p => p.position.x === position.x && p.position.y === position.y) ||
-           !!this.gameWorld.npcs.find(n => n.position.x === position.x && n.position.y === position.y);
+    return this.services.playerMovement.isPositionOccupied(position as any);
   }
 
 }
