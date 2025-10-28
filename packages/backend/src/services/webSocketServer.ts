@@ -37,6 +37,7 @@ export class WebSocketServer {
   private isGameLoopRunning: boolean = false;
   private cleanupInterval: NodeJS.Timeout | null = null; // Add cleanup interval for stale entries
   private rateLimiter: RateLimiter;
+  private currentInterval: number = 1000; // Add this line
   private gameLoopStats = {
     totalUpdates: 0,
     lastUpdateTime: 0,
@@ -181,7 +182,12 @@ export class WebSocketServer {
       return;
     }
 
+    // Set lock with automatic cleanup
     this.authenticationLocks.add(lockKey);
+    const cleanupTimeout = setTimeout(() => {
+      this.authenticationLocks.delete(lockKey);
+      console.warn(`[AUTH] Cleaned up stale lock for player: ${playerData.id}`);
+    }, 30000); // 30-second timeout
 
     try {
       // Add atomic check-and-set operation
@@ -297,7 +303,7 @@ export class WebSocketServer {
       socket.emit('join_acknowledged', { status: 'success' });
 
       console.log(`[JOIN_SUCCESS] Player ${player.displayName} fully joined the game`);
-
+      clearTimeout(cleanupTimeout); // Cancel cleanup on success
     } catch (error) {
       console.error('Player join failed:', error);
       socket.emit('join_failed', {
@@ -305,6 +311,7 @@ export class WebSocketServer {
       });
     } finally {
       this.authenticationLocks.delete(lockKey);
+      clearTimeout(cleanupTimeout);
     }
   }
 
@@ -445,28 +452,46 @@ export class WebSocketServer {
 
   private startGameLoop(): void {
     console.log('🎮 Starting game loop...');
+    this.isGameLoopRunning = true;
+    this.gameLoopInterval = setInterval(() => this.executeGameLoop(), this.currentInterval);
+    console.log(`✅ Game loop started successfully with interval: ${this.currentInterval}ms`);
+  }
 
-    // Start the game loop with 1-second intervals
+  private adjustGameLoopInterval(newInterval: number): void {
+    if (this.currentInterval !== newInterval) {
+      console.log(`🔄 Adjusting game loop interval: ${this.currentInterval}ms → ${newInterval}ms`);
+      this.currentInterval = newInterval;
+      this.restartGameLoop();
+    }
+  }
+
+  private restartGameLoop(): void {
+    if (this.gameLoopInterval) {
+      clearInterval(this.gameLoopInterval);
+    }
+
     this.gameLoopInterval = setInterval(() => {
       this.executeGameLoop();
-    }, 1000);
-
-    this.isGameLoopRunning = true;
-    console.log('✅ Game loop started successfully');
+    }, this.currentInterval);
   }
 
   private executeGameLoop(): void {
     const startTime = Date.now();
 
     try {
-      // Completely pause game loop when no players
       const playerCount = this.getPlayerCount();
+
+      // 🔥 KEY FIX: Dynamic interval adjustment
       if (playerCount === 0) {
-        // Reduce update frequency when empty
-        if (this.gameLoopStats.totalUpdates % 10 === 0) {
-          this.cleanupGameState(); // Clean up stale data
-        }
+        this.adjustGameLoopInterval(10000); // 10 seconds when empty
+        this.cleanupGameState();
+        const updateTime = Date.now() - startTime;
+        this.updateGameLoopStats(updateTime);
         return;
+      } else if (playerCount < 10) {
+        this.adjustGameLoopInterval(2000); // 2 seconds for small groups
+      } else {
+        this.adjustGameLoopInterval(1000); // 1 second for active games
       }
 
       const room = gameService.getRoom('main_room');
@@ -474,25 +499,43 @@ export class WebSocketServer {
         room.update();
       }
 
-      // Only broadcast if there are changes and active players
       this.broadcastGameDeltas();
 
       const updateTime = Date.now() - startTime;
       this.updateGameLoopStats(updateTime);
 
-      // Performance monitoring with memory usage
+      // Performance monitoring
       if (this.gameLoopStats.totalUpdates % 60 === 0) {
         this.logGameLoopStats();
 
-        // Force garbage collection in development
-        if (process.env.NODE_ENV === 'development' && global.gc) {
-          global.gc();
-        }
+        // Proactive memory cleanup
+        this.performMemoryCleanup();
       }
     } catch (error) {
-      this.gameLoopStats.errorCount++;
-      console.error('❌ Error in game loop execution:', error);
+      this.handleGameLoopError(error as Error);
     }
+  }
+
+  private performMemoryCleanup(): void {
+    // Force garbage collection in development
+    if (process.env.NODE_ENV === 'development' && global.gc) {
+      global.gc();
+    }
+
+    // Clean up stale game state
+    const room = gameService.getRoom('main_room');
+    if (room && typeof room.cleanup === 'function') {
+      room.cleanup();
+    }
+  }
+
+  private handleGameLoopError(error: Error): void {
+    this.gameLoopStats.errorCount++;
+    console.error('❌ Error in game loop execution:', error);
+
+    // Exponential backoff for error recovery
+    const errorBackoff = Math.min(this.gameLoopStats.errorCount * 1000, 10000);
+    this.adjustGameLoopInterval(this.currentInterval + errorBackoff);
   }
 
   private cleanupGameState(): void {
@@ -552,51 +595,29 @@ export class WebSocketServer {
   }
 
   private cleanupStaleClientData(): void {
-    try {
-      const now = Date.now();
-      const staleTimeout = 60000; // 60 seconds timeout for joins not confirmed
-      let cleanedCount = 0;
+    const staleSockets = new Set<string>();
 
-      console.log(`[CLEANUP_CHECK] Starting stale client data cleanup - ${this.connectedClients.size} clients tracked`);
+    // First pass: identify stale sockets
+    this.connectedClients.forEach((clientData, socketId) => {
+      if (!this.io.sockets.sockets.has(socketId)) {
+        staleSockets.add(socketId);
+      }
+    });
 
-      // Iterate over a copy of entries to avoid mutation issues while iterating
-      for (const [socketId, clientData] of Array.from(this.connectedClients.entries())) {
-        const age = now - clientData.connectedAt;
-
-        // Condition to treat entry as stale: socket is no longer present in io.sockets
-        const socketExists = this.io.sockets.sockets.has(socketId);
-
-        if (!socketExists) {
-          console.log(`[CLEANUP] Removing stale client data for socket ${socketId}:`, {
-            playerId: clientData.playerId,
-            ageMs: age,
-            socketExists
-          });
-
-          // Remove mappings
+    // Second pass: batch cleanup
+    if (staleSockets.size > 0) {
+      staleSockets.forEach(socketId => {
+        const clientData = this.connectedClients.get(socketId);
+        if (clientData) {
           this.connectedClients.delete(socketId);
-          // CRITICAL: Only remove player socket mapping if it still points to the stale socket
+          // Use atomic operation to prevent race conditions
           if (this.playerSockets.get(clientData.playerId) === socketId) {
             this.playerSockets.delete(clientData.playerId);
           }
-
-          // The player is intentionally left in the game world as "disconnected"
-          // This allows for potential reconnection logic in the future.
-          // If a player needs to be fully removed on disconnect, that logic
-          // should be in handlePlayerDisconnect.
-
-          cleanedCount++;
         }
-      }
+      });
 
-      if (cleanedCount > 0) {
-        console.log(`[CLEANUP_COMPLETE] Cleaned up ${cleanedCount} stale client entries`);
-        console.log(`[CLEANUP_STATUS] Remaining clients: ${this.connectedClients.size}, Player sockets: ${this.playerSockets.size}`);
-      } else {
-        console.log(`[CLEANUP_CHECK] No stale entries found`);
-      }
-    } catch (err) {
-      console.error('[CLEANUP_ERROR] Error during stale client cleanup:', err);
+      console.log(`[CLEANUP] Removed ${staleSockets.size} stale connections`);
     }
   }
 
@@ -609,6 +630,16 @@ export class WebSocketServer {
 
   public getPlayerCount(): number {
     return this.connectedClients.size;
+  }
+
+  public getGameLoopStats() {
+    return this.gameLoopStats;
+  }
+
+  public validateEnvironment() {
+    if (!process.env.NODE_ENV) {
+      throw new Error('NODE_ENV is not defined.');
+    }
   }
 
   public isPlayerOnline(playerId: string): boolean {

@@ -1,7 +1,11 @@
 import { GameWorld, Position, BiomeType, Player, GAME_CONFIG } from 'shared';
 import { LootManager } from './LootManager';
 import { NPCManager } from './NPCManager';
-import { GameEvent } from './gameStateManager';
+
+export interface GameEvent {
+  type: string;
+  data?: any;
+}
 
 export interface GameActionResult {
   success: boolean;
