@@ -174,7 +174,7 @@ export class GameRoom {
         // Compare without volatile properties
         const oldComparable = this.getComparableState(oldEntity);
         const newComparable = this.getComparableState(newEntity);
-        if (JSON.stringify(oldComparable) !== JSON.stringify(newComparable)) {
+        if (!this.isDeepEqual(oldComparable, newComparable)) {
           changed.push(newEntity);
         }
       }
