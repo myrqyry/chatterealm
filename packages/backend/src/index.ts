@@ -322,7 +322,7 @@ if (require.main === module) {
 // Enhanced emoji endpoint with comprehensive validation
 const emojiValidation = [
   query('char')
-    .isLength({ min: 1, max: 10 })
+    .isString()
     .matches(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F]{1,4}$/u)
     .withMessage('Invalid emoji character'),
   query('roughness')
