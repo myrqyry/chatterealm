@@ -14,12 +14,11 @@ class GameService {
     return GameService.instance;
   }
 
-  public createRoom(roomId: string): GameRoom {
+  public async createRoom(roomId: string): Promise<GameRoom> {
     if (this.rooms.has(roomId)) {
       return this.rooms.get(roomId)!;
     }
-    // The GameRoom now initializes its own GameStateManager and GameWorld.
-    const room = new GameRoom(roomId);
+    const room = await GameRoom.create(roomId);
     this.rooms.set(roomId, room);
     return room;
   }
@@ -28,8 +27,8 @@ class GameService {
     return this.rooms.get(roomId);
   }
 
-  public joinRoom(roomId: string, playerData: PlayerData): GameRoom | undefined {
-    const room = this.getRoom(roomId) ?? this.createRoom(roomId);
+  public async joinRoom(roomId: string, playerData: PlayerData): Promise<GameRoom> {
+    const room = this.getRoom(roomId) ?? await this.createRoom(roomId);
     room.addPlayer(playerData);
     return room;
   }

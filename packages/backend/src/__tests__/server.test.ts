@@ -2,6 +2,11 @@ import request from 'supertest';
 import { app, httpServer } from '../index';
 
 describe('Server Initialization', () => {
+  beforeAll((done) => {
+    // Wait for the async server start to complete
+    setTimeout(done, 1000);
+  });
+
   afterAll((done) => {
     if (httpServer.listening) {
       httpServer.close(done);
