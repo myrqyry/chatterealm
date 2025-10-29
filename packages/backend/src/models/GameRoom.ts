@@ -30,17 +30,34 @@ export class GameRoom {
   private cataclysmService: CataclysmService;
   private lastGameState: GameWorld;
 
-  constructor(roomId: string) {
+  private constructor(roomId: string) {
     this.id = roomId;
-    this.gameStateManager = new GameStateManager();
+    // Properties will be initialized in the async `initialize` method
+    this.players = new Map();
+    this.gameStateManager = null!;
+    this.playerService = null!;
+    this.combatService = null!;
+    this.lootService = null!;
+    this.movementService = null!;
+    this.cataclysmService = null!;
+    this.lastGameState = null!;
+  }
+
+  public static async create(roomId: string): Promise<GameRoom> {
+    const room = new GameRoom(roomId);
+    await room.initialize();
+    return room;
+  }
+
+  private async initialize(): Promise<void> {
+    this.gameStateManager = await GameStateManager.create();
     const gameWorld = this.gameStateManager.getGameWorld();
-    // Reuse managers from the authoritative GameStateManager to avoid divergent state
     const npcManager = this.gameStateManager.getNPCManager();
     const gameWorldManager = this.gameStateManager.getGameWorldManager();
     this.playerService = new PlayerService(gameWorld, gameWorldManager, new Set(), new Set());
     this.combatService = new CombatService();
     this.cataclysmService = new CataclysmService(new LootManager(), npcManager, new Set());
-    this.lootService = new LootService(this.gameStateManager, this.cataclysmService);
+    this.lootService = new LootService(this.cataclysmService);
     this.movementService = new PlayerMovementService(gameWorld);
     this.lastGameState = clone(gameWorld);
   }
@@ -116,15 +133,23 @@ export class GameRoom {
   }
 
   public pickupItem(playerId: string, itemId: string): any {
-    return this.lootService.pickupItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.pickupItem(playerId, itemId, gameWorld.items, gameWorld.players);
+  }
+
+  public useItem(playerId: string, itemId: string): any {
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.useItem(playerId, itemId, gameWorld.players);
   }
 
   public lootItem(playerId: string, itemId: string): any {
-    return this.lootService.lootItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.lootItem(playerId, itemId, gameWorld.items, gameWorld.players);
   }
 
   public inspectItem(playerId: string, itemId: string): any {
-    return this.lootService.inspectItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.inspectItem(playerId, itemId, gameWorld.items, gameWorld.players);
   }
 
   /**
@@ -174,7 +199,7 @@ export class GameRoom {
         // Compare without volatile properties
         const oldComparable = this.getComparableState(oldEntity);
         const newComparable = this.getComparableState(newEntity);
-        if (!this.isDeepEqual(oldComparable, newComparable)) {
+        if (JSON.stringify(oldComparable) !== JSON.stringify(newComparable)) {
           changed.push(newEntity);
         }
       }

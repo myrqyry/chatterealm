@@ -40,9 +40,9 @@ const app = express();
 const env = validateEnv();
 const httpServer = createServer(app);
 
-const gameStateManager = new GameStateManager();
+let gameStateManager: GameStateManager;
 const emojiService = new EmojiService();
-const webSocketServer = new WebSocketServer(httpServer);
+let webSocketServer: WebSocketServer;
 const handDrawnBuildingService = new HandDrawnBuildingService();
 
 // No longer needed, as services are instantiated within GameStateManager
@@ -81,8 +81,8 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:"],
     },
   },
@@ -306,23 +306,36 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Start the server only if this file is run directly
-if (require.main === module) {
-  httpServer.listen(env.PORT, '0.0.0.0', () => {
-    console.log(`🚀 ChatterRealm Backend running on http://localhost:${env.PORT}`);
-    console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
-    console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
-    console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
-    console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
-    console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
-    console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
-  });
+// Initialize and start the server
+async function startServer() {
+  try {
+    gameStateManager = await GameStateManager.create();
+    webSocketServer = new WebSocketServer(httpServer);
+
+    // Start the server only if this file is run directly
+    if (require.main === module) {
+      httpServer.listen(env.PORT, '0.0.0.0', () => {
+        console.log(`🚀 ChatterRealm Backend running on http://localhost:${env.PORT}`);
+        console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
+        console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
+        console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
+        console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
+        console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
+        console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
+
+startServer();
 
 // Enhanced emoji endpoint with comprehensive validation
 const emojiValidation = [
   query('char')
-    .isString()
+    .isLength({ min: 1, max: 10 })
     .matches(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F]{1,4}$/u)
     .withMessage('Invalid emoji character'),
   query('roughness')

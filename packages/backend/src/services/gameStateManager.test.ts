@@ -5,8 +5,8 @@ import { createMockGameWorld, createMockPlayer } from '../testUtils/mockGameWorl
 describe('GameStateManager', () => {
   let gameStateManager: GameStateManager;
 
-  beforeEach(() => {
-    gameStateManager = new GameStateManager({ options: { generateNPCs: false, worldType: 'test' } });
+  beforeEach(async () => {
+    gameStateManager = await GameStateManager.create({ options: { generateNPCs: false, worldType: 'test' } });
   });
 
   describe('game world access', () => {

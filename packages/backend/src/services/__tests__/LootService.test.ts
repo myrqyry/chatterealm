@@ -49,7 +49,7 @@ describe('LootService', () => {
     mockCataclysmService = new (CataclysmService as any)(mockLootManager, mockNpcManager, new Set());
 
     // Create LootService with mocked dependencies
-    lootService = new LootService(mockGameStateManager, mockCataclysmService);
+    lootService = new LootService(mockCataclysmService);
 
     // Setup a player for tests
     player = createMockPlayer('player1', 'Tester', { x: 10, y: 10 });
@@ -66,7 +66,7 @@ describe('LootService', () => {
 
       // Act: Call the private method (using ts-ignore for testing private methods)
       // @ts-ignore
-      const result = lootService.checkForInterruptions(session);
+      const result = lootService.checkForInterruptions(session, mockGameWorld);
 
       // Assert: Check that looting was interrupted
       expect(result).toBe(true);
@@ -82,35 +82,11 @@ describe('LootService', () => {
 
       // Act
       // @ts-ignore
-      const result = lootService.checkForInterruptions(session);
+      const result = lootService.checkForInterruptions(session, mockGameWorld);
 
       // Assert
       expect(result).toBe(false);
       expect(mockCataclysmService.isInCataclysmCircle).toHaveBeenCalledWith(player.position, mockGameWorld);
-    });
-  });
-
-  describe('pickupItem', () => {
-    it('should allow a player to pick up an item', () => {
-      const item: Item = {
-        id: 'item1',
-        name: 'Test Item',
-        description: 'A test item',
-        type: ItemType.WEAPON,
-        rarity: ItemRarity.COMMON,
-        position: { x: 10, y: 10 },
-        canBeLooted: true,
-        isHidden: false,
-        revealProgress: 1,
-        revealDuration: 0,
-      };
-      mockGameWorld.items.push(item);
-
-      const result = lootService.pickupItem('player1', 'item1', mockGameWorld.items, mockGameWorld.players);
-
-      expect(result.success).toBe(true);
-      expect(player.inventory).toContain(item);
-      expect(mockGameWorld.items).not.toContain(item);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { GameWorld, GAME_CONFIG, BiomeType, Player, NPC } from 'shared';
+import { GameWorld, GAME_CONFIG, BiomeType, Player, NPC, LootResult } from 'shared';
 import { PlayerMovementService, MoveResult } from './PlayerMovementService';
 import { CombatService, CombatResult } from './CombatService';
 import { LootService } from './LootService';
@@ -44,16 +44,10 @@ class NullCombatService extends CombatService {
 }
 
 class NullLootService extends LootService {
-    constructor() {
-        // Create a dummy GameStateManager that is immediately discarded.
-        // This is a bit of a hack to satisfy the constructor, a better long-term
-        // solution would be to refactor LootService to not require the manager instance.
-        super({} as GameStateManager);
-    }
-  pickupItem(playerId: string, itemId: string, items: any[], players: any[]): ItemResult {
-    return { success: false, message: 'LootService unavailable' };
+  constructor() {
+    super();
   }
-  useItem(playerId: string, itemId: string, players: any[]): ItemResult {
+  startLooting(playerId: string, buildingId: string, gameWorld: any): LootResult {
     return { success: false, message: 'LootService unavailable' };
   }
 }
@@ -92,19 +86,18 @@ export class GameStateManager extends EventEmitter {
     loot: false
   };
 
-  constructor(config: GameStateManagerConfig = {}) {
+  private constructor(config: GameStateManagerConfig = {}) {
     super();
-    try {
-      this.initializeComponents(config);
-      this.isInitialized = true;
-    } catch (error: any) {
-      console.error('GameStateManager initialization failed:', error);
-      this.emit('error', error as Error);
-      throw new Error(`Failed to initialize GameStateManager: ${error.message}`);
-    }
   }
 
-  private initializeComponents(config: GameStateManagerConfig): void {
+  public static async create(config: GameStateManagerConfig = {}): Promise<GameStateManager> {
+    const instance = new GameStateManager(config);
+    await instance.initializeComponents(config);
+    instance.isInitialized = true;
+    return instance;
+  }
+
+  private async initializeComponents(config: GameStateManagerConfig): Promise<void> {
     try {
       this.npcManager = new NPCManager(new Set());
       this.healthStatus.npcManager = true;
@@ -112,7 +105,7 @@ export class GameStateManager extends EventEmitter {
       this.gameWorldManager = new GameWorldManager(this.npcManager);
       this.healthStatus.worldManager = true;
 
-      this.gameWorld = this.retryOperation(
+      this.gameWorld = await this.retryOperation(
         () => this.gameWorldManager.initializeGameWorld(config.options),
         'Game world initialization'
       );
@@ -148,7 +141,7 @@ export class GameStateManager extends EventEmitter {
     }
 
     try {
-      services.loot = serviceConfig?.loot || new LootService(this);
+      services.loot = serviceConfig?.loot || new LootService();
       this.healthStatus.loot = true;
     } catch (error) {
       console.error('LootService initialization failed:', error);
@@ -160,13 +153,13 @@ export class GameStateManager extends EventEmitter {
     return services as GameServices;
   }
 
-  private retryOperation<T>(
+  private async retryOperation<T>(
     operation: () => T,
     operationName: string,
     maxRetries: number = 3,
     delay: number = 1000
-  ): T {
-    let lastError: Error;
+  ): Promise<T> {
+    let lastError: Error | undefined;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return operation();
@@ -175,10 +168,7 @@ export class GameStateManager extends EventEmitter {
         console.warn(`${operationName} failed (attempt ${attempt}/${maxRetries}):`, error);
         if (attempt < maxRetries) {
           const waitTime = delay * Math.pow(2, attempt - 1);
-          // WARNING: Synchronous wait, blocks the event loop.
-          // This is acceptable only during initial server startup.
-          // Do NOT use this in request handlers or game loops.
-          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, waitTime);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       }
     }
@@ -256,13 +246,8 @@ export class GameStateManager extends EventEmitter {
     return this.services.combat.processAttack(attacker, defender, attacker.position, defender.position);
   }
 
-  public pickupItem(playerId: string, itemId: string): ItemResult {
-    const world = this.getGameWorld();
-    return this.services.loot.pickupItem(playerId, itemId, world.items, world.players);
-  }
-
-  public useItem(playerId: string, itemId: string): ItemResult {
-    return this.services.loot.useItem(playerId, itemId, this.getGameWorld().players);
+  public startLooting(playerId: string, buildingId: string): LootResult {
+    return this.services.loot.startLooting(playerId, buildingId, this.getGameWorld());
   }
 
   public addPlayer(player: any): { success: boolean; player?: any; message?: string } {

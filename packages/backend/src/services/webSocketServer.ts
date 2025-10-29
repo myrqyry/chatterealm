@@ -240,7 +240,7 @@ export class WebSocketServer {
         lastActive: Date.now()
       };
 
-      const room = gameService.joinRoom(SOCKET_MAIN_ROOM, player);
+      const room = await gameService.joinRoom(SOCKET_MAIN_ROOM, player);
 
       if (!room) {
         console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${SOCKET_MAIN_ROOM}`);

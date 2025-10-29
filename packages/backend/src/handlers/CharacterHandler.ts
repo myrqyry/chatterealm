@@ -7,7 +7,7 @@ export class CharacterHandler {
     private io: Server
   ) {}
 
-  public handleCreateCharacter(socket: Socket, data: any): void {
+  public async handleCreateCharacter(socket: Socket, data: any): Promise<void> {
     try {
       const { characterData } = data;
 
@@ -61,7 +61,7 @@ export class CharacterHandler {
 
       // Add the new player to the game world using GameService
       const roomId = 'main_room';
-      const room = gameService.joinRoom(roomId, player);
+      const room = await gameService.joinRoom(roomId, player);
 
       if (room) {
         socket.emit('character_created', {
