@@ -21,6 +21,8 @@ import compression from 'compression';
 import cors from 'cors';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import { body, query, validationResult } from 'express-validator';
 import { WebSocketServer } from './services/webSocketServer';
 import { GameStateManager } from './services/gameStateManager';
 import { EmojiService } from './services/EmojiService';
@@ -74,6 +76,22 @@ if (twitchClientId && twitchClientSecret && twitchChannelName) {
 // All services are now injected into GameStateManager via its constructor.
 
 // Middleware
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+  }
+}));
+
 // CORS Configuration
 const allowedOriginsEnv = env.ALLOWED_ORIGINS;
 const allowedOrigins = allowedOriginsEnv 
@@ -82,25 +100,36 @@ const allowedOrigins = allowedOriginsEnv
     ? ['https://chatterrealm.com']
     : ['http://localhost:3000', 'http://localhost:5173'];
 
+// Enhanced CORS with additional security
 app.use(cors({
   origin: function (origin, callback) {
-    // Stricter origin validation for all environments
-    if (!origin) {
-      callback(new Error('Origin header is required'));
-      return;
+    // Allow requests with no origin (mobile apps, postman, etc.)
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
     }
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn(`Blocked request from unauthorized origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+
+    if (!origin) {
+      return callback(new Error('Origin header required'), false);
+    }
+
+    // Validate origin format
+    try {
+      const url = new URL(origin);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`Blocked unauthorized origin: ${origin}`);
+        callback(new Error('Origin not allowed'), false);
+      }
+    } catch (error) {
+      callback(new Error('Invalid origin format'), false);
     }
   },
   credentials: true,
-  methods: ['GET', 'POST'], // Remove unnecessary methods
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400 // Cache preflight responses
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400,
+  optionsSuccessStatus: 200
 }));
 
 app.use((req: any, res, next) => {
@@ -119,23 +148,50 @@ app.use(compression({
   threshold: 1024
 }));
 
-// Request logging middleware
+// Enhanced async request logging with structured logging
 app.use((req: any, res, next) => {
-  const start = Date.now();
-  const originalSend = res.send;
+  const start = process.hrtime.bigint();
+  req.id = req.id || crypto.randomUUID();
 
+  const originalSend = res.send;
   res.send = function(data) {
-    try {
-      const duration = Date.now() - start;
-      console.log(`${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
-      return originalSend.call(this, data);
-    } catch (error) {
-      console.error('Error in response logging:', error);
-      // Ensure response is still sent
-      return originalSend.call(this, data);
-    }
+    const duration = Number(process.hrtime.bigint() - start) / 1000000; // Convert to ms
+
+    // Async logging to prevent blocking
+    setImmediate(() => {
+      const logData = {
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        duration: `${duration.toFixed(2)}ms`,
+        requestId: req.id,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString()
+      };
+
+      if (duration > 1000) { // Log slow requests
+        console.warn('Slow request detected:', logData);
+      } else {
+        console.log(JSON.stringify(logData));
+      }
+    });
+
+    return originalSend.call(this, data);
   };
 
+  next();
+});
+
+// Memory monitoring middleware
+app.use((req, res, next) => {
+  const memUsage = process.memoryUsage();
+  const memUsedMB = memUsage.heapUsed / 1024 / 1024;
+
+  if (memUsedMB > 500) { // Alert at 500MB
+    console.warn(`High memory usage: ${memUsedMB.toFixed(2)}MB`);
+  }
+
+  res.setHeader('X-Memory-Usage', `${memUsedMB.toFixed(2)}MB`);
   next();
 });
 app.use(express.json());
@@ -263,97 +319,59 @@ if (require.main === module) {
   });
 }
 
-// Endpoint to fetch emoji SVG (query param: char)
-app.get('/api/emoji', async (req, res) => {
-  // Enhanced validation with stricter controls
-  const SAFE_EMOJI_REGEX = /^[\p{Emoji_Presentation}\p{Emoji}\uFE0F]{1,4}$/u;
+// Enhanced emoji endpoint with comprehensive validation
+const emojiValidation = [
+  query('char')
+    .isLength({ min: 1, max: 10 })
+    .matches(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F]{1,4}$/u)
+    .withMessage('Invalid emoji character'),
+  query('roughness')
+    .optional()
+    .isFloat({ min: 0, max: 10 })
+    .withMessage('Roughness must be between 0 and 10'),
+  query('bowing')
+    .optional()
+    .isFloat({ min: 0, max: 10 })
+    .withMessage('Bowing must be between 0 and 10'),
+];
+
+app.get('/api/emoji', emojiValidation, async (req: express.Request, res: express.Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: errors.array()
+    });
+  }
+
   try {
-    const q = req.query.char as string | undefined;
-
-    // Input validation
-    if (!q || typeof q !== 'string' || q.length > 20) {
-      return res.status(400).json({
-        error: 'Invalid emoji parameter',
-        message: 'Please provide a valid, URL-encoded emoji character via the "char" query parameter.'
-      });
-    }
-
-    let emoji: string;
-    try {
-      emoji = decodeURIComponent(q);
-      // Additional validation after decoding
-      if (!SAFE_EMOJI_REGEX.test(emoji)) {
-        throw new Error('Invalid emoji format');
-      }
-    } catch (error) {
-      return res.status(400).json({
-        error: 'Invalid emoji encoding or format',
-        message: 'The provided emoji is either not a valid emoji or is improperly encoded.'
-      });
-    }
-
-    const wantRough = String(req.query.rough || '').toLowerCase() === 'true';
-
-    // Validate rough conversion parameters if rough=true
-    if (wantRough) {
-      const roughness = req.query.roughness !== undefined ? Number(req.query.roughness) : undefined;
-      const bowing = req.query.bowing !== undefined ? Number(req.query.bowing) : undefined;
-      const seed = req.query.seed !== undefined ? Number(req.query.seed) : undefined;
-
-      if (roughness !== undefined && (isNaN(roughness) || roughness < 0 || roughness > 10)) {
-        return res.status(400).json({
-          error: 'Invalid parameter: roughness',
-          message: 'Roughness must be a number between 0 and 10'
-        });
-      }
-
-      if (bowing !== undefined && (isNaN(bowing) || bowing < 0 || bowing > 10)) {
-        return res.status(400).json({
-          error: 'Invalid parameter: bowing',
-          message: 'Bowing must be a number between 0 and 10'
-        });
-      }
-
-      if (seed !== undefined && (isNaN(seed) || seed < 0 || seed > 1000000)) {
-        return res.status(400).json({
-          error: 'Invalid parameter: seed',
-          message: 'Seed must be a number between 0 and 1000000'
-        });
-      }
-    }
+    const emoji = req.query.char as string;
+    const wantRough = req.query.rough === 'true';
 
     const svg = await emojiService.resolveEmojiSvg(emoji);
 
     if (!wantRough) {
-      res.type('image/svg+xml').send(svg);
-      return;
+      res.type('image/svg+xml');
+      res.set('Cache-Control', 'public, max-age=86400'); // 24 hours
+      return res.send(svg);
     }
 
-    // Parse conversion options from query params
-    const roughness = req.query.roughness !== undefined ? Number(req.query.roughness) : undefined;
-    const bowing = req.query.bowing !== undefined ? Number(req.query.bowing) : undefined;
-    const seed = req.query.seed !== undefined ? Number(req.query.seed) : undefined;
-    const randomize = req.query.randomize !== undefined ? String(req.query.randomize) === 'true' : undefined;
-    const pencilFilter = req.query.pencilFilter !== undefined ? String(req.query.pencilFilter) === 'true' : undefined;
-    const sketchPatterns = req.query.sketchPatterns !== undefined ? String(req.query.sketchPatterns) === 'true' : undefined;
-
     const options = {
-      roughness,
-      bowing,
-      seed,
-      randomize,
-      pencilFilter,
-      sketchPatterns
+      roughness: req.query.roughness ? Number(req.query.roughness) : undefined,
+      bowing: req.query.bowing ? Number(req.query.bowing) : undefined,
     };
 
     const roughSvg = await emojiService.convertToRoughSvg(svg, options, emoji);
 
-    res.type('image/svg+xml').send(roughSvg);
-  } catch (error) {
-    console.error('Unexpected error in /api/emoji:', error);
+    res.type('image/svg+xml');
+    res.set('Cache-Control', 'public, max-age=3600'); // 1 hour for processed content
+    res.send(roughSvg);
+
+  } catch (error: any) {
+    console.error(`Emoji processing error for ${req.query.char}:`, error);
     res.status(500).json({
-      error: 'Internal server error',
-      message: 'Failed to process emoji request'
+      error: 'Processing failed',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Internal error'
     });
   }
 });

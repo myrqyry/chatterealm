@@ -69,7 +69,6 @@ export class GameRoom {
   public addPlayer(playerData: PlayerData): Player {
     const player = this.playerService.addPlayer(playerData);
     this.players.set(player.id, player);
-    this.lastGameState = clone(this.gameStateManager.getGameWorld());
     return player;
   }
 
@@ -156,14 +155,28 @@ export class GameRoom {
     return deltas;
   }
 
+  private getComparableState(entity: any): any {
+    const { lastMoveTime, lastActive, ...comparableState } = entity;
+    return comparableState;
+  }
+
   private findChangedEntities<T extends { id: string }>(oldEntities: T[], newEntities: T[]): T[] {
     const oldEntityMap = new Map(oldEntities.map(e => [e.id, e]));
+    const newEntityMap = new Map(newEntities.map(e => [e.id, e]));
     const changed: T[] = [];
 
-    for (const newEntity of newEntities) {
-      const oldEntity = oldEntityMap.get(newEntity.id);
-      if (!oldEntity || JSON.stringify(oldEntity) !== JSON.stringify(newEntity)) {
-        changed.push(newEntity);
+    // Check for new or changed entities
+    for (const [id, newEntity] of newEntityMap.entries()) {
+      const oldEntity = oldEntityMap.get(id);
+      if (!oldEntity) {
+        changed.push(newEntity); // It's a new entity
+      } else {
+        // Compare without volatile properties
+        const oldComparable = this.getComparableState(oldEntity);
+        const newComparable = this.getComparableState(newEntity);
+        if (JSON.stringify(oldComparable) !== JSON.stringify(newComparable)) {
+          changed.push(newEntity);
+        }
       }
     }
     return changed;
