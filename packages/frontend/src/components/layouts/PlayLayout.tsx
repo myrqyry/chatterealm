@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from '../GameCanvas';
 import CharacterBuilder from '../CharacterBuilder';
+import { useGameLoop } from '../../hooks/useGameLoop';
 import { MaterialButton, MaterialCard, MaterialChip } from '../index'; // Removed MaterialAppBar, MaterialPaper
 import { useGameStore } from '../../stores/gameStore';
 import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../../utils/designSystem'; // Import design system tokens
 
 const PlayLayout: React.FC = () => {
+  useGameLoop();
   const { gameWorld, handleJoinGame } = useGameStore();
   const [isCharacterBuilderOpen, setIsCharacterBuilderOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<{
