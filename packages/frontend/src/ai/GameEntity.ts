@@ -23,6 +23,7 @@ export class GameEntity {
   }
 
   public update(delta: number): void {
+    if (!this.active) return;
     this.children.forEach(child => child.update(delta));
   }
 
