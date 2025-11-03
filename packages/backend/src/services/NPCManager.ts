@@ -22,7 +22,6 @@ export class NPCManager {
         id: `npc_${i}_${Date.now()}`,
         name: this.generateNPCName(),
         type: 'monster',
-        personality: this.generateNPCPersonality(),
         position,
         stats: {
           hp: 30 + Math.floor(Math.random() * 20),
@@ -86,7 +85,6 @@ export class NPCManager {
           id: `npc_cataclysm_${i}_${Date.now()}`,
           name: this.generateNPCName(),
           type: 'monster',
-          personality: this.generateNPCPersonality(),
           position,
           stats: {
             hp: 40 + Math.floor(Math.random() * 30),
@@ -186,14 +184,6 @@ export class NPCManager {
     const creature = creatures[Math.floor(Math.random() * creatures.length)];
     
     return `${prefix} ${creature}`;
-  }
-
-  /**
-   * Generate a random NPC personality
-   */
-  private generateNPCPersonality(): string {
-    const personalities = ['grumpy', 'friendly', 'nervous', 'brave', 'cowardly', 'wise', 'foolish'];
-    return personalities[Math.floor(Math.random() * personalities.length)];
   }
 
   /**

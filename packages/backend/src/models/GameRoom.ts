@@ -4,7 +4,6 @@ import { Player } from './Player';
 import { PlayerService } from '../services/PlayerService';
 import { CombatService } from '../services/CombatService';
 import { LootService } from '../services/LootService';
-import { NpcService } from '../services/NpcService';
 import { PlayerMovementService } from '../services/PlayerMovementService';
 import { GameWorldManager } from '../services/GameWorldManager';
 import { NPCManager } from '../services/NPCManager';
@@ -27,7 +26,6 @@ export class GameRoom {
   private playerService: PlayerService;
   private combatService: CombatService;
   private lootService: LootService;
-  private npcService: NpcService;
   private movementService: PlayerMovementService;
   private cataclysmService: CataclysmService;
   private lastGameState: GameWorld;
@@ -59,23 +57,9 @@ export class GameRoom {
     this.playerService = new PlayerService(gameWorld, gameWorldManager, new Set(), new Set());
     this.combatService = new CombatService();
     this.cataclysmService = new CataclysmService(new LootManager(), npcManager, new Set());
-    this.lootService = new LootService(this.gameStateManager, this.cataclysmService);
-    this.npcService = new NpcService();
+    this.lootService = new LootService(this.cataclysmService);
     this.movementService = new PlayerMovementService(gameWorld);
     this.lastGameState = clone(gameWorld);
-  }
-
-  public async handleNpcInteraction(
-    playerId: string,
-    npcId: string,
-    message: string
-  ): Promise<string> {
-    const npc = this.gameStateManager.getGameWorld().npcs.find((n) => n.id === npcId);
-    if (!npc) {
-      return 'NPC not found.';
-    }
-
-    return this.npcService.generateDialogue(npc, message);
   }
 
   /**

@@ -366,38 +366,6 @@ export class WebSocketClient {
     });
   }
 
-  public sendNpcMessage(npcId: string, message: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      if (!this.socket) {
-        return reject(new Error('WebSocket is not connected.'));
-      }
-
-      this.socket.emit('npc_message', { npcId, message });
-
-      const onNpcResponse = (response: { success: boolean; message: string; error?: string }) => {
-        cleanup();
-        if (response.success) {
-          resolve(response.message);
-        } else {
-          reject(new Error(response.error || 'Failed to get NPC response.'));
-        }
-      };
-
-      const onError = (error: { message: string }) => {
-        cleanup();
-        reject(new Error(error.message));
-      };
-
-      const cleanup = () => {
-        this.socket?.off('npc_response', onNpcResponse);
-        this.socket?.off('error', onError);
-      };
-
-      this.socket.once('npc_response', onNpcResponse);
-      this.socket.once('error', onError);
-    });
-  }
-
   // Connection status
   public getConnectionStatus(): boolean {
     return this.isConnected;
