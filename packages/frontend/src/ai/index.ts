@@ -4,3 +4,4 @@ export * from './AITypes';
 export * from './Telegram';
 export * from './MessageDispatcher';
 export * from './fsm';
+export * from './steering';

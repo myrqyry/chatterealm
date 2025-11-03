@@ -1,5 +1,7 @@
 import { Telegram } from './Telegram';
 import { StateMachine } from './fsm/StateMachine';
+import { Vector2D } from './steering/Vector2D';
+import { SteeringBehavior } from './steering/SteeringBehavior';
 
 export class GameEntity {
   public id: number;
@@ -8,10 +10,19 @@ export class GameEntity {
   public parent: GameEntity | null = null;
   public name: string = '';
   public stateMachine: StateMachine<GameEntity>;
+  public position: Vector2D;
+  public velocity: Vector2D;
+  public maxSpeed: number;
+  public mass: number;
+  public steering: SteeringBehavior | null = null;
 
-  constructor() {
+  constructor(x: number = 0, y: number = 0) {
     this.id = GameEntity.nextId++;
     this.stateMachine = new StateMachine(this);
+    this.position = new Vector2D(x, y);
+    this.velocity = new Vector2D();
+    this.maxSpeed = 1;
+    this.mass = 1;
   }
 
   public add(entity: GameEntity): void {
@@ -30,7 +41,17 @@ export class GameEntity {
   public update(delta: number): void {
     if (!this.active) return;
 
-    this.stateMachine.update(delta);
+    this.stateMachine.update();
+
+    if (this.steering) {
+      const steeringForce = this.steering.calculate(this);
+      const acceleration = steeringForce.divideScalar(this.mass);
+
+      this.velocity.add(acceleration.multiplyScalar(delta));
+      this.velocity.truncate(this.maxSpeed);
+
+      this.position.add(this.velocity.clone().multiplyScalar(delta));
+    }
 
     this.children.forEach(child => child.update(delta));
   }
