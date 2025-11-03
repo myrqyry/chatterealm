@@ -163,6 +163,18 @@ export interface Player {
   connected: boolean; // Track if player is currently connected
   lastActive: number; // Timestamp of last activity for cleanup
   buffs?: Buff[]; // Added to player
+  bio?: string;
+}
+
+export interface PlayerProfile {
+  id: string;
+  displayName: string;
+  avatar: string;
+  class: PlayerClass;
+  level: number;
+  bio: string;
+  achievements: string[];
+  titles: string[];
 }
 
 export interface JoinGameData {

@@ -1,3 +1,3 @@
-const { colorTokens } = require('./colors.js');
+import { colorTokens } from '../../../../shared/src/constants/colorConstants';
 
 export const COLORS = colorTokens;

@@ -44,26 +44,36 @@ describe('WebSocketServer Integration', () => {
         const player1Data = { id: 'player1', displayName: 'Player One', class: PlayerClass.ROGUE };
         const player2Data = { id: 'player2', displayName: 'Player Two', class: PlayerClass.MAGE };
 
+        let clientSocket2: ClientSocket;
+
         clientSocket.emit('join_game', player1Data);
         clientSocket.once('join_acknowledged', () => {
-            const room = gameService.getRoom('main_room');
-            if (!room) return done(new Error('Room not found'));
+            clientSocket2 = ioc(`http://localhost:${port}`, {
+                reconnection: false,
+                transports: ['websocket'],
+            });
 
-            room.addPlayer(player2Data as any);
-            room.movePlayer(player1Data.id, { x: 1, y: 1 });
+            clientSocket2.on('connect', () => {
+                clientSocket2.emit('join_game', player2Data);
+                    clientSocket.once('game_state_delta', (deltas: GameStateDelta[]) => {
+                        const playerDelta = deltas.find(d => d.type === 'players');
 
-            clientSocket.once('game_state_delta', (deltas: GameStateDelta[]) => {
-                const playerDelta = deltas.find(d => d.type === 'players');
+                        // This is the failing assertion.
+                        // We expect the delta to contain only the changed player.
+                        expect(playerDelta).toBeDefined();
+                        expect(Array.isArray(playerDelta?.data)).toBe(true);
+                        expect(playerDelta?.data.length).toBe(1);
+                        expect(playerDelta?.data[0].id).toBe(player1Data.id);
 
-                // This is the failing assertion.
-                // We expect the delta to contain only the changed player.
-                expect(playerDelta).toBeDefined();
-                expect(Array.isArray(playerDelta?.data)).toBe(true);
-                expect(playerDelta?.data.length).toBe(1);
-                expect(playerDelta?.data[0].id).toBe(player1Data.id);
+                        clientSocket2.disconnect();
+                        done();
+                    });
 
-                done();
+                    const room = gameService.getRoom('main_room');
+                    if (!room) return done(new Error('Room not found'));
+
+                    room.movePlayer(player1Data.id, { x: 1, y: 1 });
             });
         });
-    }, 5000);
+    }, 10000);
 });

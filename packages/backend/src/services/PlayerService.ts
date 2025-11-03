@@ -1,4 +1,4 @@
-import { Player as PlayerData, GameWorld } from 'shared';
+import { Player as PlayerData, GameWorld, PlayerProfile } from 'shared';
 import { Player } from '../models/Player';
 import { GameWorldManager } from './GameWorldManager';
 
@@ -46,5 +46,23 @@ export class PlayerService {
 
   public getPlayers(): PlayerData[] {
     return this.gameWorld.players;
+  }
+
+  public getPlayerProfile(playerId: string): PlayerProfile | null {
+    const player = this.getPlayer(playerId);
+    if (!player) {
+      return null;
+    }
+
+    return {
+      id: player.id,
+      displayName: player.displayName,
+      avatar: player.avatar,
+      class: player.class,
+      level: player.level,
+      bio: player.bio || "A brave adventurer exploring the world of ChatterRealm.",
+      achievements: player.achievements,
+      titles: player.titles,
+    };
   }
 }

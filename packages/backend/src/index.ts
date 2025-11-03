@@ -17,8 +17,12 @@ process.on('unhandledRejection', (reason, promise) => {
     process.exit(1);
   }
 });
+import compression from 'compression';
 import cors from 'cors';
+import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import { body, query, validationResult } from 'express-validator';
 import { WebSocketServer } from './services/webSocketServer';
 import { GameStateManager } from './services/gameStateManager';
 import { EmojiService } from './services/EmojiService';
@@ -30,25 +34,24 @@ import { PlayerMovementService } from './services/PlayerMovementService';
 import { CombatService } from './services/CombatService';
 import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
 import { GAME_CONFIG } from 'shared';
+import { validateEnv } from './config/env';
 
 const app = express();
+const env = validateEnv();
 const httpServer = createServer(app);
-const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8081;
 
-const gameStateManager = new GameStateManager();
+let gameStateManager: GameStateManager;
 const emojiService = new EmojiService();
-const webSocketServer = new WebSocketServer(httpServer);
+let webSocketServer: WebSocketServer;
 const handDrawnBuildingService = new HandDrawnBuildingService();
 
-// Lower-level services instantiated and wired for compatibility
-const playerMovementService = new PlayerMovementService(gameStateManager.getGameWorld());
-const combatService = new CombatService();
+// No longer needed, as services are instantiated within GameStateManager
 
 // Conditionally instantiate the Twitch service
 let twitchService: StreamOptimizedTwitchService | null = null;
-const twitchClientId = process.env.TWITCH_CLIENT_ID;
-const twitchClientSecret = process.env.TWITCH_CLIENT_SECRET;
-const twitchChannelName = process.env.TWITCH_CHANNEL_NAME;
+const twitchClientId = env.TWITCH_CLIENT_ID;
+const twitchClientSecret = env.TWITCH_CLIENT_SECRET;
+const twitchChannelName = env.TWITCH_CHANNEL_NAME;
 
 if (twitchClientId && twitchClientSecret && twitchChannelName) {
   twitchService = new StreamOptimizedTwitchService(
@@ -68,57 +71,135 @@ if (twitchClientId && twitchClientSecret && twitchChannelName) {
   console.warn('⚠️ Twitch credentials not provided in environment variables (TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_CHANNEL_NAME). Twitch integration is disabled.');
 }
 
-// Instantiate remaining services
-// Services
-const streamCommentaryService = new StreamCommentaryService();
-const autoWanderService = new AutoWanderService(gameStateManager);
-const lootService = new LootService(gameStateManager);
+// The remaining services are instantiated within GameStateManager or are not used.
 
-// Wire cross-service references back into the GameStateManager so older APIs still work
-gameStateManager.setServices({
-  playerMovementService,
-  combatService,
-  lootService,
-});
+// All services are now injected into GameStateManager via its constructor.
 
 // Middleware
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+  }
+}));
+
 // CORS Configuration
-const allowedOriginsEnv = process.env.ALLOWED_ORIGINS;
+const allowedOriginsEnv = env.ALLOWED_ORIGINS;
 const allowedOrigins = allowedOriginsEnv 
   ? allowedOriginsEnv.split(',').map(origin => origin.trim())
   : process.env.NODE_ENV === 'production'
     ? ['https://chatterrealm.com']
     : ['http://localhost:3000', 'http://localhost:5173'];
 
+// Enhanced CORS with additional security
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman, curl, etc.)
-    if (!origin) {
-      // In production, be more strict
-      if (process.env.NODE_ENV === 'production') {
-        callback(new Error('Origin header is required in production'));
-      } else {
-        callback(null, true);
-      }
-      return;
+    // Allow requests with no origin (mobile apps, postman, etc.)
+    if (!origin && process.env.NODE_ENV === 'development') {
+      return callback(null, true);
     }
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+
+    if (!origin) {
+      return callback(new Error('Origin header required'), false);
+    }
+
+    // Validate origin format
+    try {
+      const url = new URL(origin);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`Blocked unauthorized origin: ${origin}`);
+        callback(new Error('Origin not allowed'), false);
+      }
+    } catch (error) {
+      callback(new Error('Invalid origin format'), false);
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  maxAge: 86400,
+  optionsSuccessStatus: 200
 }));
+
+app.use((req: any, res, next) => {
+  req.id = crypto.randomUUID();
+  res.setHeader('X-Request-ID', req.id);
+  next();
+});
+
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  threshold: 1024
+}));
+
+// Enhanced async request logging with structured logging
+app.use((req: any, res, next) => {
+  const start = process.hrtime.bigint();
+  req.id = req.id || crypto.randomUUID();
+
+  const originalSend = res.send;
+  res.send = function(data) {
+    const duration = Number(process.hrtime.bigint() - start) / 1000000; // Convert to ms
+
+    // Async logging to prevent blocking
+    setImmediate(() => {
+      const logData = {
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        duration: `${duration.toFixed(2)}ms`,
+        requestId: req.id,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString()
+      };
+
+      if (duration > 1000) { // Log slow requests
+        console.warn('Slow request detected:', logData);
+      } else {
+        console.log(JSON.stringify(logData));
+      }
+    });
+
+    return originalSend.call(this, data);
+  };
+
+  next();
+});
+
+// Memory monitoring middleware
+app.use((req, res, next) => {
+  const memUsage = process.memoryUsage();
+  const memUsedMB = memUsage.heapUsed / 1024 / 1024;
+
+  if (memUsedMB > 500) { // Alert at 500MB
+    console.warn(`High memory usage: ${memUsedMB.toFixed(2)}MB`);
+  }
+
+  res.setHeader('X-Memory-Usage', `${memUsedMB.toFixed(2)}MB`);
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting with configurable values
-const rateLimitWindowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10); // 15 minutes default
-const rateLimitMaxRequests = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10); // 100 requests default
+const rateLimitWindowMs = env.RATE_LIMIT_WINDOW_MS;
+const rateLimitMaxRequests = env.RATE_LIMIT_MAX_REQUESTS;
 
 const apiLimiter = rateLimit({
   windowMs: rateLimitWindowMs,
@@ -132,15 +213,26 @@ app.use('/api/', apiLimiter);
 
 // Health check endpoint
 app.get('/', (req, res) => {
+  const uptime = process.uptime();
+  const memUsage = process.memoryUsage();
+
   res.json({
     status: 'ok',
     message: 'ChatterRealm Backend API',
     version: '1.0.0',
+    uptime: `${Math.floor(uptime / 60)}m ${Math.floor(uptime % 60)}s`,
+    memory: {
+      used: `${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`,
+      total: `${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`
+    },
     world: {
       players: gameStateManager.getGameWorld().players.length,
       npcs: gameStateManager.getGameWorld().npcs.length,
       items: gameStateManager.getGameWorld().items.length,
       phase: gameStateManager.getGameWorld().phase
+    },
+    websocket: {
+      connections: webSocketServer.getPlayerCount()
     }
   });
 });
@@ -214,112 +306,85 @@ process.on('SIGTERM', () => {
   });
 });
 
-// Start the server only if this file is run directly
-if (require.main === module) {
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 ChatterRealm Backend running on http://localhost:${PORT}`);
-    console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
-    console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
-    console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
-    console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
-    console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
-    console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
-  });
+// Initialize and start the server
+async function startServer() {
+  try {
+    gameStateManager = await GameStateManager.create();
+    webSocketServer = new WebSocketServer(httpServer);
+
+    // Start the server only if this file is run directly
+    if (require.main === module) {
+      httpServer.listen(env.PORT, '0.0.0.0', () => {
+        console.log(`🚀 ChatterRealm Backend running on http://localhost:${env.PORT}`);
+        console.log(`📊 Game World: ${GAME_CONFIG.gridWidth}x${GAME_CONFIG.gridHeight} grid`);
+        console.log(`👥 Max Players: ${GAME_CONFIG.maxPlayers}`);
+        console.log(`🎮 Enhanced WebSocket server with continuous game loop active`);
+        console.log(`🌍 Full game state management and cataclysm mechanics enabled`);
+        console.log(`🔒 CORS enabled for: ${allowedOrigins.join(', ')}`);
+        console.log(`⏱️  Rate limit: ${rateLimitMaxRequests} requests per ${rateLimitWindowMs / 60000} minutes`);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-// Endpoint to fetch emoji SVG (query param: char)
-app.get('/api/emoji', async (req, res) => {
+startServer();
+
+// Enhanced emoji endpoint with comprehensive validation
+const emojiValidation = [
+  query('char')
+    .isLength({ min: 1, max: 10 })
+    .matches(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F]{1,4}$/u)
+    .withMessage('Invalid emoji character'),
+  query('roughness')
+    .optional()
+    .isFloat({ min: 0, max: 10 })
+    .withMessage('Roughness must be between 0 and 10'),
+  query('bowing')
+    .optional()
+    .isFloat({ min: 0, max: 10 })
+    .withMessage('Bowing must be between 0 and 10'),
+];
+
+app.get('/api/emoji', emojiValidation, async (req: express.Request, res: express.Response) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: errors.array()
+    });
+  }
+
   try {
-    const q = req.query.char as string | undefined;
-
-    // Input validation
-    if (!q || typeof q !== 'string' || q.length === 0) {
-      return res.status(400).json({
-        error: 'Missing required parameter: char',
-        message: 'Please provide an emoji character via the "char" query parameter'
-      });
-    }
-
-    let emoji: string;
-    try {
-      emoji = decodeURIComponent(q);
-    } catch (decodeError) {
-      return res.status(400).json({
-        error: 'Invalid parameter: char',
-        message: 'The "char" parameter contains invalid URL encoding'
-      });
-    }
-
-    // Validate emoji is a single character or valid emoji sequence
-    if (emoji.length > 10) {
-      return res.status(400).json({
-        error: 'Invalid parameter: char',
-        message: 'Emoji character is too long (max 10 characters)'
-      });
-    }
-
-    const wantRough = String(req.query.rough || '').toLowerCase() === 'true';
-
-    // Validate rough conversion parameters if rough=true
-    if (wantRough) {
-      const roughness = req.query.roughness !== undefined ? Number(req.query.roughness) : undefined;
-      const bowing = req.query.bowing !== undefined ? Number(req.query.bowing) : undefined;
-      const seed = req.query.seed !== undefined ? Number(req.query.seed) : undefined;
-
-      if (roughness !== undefined && (isNaN(roughness) || roughness < 0 || roughness > 10)) {
-        return res.status(400).json({
-          error: 'Invalid parameter: roughness',
-          message: 'Roughness must be a number between 0 and 10'
-        });
-      }
-
-      if (bowing !== undefined && (isNaN(bowing) || bowing < 0 || bowing > 10)) {
-        return res.status(400).json({
-          error: 'Invalid parameter: bowing',
-          message: 'Bowing must be a number between 0 and 10'
-        });
-      }
-
-      if (seed !== undefined && (isNaN(seed) || seed < 0 || seed > 1000000)) {
-        return res.status(400).json({
-          error: 'Invalid parameter: seed',
-          message: 'Seed must be a number between 0 and 1000000'
-        });
-      }
-    }
+    const emoji = req.query.char as string;
+    const wantRough = req.query.rough === 'true';
 
     const svg = await emojiService.resolveEmojiSvg(emoji);
 
     if (!wantRough) {
-      res.type('image/svg+xml').send(svg);
-      return;
+      res.type('image/svg+xml');
+      res.set('Cache-Control', 'public, max-age=86400'); // 24 hours
+      return res.send(svg);
     }
 
-    // Parse conversion options from query params
-    const roughness = req.query.roughness !== undefined ? Number(req.query.roughness) : undefined;
-    const bowing = req.query.bowing !== undefined ? Number(req.query.bowing) : undefined;
-    const seed = req.query.seed !== undefined ? Number(req.query.seed) : undefined;
-    const randomize = req.query.randomize !== undefined ? String(req.query.randomize) === 'true' : undefined;
-    const pencilFilter = req.query.pencilFilter !== undefined ? String(req.query.pencilFilter) === 'true' : undefined;
-    const sketchPatterns = req.query.sketchPatterns !== undefined ? String(req.query.sketchPatterns) === 'true' : undefined;
-
     const options = {
-      roughness,
-      bowing,
-      seed,
-      randomize,
-      pencilFilter,
-      sketchPatterns
+      roughness: req.query.roughness ? Number(req.query.roughness) : undefined,
+      bowing: req.query.bowing ? Number(req.query.bowing) : undefined,
     };
 
     const roughSvg = await emojiService.convertToRoughSvg(svg, options, emoji);
 
-    res.type('image/svg+xml').send(roughSvg);
-  } catch (error) {
-    console.error('Unexpected error in /api/emoji:', error);
+    res.type('image/svg+xml');
+    res.set('Cache-Control', 'public, max-age=3600'); // 1 hour for processed content
+    res.send(roughSvg);
+
+  } catch (error: any) {
+    console.error(`Emoji processing error for ${req.query.char}:`, error);
     res.status(500).json({
-      error: 'Internal server error',
-      message: 'Failed to process emoji request'
+      error: 'Processing failed',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Internal error'
     });
   }
 });

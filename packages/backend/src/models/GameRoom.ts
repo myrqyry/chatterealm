@@ -1,4 +1,4 @@
-import { GameWorld, Player as PlayerData, NPC, Item } from 'shared';
+import { GameWorld, Player as PlayerData, NPC, Item, PlayerProfile } from 'shared';
 import { GameStateManager } from '../services/gameStateManager';
 import { Player } from './Player';
 import { PlayerService } from '../services/PlayerService';
@@ -32,11 +32,28 @@ export class GameRoom {
   private cataclysmService: CataclysmService;
   private lastGameState: GameWorld;
 
-  constructor(roomId: string) {
+  private constructor(roomId: string) {
     this.id = roomId;
-    this.gameStateManager = new GameStateManager();
+    // Properties will be initialized in the async `initialize` method
+    this.players = new Map();
+    this.gameStateManager = null!;
+    this.playerService = null!;
+    this.combatService = null!;
+    this.lootService = null!;
+    this.movementService = null!;
+    this.cataclysmService = null!;
+    this.lastGameState = null!;
+  }
+
+  public static async create(roomId: string): Promise<GameRoom> {
+    const room = new GameRoom(roomId);
+    await room.initialize();
+    return room;
+  }
+
+  private async initialize(): Promise<void> {
+    this.gameStateManager = await GameStateManager.create();
     const gameWorld = this.gameStateManager.getGameWorld();
-    // Reuse managers from the authoritative GameStateManager to avoid divergent state
     const npcManager = this.gameStateManager.getNPCManager();
     const gameWorldManager = this.gameStateManager.getGameWorldManager();
     this.playerService = new PlayerService(gameWorld, gameWorldManager, new Set(), new Set());
@@ -69,12 +86,22 @@ export class GameRoom {
   }
 
   /**
+   * Cleans up the game state.
+   */
+  public cleanup(): void {
+    const now = Date.now();
+    const disconnectedPlayers = this.playerService.getPlayers().filter(p => !p.connected && (now - p.lastActive > 60000));
+    for (const player of disconnectedPlayers) {
+      this.removePlayer(player.id);
+    }
+  }
+
+  /**
    * Adds a player to the game room and to the underlying game state.
    */
   public addPlayer(playerData: PlayerData): Player {
     const player = this.playerService.addPlayer(playerData);
     this.players.set(player.id, player);
-    this.lastGameState = clone(this.gameStateManager.getGameWorld());
     return player;
   }
 
@@ -92,6 +119,10 @@ export class GameRoom {
 
   public getPlayers(): PlayerData[] {
     return this.playerService.getPlayers();
+  }
+
+  public getPlayerProfile(playerId: string): PlayerProfile | null {
+    return this.playerService.getPlayerProfile(playerId);
   }
 
   /**
@@ -118,15 +149,23 @@ export class GameRoom {
   }
 
   public pickupItem(playerId: string, itemId: string): any {
-    return this.lootService.pickupItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.pickupItem(playerId, itemId, gameWorld.items, gameWorld.players);
+  }
+
+  public useItem(playerId: string, itemId: string): any {
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.useItem(playerId, itemId, gameWorld.players);
   }
 
   public lootItem(playerId: string, itemId: string): any {
-    return this.lootService.lootItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.lootItem(playerId, itemId, gameWorld.items, gameWorld.players);
   }
 
   public inspectItem(playerId: string, itemId: string): any {
-    return this.lootService.inspectItem(playerId, itemId, this.gameStateManager.getGameWorld().items, this.gameStateManager.getGameWorld().players);
+    const gameWorld = this.gameStateManager.getGameWorld();
+    return this.lootService.inspectItem(playerId, itemId, gameWorld.items, gameWorld.players);
   }
 
   /**
@@ -157,14 +196,28 @@ export class GameRoom {
     return deltas;
   }
 
+  private getComparableState(entity: any): any {
+    const { lastMoveTime, lastActive, ...comparableState } = entity;
+    return comparableState;
+  }
+
   private findChangedEntities<T extends { id: string }>(oldEntities: T[], newEntities: T[]): T[] {
     const oldEntityMap = new Map(oldEntities.map(e => [e.id, e]));
+    const newEntityMap = new Map(newEntities.map(e => [e.id, e]));
     const changed: T[] = [];
 
-    for (const newEntity of newEntities) {
-      const oldEntity = oldEntityMap.get(newEntity.id);
-      if (!oldEntity || JSON.stringify(oldEntity) !== JSON.stringify(newEntity)) {
-        changed.push(newEntity);
+    // Check for new or changed entities
+    for (const [id, newEntity] of newEntityMap.entries()) {
+      const oldEntity = oldEntityMap.get(id);
+      if (!oldEntity) {
+        changed.push(newEntity); // It's a new entity
+      } else {
+        // Compare without volatile properties
+        const oldComparable = this.getComparableState(oldEntity);
+        const newComparable = this.getComparableState(newEntity);
+        if (JSON.stringify(oldComparable) !== JSON.stringify(newComparable)) {
+          changed.push(newEntity);
+        }
       }
     }
     return changed;

@@ -64,4 +64,21 @@ describe('PlayerService', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('getPlayerProfile', () => {
+    it('should return the profile for an existing player', () => {
+      const player = createMockPlayer('1', 'testPlayer', { x: 5, y: 5 });
+      playerService.addPlayer(player);
+
+      const profile = playerService.getPlayerProfile('1');
+      expect(profile).not.toBeNull();
+      expect(profile?.id).toBe('1');
+      expect(profile?.displayName).toBe('testPlayer');
+    });
+
+    it('should return null for a non-existent player', () => {
+      const profile = playerService.getPlayerProfile('nonexistent');
+      expect(profile).toBeNull();
+    });
+  });
 });

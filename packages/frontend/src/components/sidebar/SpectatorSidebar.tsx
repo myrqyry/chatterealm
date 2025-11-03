@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useGameStore } from '../../stores/gameStore';
 import { COLORS } from '../../utils/tokens';
 
@@ -39,7 +40,7 @@ const SpectatorSidebar: React.FC<SpectatorSidebarProps> = ({ className }) => {
             <h3 className="text-text-primary text-sm font-semibold mb-3 flex items-center gap-2">👥 All Players ({gameWorld?.players?.length || 0})</h3>
             <div className="flex flex-col gap-2">
               {gameWorld?.players?.map(player => (
-                <div key={player.id} className={
+                <Link to={`/profile/${player.id}`} key={player.id} className={
                   `rounded-md p-3 border text-sm ` +
                   (currentPlayer?.id === player.id
                     ? 'bg-[rgba(196,167,231,0.1)] border-[rgba(196,167,231,0.3)]'
@@ -63,7 +64,7 @@ const SpectatorSidebar: React.FC<SpectatorSidebarProps> = ({ className }) => {
                     <div className="text-text-secondary"><strong>XP:</strong> {player.experience}</div>
                     <div className="text-text-secondary"><strong>Buffs:</strong> {player.buffs?.length ? player.buffs.join(', ') : 'None'}</div>
                   </div>
-                </div>
+                </Link>
               )) || (
                 <div className="text-text-secondary text-center p-5 text-sm">No players in game</div>
               )}

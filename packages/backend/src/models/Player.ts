@@ -8,6 +8,7 @@ export class Player {
   class: PlayerClass;
   connected: boolean;
   lastActive: number;
+  bio: string;
 
   constructor(playerData: PlayerData) {
     this.id = playerData.id;
@@ -17,6 +18,7 @@ export class Player {
     this.class = playerData.class;
     this.connected = true;
     this.lastActive = Date.now();
+    this.bio = playerData.bio || '';
   }
 
   public move(direction: 'up' | 'down' | 'left' | 'right'): void {
@@ -73,6 +75,7 @@ export class Player {
       isAlive: this.stats.hp > 0,
       lastMoveTime: 0,
       spawnTime: 0,
+      bio: this.bio,
     };
   }
 }

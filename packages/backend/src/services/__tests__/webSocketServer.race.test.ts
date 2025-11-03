@@ -60,7 +60,18 @@ describe('WebSocketServer Race Conditions', () => {
                 client.on('error', (error) => {
                     const validErrors = [
                         'Authentication already in progress for this player.',
-                        'Player is already online.'
+                        'Player is already online.',
+                        'Join already in progress'
+                    ];
+                    if (validErrors.includes(error.message)) {
+                        errorCount++;
+                    }
+                    resolve();
+                });
+                client.on('join_failed', (error) => {
+                    const validErrors = [
+                        'Player already connected',
+                        'Join failed'
                     ];
                     if (validErrors.includes(error.message)) {
                         errorCount++;

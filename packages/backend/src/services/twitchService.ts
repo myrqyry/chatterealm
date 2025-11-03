@@ -264,6 +264,7 @@ export class TwitchService {
       }
     }, 2000); // 2 second cooldown
 
+
     // !pickup command - pick up items
     this.registerCommand('pickup', async (cmd: ChatCommand) => {
       const player = this.getExistingPlayer(cmd.username);
@@ -283,7 +284,11 @@ export class TwitchService {
       }
 
       // Pick up the first item
-      const result = this.gameStateManager.pickupItem(cmd.username, items[0].id);
+      const room = gameService.getRoom('main_room');
+      if (!room) {
+        return `@${cmd.displayName} Error: Game room not found.`;
+      }
+      const result = room.pickupItem(cmd.username, items[0].id);
 
       if (result.success) {
         return `@${cmd.displayName} ${result.message}`;
@@ -318,6 +323,7 @@ export class TwitchService {
       return `@${cmd.displayName} Inventory: ${items}`;
     }, 3000); // 3 second cooldown
 
+
     // !use command - use an item from inventory
     this.registerCommand('use', async (cmd: ChatCommand) => {
       if (cmd.args.length < 1) {
@@ -338,7 +344,11 @@ export class TwitchService {
         return `@${cmd.displayName} Item not found in your inventory!`;
       }
 
-      const result = this.gameStateManager.useItem(cmd.username, item.id);
+      const room = gameService.getRoom('main_room');
+      if (!room) {
+        return `@${cmd.displayName} Error: Game room not found.`;
+      }
+      const result = room.useItem(cmd.username, item.id);
 
       if (result.success) {
         return `@${cmd.displayName} ${result.message}`;

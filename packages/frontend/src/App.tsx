@@ -16,6 +16,7 @@ import { CataclysmDemo } from './components/CataclysmDemo';
 import { SVGAssetDemo } from './components';
 import EmojiSvgSmokeTest from './components/dev/EmojiSvgSmokeTest';
 import { CharacterCreator } from './components/character/CharacterCreator';
+import PlayerProfileWrapper from './components/player/PlayerProfile/PlayerProfileWrapper';
 
 // Import mode-specific layouts
 import PlayLayout from './components/layouts/PlayLayout';
@@ -38,23 +39,27 @@ function App() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   async function handleEnableSound() {
     try {
-      // Check if audio context is supported
-      const hasAudioContext = typeof window.AudioContext !== 'undefined';
-      const hasWebkitAudioContext = typeof (window as any).webkitAudioContext !== 'undefined';
-      
-      if (!hasAudioContext && !hasWebkitAudioContext) {
-        console.warn('Audio context not supported, skipping sound');
-        setSoundEnabled(true); // Still mark as "enabled" so UI works
+      const hasAudioSupport = typeof window.AudioContext !== 'undefined' ||
+                            typeof (window as any).webkitAudioContext !== 'undefined';
+
+      if (!hasAudioSupport) {
+        console.warn('Audio not supported');
+        setSoundEnabled(false);
+        // Show user notification
         return;
       }
 
       await initializeSounds();
       setSoundEnabled(true);
-      console.log('🎵 Sound initialized');
+      console.log('🎵 Sound initialized successfully');
+
     } catch (err) {
-      console.error('Failed to initialize sound', err);
-      // Still mark as enabled so the button disappears and app continues
-      setSoundEnabled(true);
+      console.error('Sound initialization failed:', err);
+      setSoundEnabled(false);
+
+      // Show user-friendly error message
+      // You could use a toast notification here
+      alert('Sound could not be enabled. Please check your browser permissions.');
     }
   }
 
@@ -78,6 +83,16 @@ function App() {
             element={
               <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
                 <CharacterCreator />
+              </BaseLayout>
+            }
+          />
+
+          {/* Player Profile */}
+          <Route
+            path="/profile/:playerId"
+            element={
+              <BaseLayout mode="play" headerContent={<ModeNavigation compact />}>
+                <PlayerProfileWrapper />
               </BaseLayout>
             }
           />

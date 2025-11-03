@@ -11,6 +11,7 @@ import type { NotificationData } from '../types/notification';
 // Import WebSocket client
 import { webSocketClient } from '../services/webSocketClient';
 import { createMockGameWorld } from '../services/worldGeneration/WorldGenerator';
+import { EntityManager } from '../ai/EntityManager';
 
 interface GameState {
   // Core game state
@@ -39,6 +40,9 @@ interface GameState {
 
   // Unified settings state
   unifiedSettings: UnifiedSettings;
+
+  // AI
+  entityManager: EntityManager;
 
   // Actions
   setGameWorld: (world: GameWorld) => void;
@@ -247,6 +251,9 @@ export const useGameStore = create<GameState>()(
         unifiedSettings: createDefaultUnifiedSettings(),
         // UI state: whether sidebar is collapsed (for responsive layouts)
         sidebarCollapsed: false,
+
+        // AI
+        entityManager: new EntityManager(),
 
         // Game actions
         joinGame: (playerData) => {
