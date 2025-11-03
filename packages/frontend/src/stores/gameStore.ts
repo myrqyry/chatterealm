@@ -345,6 +345,7 @@ export const useGameStore = create<GameState>()(
 
           // State setters
           setGameWorld: (world) => {
+            get().entityManager.clear(); // Clear old entities
             set({ gameWorld: world });
             for (const npc of world.npcs) {
               const entity = get().npcFactory.create(npc);
