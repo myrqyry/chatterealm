@@ -38,7 +38,7 @@ export class WanderBehavior extends SteeringBehavior {
       .add(entity.position);
 
     const desiredVelocity = target.clone().sub(entity.position).normalize().multiplyScalar(entity.maxSpeed);
-    return desiredVelocity.sub(entity.velocity);
+    const steeringForce = desiredVelocity.sub(entity.velocity);
 
     return steeringForce;
   }
