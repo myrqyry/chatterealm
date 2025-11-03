@@ -1,4 +1,5 @@
 import { Telegram } from './Telegram';
+import { StateMachine } from './fsm/StateMachine';
 
 export class GameEntity {
   public id: number;
@@ -6,9 +7,11 @@ export class GameEntity {
   public children: GameEntity[] = [];
   public parent: GameEntity | null = null;
   public name: string = '';
+  public stateMachine: StateMachine<GameEntity>;
 
   constructor() {
     this.id = GameEntity.nextId++;
+    this.stateMachine = new StateMachine(this);
   }
 
   public add(entity: GameEntity): void {
@@ -26,6 +29,9 @@ export class GameEntity {
 
   public update(delta: number): void {
     if (!this.active) return;
+
+    this.stateMachine.update();
+
     this.children.forEach(child => child.update(delta));
   }
 
