@@ -31,7 +31,7 @@ export class Telegram {
   constructor(
     sender: number,
     receiver: number,
-    messageType: string,
+    messageType: AIMessageType,
     dispatchTime: number = -1,
     data: any = null
   ) {
