@@ -298,7 +298,7 @@ export class PlayerMovementService {
           };
           neighborNode.fCost = neighborNode.gCost + neighborNode.hCost;
           openSet.push(neighborNode);
-          openSetMap.set(neighborKey, neighborNode);
+          openSetMap.set(existingNeighborKey, neighborNode);
         }
       }
     }
