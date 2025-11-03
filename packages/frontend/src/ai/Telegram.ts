@@ -16,7 +16,7 @@ export class Telegram {
   /**
    * The message type.
    */
-  public messageType: string;
+  public messageType: AIMessageType;
 
   /**
    * The time when the message should be dispatched. A value of -1 indicates an immediate dispatch.
