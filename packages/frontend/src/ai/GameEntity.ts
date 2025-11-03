@@ -30,7 +30,7 @@ export class GameEntity {
   public update(delta: number): void {
     if (!this.active) return;
 
-    this.stateMachine.update();
+    this.stateMachine.update(delta);
 
     this.children.forEach(child => child.update(delta));
   }
