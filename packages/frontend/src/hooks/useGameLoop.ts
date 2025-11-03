@@ -8,7 +8,7 @@ export const useGameLoop = () => {
 
   const animate = useCallback((time: number) => {
     if (previousTimeRef.current !== undefined) {
-      const deltaTime = (time - previousTimeRef.current) / 1000;
+      const deltaTime = Math.min((time - previousTimeRef.current) / 1000, 0.1);
       entityManager.update(deltaTime);
     }
     previousTimeRef.current = time;
