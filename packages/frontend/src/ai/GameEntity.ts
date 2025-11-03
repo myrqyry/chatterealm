@@ -53,7 +53,7 @@ export class GameEntity {
 
     if (this.steering) {
       const steeringForce = this.steering.calculate(this);
-      const acceleration = steeringForce.divideScalar(this.mass);
+      const acceleration = steeringForce.clone().divideScalar(this.mass);
 
       this.velocity.add(acceleration.multiplyScalar(delta));
       this.velocity.truncate(this.maxSpeed);
