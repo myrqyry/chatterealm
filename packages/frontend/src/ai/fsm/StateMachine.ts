@@ -33,6 +33,10 @@ export class StateMachine<T extends GameEntity> {
    * @param newState The new state.
    */
   public changeState(newState: State<T>): void {
+    if (this.currentState === newState) {
+      return;
+    }
+
     if (this.currentState) {
       this.previousState = this.currentState;
       this.currentState.exit(this.owner);
