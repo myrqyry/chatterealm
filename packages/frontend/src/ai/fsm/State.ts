@@ -15,7 +15,7 @@ export abstract class State<T extends GameEntity> {
    * This method is called on each update cycle.
    * @param entity The entity that owns this state.
    */
-  public abstract execute(entity: T, delta: number): void;
+  public abstract execute(entity: T): void;
 
   /**
    * This method is called when the state is exited.

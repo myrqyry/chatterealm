@@ -1,20 +1,23 @@
 import { State } from '../State';
-import { GameEntity } from '../../GameEntity';
+import { WanderBehavior } from '../../steering/behaviors/WanderBehavior';
+import { AIEntity } from '../../AITypes';
 
 /**
  * @class IdleState
  * @description The state for an entity that is idle.
  */
-export class IdleState extends State<GameEntity> {
-  public enter(entity: GameEntity): void {
-    console.log(`${entity.name} is now idle.`);
+export class IdleState extends State<AIEntity> {
+  public enter(entity: AIEntity): void {
+    entity.steering = new WanderBehavior();
+    console.log(`${entity.name} is now idle and wandering.`);
   }
 
-  public execute(entity: GameEntity): void {
-    // In a real game, the entity would look for things to do here.
+  public execute(entity: AIEntity): void {
+    // The wandering behavior is handled by the GameEntity's update method.
   }
 
-  public exit(entity: GameEntity): void {
+  public exit(entity: AIEntity): void {
+    entity.steering = null;
     console.log(`${entity.name} is no longer idle.`);
   }
 }
