@@ -7,7 +7,7 @@ export class Time {
   public scale: number;
 
   private constructor() {
-    this.lastTime = 0;
+    this.lastTime = performance.now();
     this.delta = 0;
     this.scale = 1;
   }
