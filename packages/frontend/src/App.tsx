@@ -1,6 +1,6 @@
 import { useGameStore } from './stores/gameStore';
 import { useTheme } from './hooks/useTheme';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { initializeSounds } from './services/soundService';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -35,6 +35,23 @@ function App() {
 
   // Apply theme globally
   useTheme();
+
+  const { updateAI } = useGameStore();
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const gameLoop = () => {
+      updateAI();
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
+
+    gameLoop();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [updateAI]);
 
   const [soundEnabled, setSoundEnabled] = useState(false);
   async function handleEnableSound() {

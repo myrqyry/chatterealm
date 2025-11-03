@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import type { Player, GameWorld } from 'shared';
 import { useGameStore } from '../stores/gameStore';
 import { throttledLog, throttledError, throttledWarn } from '../utils/loggingUtils';
+import { EntityManager } from '../ai/EntityManager';
 
 export interface PlayerCommand {
   type: 'move' | 'move_to' | 'attack' | 'pickup' | 'use_item' | 'start_cataclysm';
@@ -22,9 +23,14 @@ export class WebSocketClient {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private hasJoinedGame = false; // Add flag to prevent duplicate joins
+  private entityManager: EntityManager | null = null;
 
   constructor() {
     this.connect();
+  }
+
+  public setEntityManager(entityManager: EntityManager): void {
+    this.entityManager = entityManager;
   }
 
   // Connection management
@@ -188,6 +194,10 @@ export class WebSocketClient {
     this.socket.on('loot_failure', (data: { reason: string }) => {
       throttledWarn('LOOT_FAILURE', `Loot failed: ${data.reason}`);
       useGameStore.getState().setGameMessage(`Loot failed: ${data.reason}`);
+    });
+
+    this.socket.on('ai_message', (data: { senderId: number, receiverId: number, message: string, extraInfo: any }) => {
+      useGameStore.getState().messageDispatcher.dispatchMessage(0, data.senderId, data.receiverId, data.message, data.extraInfo);
     });
   }
 

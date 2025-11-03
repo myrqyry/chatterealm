@@ -1,8 +1,5 @@
+// packages/frontend/src/ai/index.ts
+
 export * from './GameEntity';
 export * from './EntityManager';
 export * from './AITypes';
-export * from './Telegram';
-export * from './MessageDispatcher';
-export * from './fsm';
-export * from './steering';
-export * from './perception';

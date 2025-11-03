@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from '../GameCanvas';
 import CharacterBuilder from '../CharacterBuilder';
-import { useGameLoop } from '../../hooks/useGameLoop';
-import { MaterialButton, MaterialCard, MaterialChip } from '../index'; // Removed MaterialAppBar, MaterialPaper
+import { MaterialButton, MaterialCard } from '../index';
 import { useGameStore } from '../../stores/gameStore';
-import { TYPOGRAPHY, SPACING, BORDER_RADIUS, COMMON_STYLES, ANIMATION } from '../../utils/designSystem'; // Import design system tokens
 
 const PlayLayout: React.FC = () => {
-  useGameLoop();
   const { gameWorld, handleJoinGame } = useGameStore();
   const [isCharacterBuilderOpen, setIsCharacterBuilderOpen] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<{
@@ -77,20 +74,22 @@ const PlayLayout: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Game Canvas or Character Builder */}
-        <div className="flex-1 overflow-hidden flex items-center justify-center relative" style={{ background: 'var(--color-surface)' }}>
-          {!currentPlayer ? (
+        <div className="flex-1 overflow-hidden flex items-center justify-center relative bg-surface">
+          {isCharacterBuilderOpen ? (
+            <CharacterBuilder
+              isOpen={isCharacterBuilderOpen}
+              onClose={handleCloseCharacterBuilder}
+              onJoinGame={handleCharacterJoin}
+              currentPlayer={currentPlayer}
+            />
+          ) : !currentPlayer ? (
             // Character Creation Screen
             <div className="flex flex-col items-center justify-center gap-8 p-8 text-center">
               <div>
-                <h1 className="text-text-primary font-bold" style={{ fontSize: TYPOGRAPHY.fontSize['3xl'], marginBottom: SPACING.md, textShadow: COMMON_STYLES.textShadow.neon }}>
+                <h1 className="text-4xl font-bold mb-4 text-text-primary [text-shadow:0_0_10px_var(--color-primary)]">
                   ⚔️ Welcome to ChatteRealm ⚔️
                 </h1>
-                <p style={{
-                  fontSize: TYPOGRAPHY.fontSize.lg,
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: SPACING.lg,
-                  maxWidth: '600px'
-                }}>
+                <p className="text-lg text-text-secondary mb-8 max-w-xl">
                   Embark on an epic adventure in a procedurally generated world.
                   Choose your class, customize your character, and join the realm!
                 </p>
@@ -115,16 +114,10 @@ const PlayLayout: React.FC = () => {
                 🎮 Create Your Character
               </MaterialButton>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: SPACING.lg,
-                maxWidth: '800px',
-                marginTop: SPACING.lg
-              }}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mt-8">
                 <MaterialCard sx={{ background: COMMON_STYLES.glass.background, border: COMMON_STYLES.glass.border, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, textAlign: 'center' }}>
-                  <h3 className="text-text-primary mb-2" style={{ fontSize: TYPOGRAPHY.fontSize.xl }}>🏰 Dynamic World</h3>
-                  <p className="text-text-secondary" style={{ fontSize: TYPOGRAPHY.fontSize.sm }}>Explore procedurally generated terrain with biomes, rivers, and cataclysmic events</p>
+                  <h3 className="text-text-primary mb-2 text-xl">🏰 Dynamic World</h3>
+                  <p className="text-text-secondary text-sm">Explore procedurally generated terrain with biomes, rivers, and cataclysmic events</p>
                 </MaterialCard>
 
                 <MaterialCard
@@ -136,10 +129,10 @@ const PlayLayout: React.FC = () => {
                     textAlign: 'center'
                   }}
                 >
-                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.xl }}>
+                  <h3 className="text-text-primary mb-2 text-xl">
                     ⚔️ Class System
                   </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
+                  <p className="text-text-secondary text-sm">
                     Choose from Knight, Rogue, or Mage with unique abilities and playstyles
                   </p>
                 </MaterialCard>
@@ -153,10 +146,10 @@ const PlayLayout: React.FC = () => {
                     textAlign: 'center'
                   }}
                 >
-                  <h3 style={{ color: 'var(--color-text-primary)', marginBottom: SPACING.sm, fontSize: TYPOGRAPHY.fontSize.xl }}>
+                  <h3 className="text-text-primary mb-2 text-xl">
                     🎨 Rich Animations
                   </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: TYPOGRAPHY.fontSize.sm }}>
+                  <p className="text-text-secondary text-sm">
                     Experience smooth GSAP animations and hand-drawn effects throughout your journey
                   </p>
                 </MaterialCard>
@@ -164,13 +157,7 @@ const PlayLayout: React.FC = () => {
             </div>
           ) : (
             // Game Canvas
-            <div style={{
-              width: '100%',
-              height: '100%',
-              maxWidth: '100%', // Changed from calc(100vw - 320px) to allow BaseLayout to manage overall width
-              maxHeight: '100%', // Changed from 100vh
-              overflow: 'hidden'
-            }}>
+            <div className="w-full h-full max-w-full max-h-full overflow-hidden">
               <GameCanvas />
             </div>
           )}
@@ -178,14 +165,6 @@ const PlayLayout: React.FC = () => {
 
   {/* Sidebar is rendered by BaseLayout */}
       </div>
-
-      {/* Character Builder Modal */}
-      <CharacterBuilder
-        isOpen={isCharacterBuilderOpen}
-        onClose={handleCloseCharacterBuilder}
-        onJoinGame={handleCharacterJoin}
-        currentPlayer={currentPlayer}
-      />
     </>
   );
 };
