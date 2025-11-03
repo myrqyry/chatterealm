@@ -153,6 +153,29 @@ export class WebSocketServer {
         }
       });
 
+      socket.on(
+        'npc_message',
+        async (data: { npcId: string; message: string }) => {
+          try {
+            const clientData = this.connectedClients.get(socket.id);
+            if (clientData) {
+              const room = gameService.getRoom('main_room');
+              if (room) {
+                const response = await room.handleNpcInteraction(
+                  clientData.playerId,
+                  data.npcId,
+                  data.message
+                );
+                socket.emit('npc_response', { success: true, message: response });
+              }
+            }
+          } catch (error) {
+            console.error('Error handling npc_message:', error);
+            socket.emit('npc_response', { success: false, message: 'An error occurred while processing your message.' });
+          }
+        }
+      );
+
       // Handle client disconnect
       socket.on('disconnect', () => {
         this.handlePlayerDisconnect(socket);
@@ -202,48 +225,42 @@ export class WebSocketServer {
       // Set authentication state to prevent race conditions
       socket.data.isAuthenticating = true;
       socket.data.commandQueue = [];
-      
-      // Create player object with all required properties
-      const player: Player = {
-        id: playerData.id,
-        displayName: playerData.displayName,
-        twitchUsername: '', // Initialized to empty string as it's not part of JoinGameData
-        avatar: playerData.avatar || '👤', // Default avatar emoji
-        position: (playerData as any).position || { x: 0, y: 0 }, // Will be set by GameStateManager
-        class: playerData.class || PlayerClass.KNIGHT, // Default to knight
-        health: 100, // Full health at spawn
-        mana: 100, // Full mana at spawn
-        stamina: 100, // Full stamina at spawn
-        hunger: 100, // Not hungry at spawn
-        thirst: 100, // Not thirsty at spawn
+
+      const room = gameService.joinRoom(SOCKET_MAIN_ROOM, {
+        ...playerData,
+        position: { x: 0, y: 0 },
+        health: 100,
+        mana: 100,
+        stamina: 100,
+        hunger: 100,
+        thirst: 100,
         stats: {
           hp: 100,
           maxHp: 100,
           attack: 10,
           defense: 5,
-          speed: 5
+          speed: 5,
         },
         level: 1,
         experience: 0,
         inventory: [],
-        equipment: {
-          weapon: undefined,
-          armor: undefined,
-          accessory: undefined
-        },
+        equipment: {},
         achievements: [],
         titles: [],
         isAlive: true,
         lastMoveTime: 0,
         spawnTime: Date.now(),
         connected: true,
-        lastActive: Date.now()
-      };
-
-      const room = await gameService.joinRoom(SOCKET_MAIN_ROOM, player);
+        lastActive: Date.now(),
+        class: playerData.class || PlayerClass.KNIGHT,
+        avatar: playerData.avatar || '👤',
+        twitchUsername: '',
+      });
 
       if (!room) {
-        console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${SOCKET_MAIN_ROOM}`);
+        console.error(
+          `[SPAWN_ERROR] Failed to add player ${playerData.displayName} to room ${SOCKET_MAIN_ROOM}`
+        );
         socket.emit('error', { message: 'Failed to join room' });
         return;
       }
@@ -302,8 +319,6 @@ export class WebSocketServer {
 
       socket.emit('join_acknowledged', { status: 'success' });
 
-      console.log(`[JOIN_SUCCESS] Player ${player.displayName} fully joined the game`);
-      clearTimeout(cleanupTimeout); // Cancel cleanup on success
     } catch (error) {
       console.error('Player join failed:', error);
       socket.emit('join_failed', {

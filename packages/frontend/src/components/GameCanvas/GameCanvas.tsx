@@ -11,6 +11,7 @@ import { GAME_CONFIG } from 'shared';
 import { useGameStore } from '../../stores/gameStore';
 import { renderGame } from '../renderers/canvas/RenderCoordinator';
 import { CanvasDrawEffectComponent, createCanvasCirclePath, createCanvasStarPath, createCanvasLightningPath } from '../animations/CanvasDrawEffect';
+import { NpcComponent } from '../npc/NpcComponent';
 import { useContainerResize } from './hooks/useContainerResize';
 import { useCanvasSetup } from './hooks/useCanvasSetup';
 import { useParticleManager } from './managers/ParticleManager';
@@ -19,6 +20,7 @@ import { useRegenerationManager } from './managers/RegenerationManager';
 import { webSocketClient } from '../../services/webSocketClient';
 import { CataclysmVisualizer } from '../CataclysmVisualizer';
 import { Position } from 'shared';
+import DialogueComponent from '../chat/DialogueComponent';
 
 /**
  * Main game canvas component that renders the game world and handles user interactions.
@@ -249,6 +251,25 @@ const GameCanvas: React.FC = () => {
     }
   };
 
+  const handleNpcInteraction = (npc: NPC) => {
+    const player = useGameStore.getState().currentPlayer;
+    if (!player) return;
+
+    const distance = Math.max(
+      Math.abs(npc.position.x - player.position.x),
+      Math.abs(npc.position.y - player.position.y)
+    );
+
+    if (distance > GAME_CONFIG.npcInteractionRadius) {
+      useGameStore.getState().setGameMessage('NPC is too far away');
+      return;
+    }
+
+    // For now, just log the interaction
+    console.log(`Interacting with ${npc.name}`);
+    setSelectedNpc(npc);
+  };
+
   const getInfectedAreas = (): Position[] => {
     if (!gameWorld || !gameWorld.cataclysmCircle.isActive) {
       return [];
@@ -270,11 +291,12 @@ const GameCanvas: React.FC = () => {
   };
 
   const infectedAreas = getInfectedAreas();
+  const [selectedNpc, setSelectedNpc] = React.useState<NPC | null>(null);
 
   return (
     <div ref={containerRef} className="w-full h-full overflow-hidden p-2 box-border relative min-w-0 min-h-0" style={{ maxHeight: '100%', maxWidth: '100%' }}>
-      <canvas 
-        ref={canvasRef} 
+      <canvas
+        ref={canvasRef}
         className={`border border-outline rounded-md block w-full h-full max-w-full max-h-full ${canvasSetup.isReady ? '' : 'hidden'}`} 
         onPointerDown={handlePointerDown}
         style={{ maxHeight: '100%', maxWidth: '100%' }}
@@ -315,6 +337,12 @@ const GameCanvas: React.FC = () => {
           clearBeforeDraw={false}
         />
       ))}
+      {npcs.map((npc) => (
+        <NpcComponent key={npc.id} npc={npc} onClick={handleNpcInteraction} />
+      ))}
+      {selectedNpc && (
+        <DialogueComponent npc={selectedNpc} onClose={() => setSelectedNpc(null)} />
+      )}
     </div>
   );
 };
