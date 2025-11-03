@@ -16,7 +16,7 @@ export class Telegram {
   /**
    * The message type.
    */
-  public messageType: AIMessageType;
+  public messageType: string;
 
   /**
    * The time when the message should be dispatched. A value of -1 indicates an immediate dispatch.
@@ -31,7 +31,7 @@ export class Telegram {
   constructor(
     sender: number,
     receiver: number,
-    messageType: AIMessageType,
+    messageType: string,
     dispatchTime: number = -1,
     data: any = null
   ) {

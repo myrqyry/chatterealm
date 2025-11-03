@@ -25,7 +25,7 @@ export class MessageDispatcher {
   public dispatch(
     sender: number,
     receiver: number,
-    messageType: AIMessageType,
+    messageType: string,
     delay: number = 0,
     data: any = null
   ): void {
