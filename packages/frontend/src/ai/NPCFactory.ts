@@ -24,7 +24,7 @@ export class NPCFactory {
     const entity = new GameEntity(this.entityManager, npc.position.x, npc.position.y) as AIEntity;
 
     // Copy properties from the NPC data object to the entity.
-    Object.assign(entity, npc);
+    Object.assign(entity, (({ id, position, ...rest }) => rest)(npc));
 
     // Set the entity's initial state.
     entity.stateMachine.setCurrentState(new IdleState());
