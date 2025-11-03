@@ -54,9 +54,10 @@ export class Vector2D {
   }
 
   public truncate(max: number): Vector2D {
-    const length = this.length();
-    if (length > max) {
-      this.multiplyScalar(max / length);
+    // Use squared length to avoid expensive sqrt calculation
+    const lengthSq = this.x * this.x + this.y * this.y;
+    if (lengthSq > max * max) {
+      this.multiplyScalar(max / Math.sqrt(lengthSq));
     }
     return this;
   }
