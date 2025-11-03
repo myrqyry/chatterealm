@@ -16,7 +16,7 @@ export class SeekBehavior extends SteeringBehavior {
 
   public calculate(entity: GameEntity): Vector2D {
     const desiredVelocity = this.target.clone().sub(entity.position).normalize().multiplyScalar(entity.maxSpeed);
-    return desiredVelocity.sub(entity.velocity);
+    const steeringForce = desiredVelocity.sub(entity.velocity);
     return steeringForce;
   }
 }

@@ -2,6 +2,9 @@ import { Telegram } from './Telegram';
 import { StateMachine } from './fsm/StateMachine';
 import { Vector2D } from './steering/Vector2D';
 import { SteeringBehavior } from './steering/SteeringBehavior';
+import { Vision } from './perception/Vision';
+import { MemorySystem } from './perception/MemorySystem';
+import { EntityManager } from './EntityManager';
 
 export class GameEntity {
   public id: number;
@@ -15,14 +18,18 @@ export class GameEntity {
   public maxSpeed: number;
   public mass: number;
   public steering: SteeringBehavior | null = null;
+  public vision: Vision;
+  public memory: MemorySystem;
 
-  constructor(x: number = 0, y: number = 0) {
+  constructor(entityManager: EntityManager, x: number = 0, y: number = 0) {
     this.id = GameEntity.nextId++;
     this.stateMachine = new StateMachine(this);
     this.position = new Vector2D(x, y);
     this.velocity = new Vector2D();
     this.maxSpeed = 1;
     this.mass = 1;
+    this.vision = new Vision(this, entityManager);
+    this.memory = new MemorySystem(this);
   }
 
   public add(entity: GameEntity): void {
@@ -42,12 +49,13 @@ export class GameEntity {
     if (!this.active) return;
 
     this.stateMachine.update();
+    this.memory.updateSystem();
 
     if (this.steering) {
       const steeringForce = this.steering.calculate(this);
-      const velocityDelta = steeringForce.clone().divideScalar(this.mass).multiplyScalar(delta);
+      const acceleration = steeringForce.clone().divideScalar(this.mass);
 
-      this.velocity.add(velocityDelta);
+      this.velocity.add(acceleration.multiplyScalar(delta));
       this.velocity.truncate(this.maxSpeed);
 
       this.position.add(this.velocity.clone().multiplyScalar(delta));

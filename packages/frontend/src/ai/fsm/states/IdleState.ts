@@ -13,7 +13,11 @@ export class IdleState extends State<AIEntity> {
   }
 
   public execute(entity: AIEntity): void {
-    // The wandering behavior is handled by the GameEntity's update method.
+    const visiblePlayers = entity.vision.getVisibleEntities().filter(e => e.name === 'Player');
+
+    if (visiblePlayers.length > 0) {
+      console.log(`${entity.name} sees a player!`);
+    }
   }
 
   public exit(entity: AIEntity): void {

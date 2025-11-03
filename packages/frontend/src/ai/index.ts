@@ -5,3 +5,4 @@ export * from './Telegram';
 export * from './MessageDispatcher';
 export * from './fsm';
 export * from './steering';
+export * from './perception';
