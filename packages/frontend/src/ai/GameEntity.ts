@@ -1,3 +1,5 @@
+import { Telegram } from './Telegram';
+
 export class GameEntity {
   public id: number;
   public active: boolean = true;
@@ -25,6 +27,10 @@ export class GameEntity {
   public update(delta: number): void {
     if (!this.active) return;
     this.children.forEach(child => child.update(delta));
+  }
+
+  public handleMessage(telegram: Telegram): boolean {
+    return false;
   }
 
   private static nextId = 0;
