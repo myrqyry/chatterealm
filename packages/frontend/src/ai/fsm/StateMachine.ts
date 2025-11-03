@@ -18,13 +18,13 @@ export class StateMachine<T extends GameEntity> {
   /**
    * Updates the state machine.
    */
-  public update(): void {
+  public update(delta: number): void {
     if (this.globalState) {
-      this.globalState.execute(this.owner);
+      this.globalState.execute(this.owner, delta);
     }
 
     if (this.currentState) {
-      this.currentState.execute(this.owner);
+      this.currentState.execute(this.owner, delta);
     }
   }
 
