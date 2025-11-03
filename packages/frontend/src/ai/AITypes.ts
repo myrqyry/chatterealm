@@ -9,5 +9,5 @@ export interface ITelegram {
   receiver: number;
   message: string;
   dispatchTime: number;
-  extraInfo?: any;
+  extraInfo?: unknown;
 }
