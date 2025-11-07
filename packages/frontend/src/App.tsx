@@ -149,9 +149,7 @@ function App() {
             path="/dev/emoji-test"
             element={
               <BaseLayout mode="dev" headerContent={<ModeNavigation compact />}>
-                <DevLayout> {/* DevLayout can accept children for nested dev tools */}
-                  <EmojiSvgSmokeTest />
-                </DevLayout>
+                <EmojiSvgSmokeTest />
               </BaseLayout>
             }
           />

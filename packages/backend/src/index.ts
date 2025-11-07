@@ -44,32 +44,7 @@ let gameStateManager: GameStateManager;
 const emojiService = new EmojiService();
 let webSocketServer: WebSocketServer;
 const handDrawnBuildingService = new HandDrawnBuildingService();
-
-// No longer needed, as services are instantiated within GameStateManager
-
-// Conditionally instantiate the Twitch service
 let twitchService: StreamOptimizedTwitchService | null = null;
-const twitchClientId = env.TWITCH_CLIENT_ID;
-const twitchClientSecret = env.TWITCH_CLIENT_SECRET;
-const twitchChannelName = env.TWITCH_CHANNEL_NAME;
-
-if (twitchClientId && twitchClientSecret && twitchChannelName) {
-  twitchService = new StreamOptimizedTwitchService(
-    webSocketServer.getIO(),
-    twitchClientId,
-    twitchClientSecret,
-    twitchChannelName,
-    gameStateManager,
-  );
-
-  // Connect to Twitch
-  twitchService.connect().catch(err => {
-      console.error("Failed to connect to Twitch:", err);
-  });
-  console.log('🔌 Twitch integration enabled.');
-} else {
-  console.warn('⚠️ Twitch credentials not provided in environment variables (TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_CHANNEL_NAME). Twitch integration is disabled.');
-}
 
 // The remaining services are instantiated within GameStateManager or are not used.
 
@@ -310,7 +285,34 @@ process.on('SIGTERM', () => {
 async function startServer() {
   try {
     gameStateManager = await GameStateManager.create();
-    webSocketServer = new WebSocketServer(httpServer);
+    // Conditionally instantiate WebSocketServer based on test environment
+    if (process.env.NODE_ENV !== 'test') {
+      webSocketServer = new WebSocketServer(httpServer, gameStateManager);
+    } else {
+      webSocketServer = new WebSocketServer(httpServer);
+    }
+
+    const twitchClientId = env.TWITCH_CLIENT_ID;
+    const twitchClientSecret = env.TWITCH_CLIENT_SECRET;
+    const twitchChannelName = env.TWITCH_CHANNEL_NAME;
+
+    if (twitchClientId && twitchClientSecret && twitchChannelName) {
+      twitchService = new StreamOptimizedTwitchService(
+        webSocketServer.getIO(),
+        twitchClientId,
+        twitchClientSecret,
+        twitchChannelName,
+        gameStateManager,
+      );
+
+      // Connect to Twitch
+      twitchService.connect().catch(err => {
+          console.error("Failed to connect to Twitch:", err);
+      });
+      console.log('🔌 Twitch integration enabled.');
+    } else {
+      console.warn('⚠️ Twitch credentials not provided in environment variables (TWITCH_CLIENT_ID, TWITCH_CLIENT_SECRET, TWITCH_CHANNEL_NAME). Twitch integration is disabled.');
+    }
 
     // Start the server only if this file is run directly
     if (require.main === module) {

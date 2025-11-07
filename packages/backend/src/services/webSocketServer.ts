@@ -23,6 +23,7 @@ export interface PlayerCommand {
 // The QueuedCommand interface is no longer needed with the simplified authentication logic.
 
 import { gameService } from './GameService';
+import { GameStateManager } from './gameStateManager';
 
 // Central socket room name used across this module
 const SOCKET_MAIN_ROOM = 'main_room';
@@ -44,8 +45,10 @@ export class WebSocketServer {
     averageUpdateTime: 0,
     errorCount: 0
   };
+  private gameStateManager: GameStateManager | undefined;
 
-  constructor(httpServer: HTTPServer) {
+  constructor(httpServer: HTTPServer, gameStateManager?: GameStateManager) {
+    this.gameStateManager = gameStateManager;
     // Initialize Socket.IO server with CORS configuration
     this.io = new SocketIOServer(httpServer, {
       cors: {
