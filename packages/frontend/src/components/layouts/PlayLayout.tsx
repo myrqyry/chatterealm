@@ -3,6 +3,38 @@ import GameCanvas from '../GameCanvas';
 import CharacterBuilder from '../CharacterBuilder';
 import { MaterialButton, MaterialCard } from '../index';
 import { useGameStore } from '../../stores/gameStore';
+import { webSocketClient } from '../../services/webSocketClient';
+
+// Define layout constants
+const LAYOUT_CONSTANTS = {
+  typography: {
+    fontSize: {
+      lg: '1.125rem'
+    }
+  },
+  spacing: {
+    md: '1rem',
+    lg: '1.5rem'
+  },
+  borderRadius: {
+    md: '8px',
+    lg: '12px'
+  },
+  commonStyles: {
+    glass: {
+      background: 'rgba(255, 255, 255, 0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.1)'
+    }
+  },
+  animation: {
+    duration: {
+      standard: '0.3s'
+    },
+    easing: {
+      easeInOut: 'ease-in-out'
+    }
+  }
+};
 
 const PlayLayout: React.FC = () => {
   const { gameWorld, handleJoinGame } = useGameStore();
@@ -12,8 +44,22 @@ const PlayLayout: React.FC = () => {
     class: any;
     avatar: string;
   } | null>(null);
+  const [isConnecting, setIsConnecting] = useState(true);
 
   const lastPlayerIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Check WebSocket connection
+    const checkConnection = async () => {
+      try {
+        await webSocketClient.connect();
+        setIsConnecting(false);
+      } catch (err) {
+        console.error('Connection failed:', err);
+      }
+    };
+    checkConnection();
+  }, []);
 
   // Ensure we notify server to remove the player when switching away from Play mode
   useEffect(() => {
@@ -24,15 +70,8 @@ const PlayLayout: React.FC = () => {
 
     return () => {
       // On unmount or when currentPlayer/PlayLayout is removed, request server to remove last player
-      try {
-        // Use runtime import to avoid circular imports at module initialization
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { webSocketClient } = require('../../services/webSocketClient');
-        if (lastPlayerIdRef.current) {
-          webSocketClient.leaveGame(lastPlayerIdRef.current);
-        }
-      } catch (err) {
-        // ignore
+      if (lastPlayerIdRef.current && webSocketClient) {
+        webSocketClient.leaveGame(lastPlayerIdRef.current);
       }
     };
   }, [currentPlayer]);
@@ -52,13 +91,9 @@ const PlayLayout: React.FC = () => {
   // Handle opening character builder
   const handleOpenCharacterBuilder = () => {
     // If a player is currently present, request the server to remove them before creating a new one
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { webSocketClient } = require('../../services/webSocketClient');
-      const pid = (currentPlayer as any)?.id;
-      if (pid) webSocketClient.leaveGame(pid);
-    } catch (err) {
-      // ignore
+    const pid = (currentPlayer as any)?.id;
+    if (pid && webSocketClient) {
+      webSocketClient.leaveGame(pid);
     }
     setCurrentPlayer(null);
     setIsCharacterBuilderOpen(true);
@@ -68,6 +103,17 @@ const PlayLayout: React.FC = () => {
   const handleCloseCharacterBuilder = () => {
     setIsCharacterBuilderOpen(false);
   };
+
+  if (isConnecting) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin text-6xl mb-4">⚔️</div>
+          <p className="text-text-secondary">Connecting to ChatteRealm...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -101,31 +147,31 @@ const PlayLayout: React.FC = () => {
                 sx={{
                   backgroundColor: 'primary.main', // Using theme color
                   color: 'primary.contrastText', // Using theme color
-                  fontSize: TYPOGRAPHY.fontSize.lg,
-                  padding: `${SPACING.md} ${SPACING.lg}`,
-                  borderRadius: BORDER_RADIUS.md,
+                  fontSize: LAYOUT_CONSTANTS.typography.fontSize.lg,
+                  padding: `${LAYOUT_CONSTANTS.spacing.md} ${LAYOUT_CONSTANTS.spacing.lg}`,
+                  borderRadius: LAYOUT_CONSTANTS.borderRadius.md,
                   '&:hover': {
                     backgroundColor: 'primary.dark', // Using theme color
                     transform: 'scale(1.05)'
                   },
-                  transition: `all ${ANIMATION.duration.standard} ${ANIMATION.easing.easeInOut}`
+                  transition: `all ${LAYOUT_CONSTANTS.animation.duration.standard} ${LAYOUT_CONSTANTS.animation.easing.easeInOut}`
                 }}
               >
                 🎮 Create Your Character
               </MaterialButton>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mt-8">
-                <MaterialCard sx={{ background: COMMON_STYLES.glass.background, border: COMMON_STYLES.glass.border, borderRadius: BORDER_RADIUS.lg, padding: SPACING.lg, textAlign: 'center' }}>
+                <MaterialCard sx={{ background: LAYOUT_CONSTANTS.commonStyles.glass.background, border: LAYOUT_CONSTANTS.commonStyles.glass.border, borderRadius: LAYOUT_CONSTANTS.borderRadius.lg, padding: LAYOUT_CONSTANTS.spacing.lg, textAlign: 'center' }}>
                   <h3 className="text-text-primary mb-2 text-xl">🏰 Dynamic World</h3>
                   <p className="text-text-secondary text-sm">Explore procedurally generated terrain with biomes, rivers, and cataclysmic events</p>
                 </MaterialCard>
 
                 <MaterialCard
                   sx={{
-                    background: COMMON_STYLES.glass.background,
-                    border: COMMON_STYLES.glass.border,
-                    borderRadius: BORDER_RADIUS.lg,
-                    padding: SPACING.lg,
+                    background: LAYOUT_CONSTANTS.commonStyles.glass.background,
+                    border: LAYOUT_CONSTANTS.commonStyles.glass.border,
+                    borderRadius: LAYOUT_CONSTANTS.borderRadius.lg,
+                    padding: LAYOUT_CONSTANTS.spacing.lg,
                     textAlign: 'center'
                   }}
                 >
@@ -139,10 +185,10 @@ const PlayLayout: React.FC = () => {
 
                 <MaterialCard
                   sx={{
-                    background: COMMON_STYLES.glass.background,
-                    border: COMMON_STYLES.glass.border,
-                    borderRadius: BORDER_RADIUS.lg,
-                    padding: SPACING.lg,
+                    background: LAYOUT_CONSTANTS.commonStyles.glass.background,
+                    border: LAYOUT_CONSTANTS.commonStyles.glass.border,
+                    borderRadius: LAYOUT_CONSTANTS.borderRadius.lg,
+                    padding: LAYOUT_CONSTANTS.spacing.lg,
                     textAlign: 'center'
                   }}
                 >
