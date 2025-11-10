@@ -2,6 +2,7 @@ import React from 'react';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { ChatMessage, Player } from '../../types/chat';
+import SmartSuggestions from './SmartSuggestions';
 
 interface ChatWindowProps {
   messages: ChatMessage[];
@@ -105,13 +106,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       <MessageList messages={messages} username={username} />
 
-      <MessageInput
-        inputMessage={inputMessage}
-        setInputMessage={setInputMessage}
-        handleKeyPress={handleKeyPress}
-        sendChatCommand={sendChatCommand}
-        isConnected={isConnected}
-      />
+      <div style={{ position: 'relative' }}>
+        <SmartSuggestions
+            currentInput={inputMessage}
+            gameContext={{
+                recentMessages: messages.slice(-5).map(m => m.message),
+                activeQuests: [], // This will need to be passed down from the game state
+                nearbyPlayers: players.map(p => p.displayName),
+                currentActivity: 'chatting', // This will need to be passed down from the game state
+            }}
+            onSelectSuggestion={(suggestion) => setInputMessageAndFocus(suggestion)}
+        />
+        <MessageInput
+            inputMessage={inputMessage}
+            setInputMessage={setInputMessage}
+            handleKeyPress={handleKeyPress}
+            sendChatCommand={sendChatCommand}
+            isConnected={isConnected}
+        />
+      </div>
 
       {/* Preset Commands */}
       <div className="quick-commands">

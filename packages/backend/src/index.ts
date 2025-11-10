@@ -35,6 +35,7 @@ import { CombatService } from './services/CombatService';
 import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
 import { GAME_CONFIG } from 'shared';
 import { validateEnv } from './config/env';
+import AIProxyService from './services/aiProxyService';
 
 const app = express();
 const env = validateEnv();
@@ -213,6 +214,10 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
+app.post('/api/ai-proxy', (req, res) => {
+  AIProxyService.handleRequest(req, res);
+});
+
 app.get('/api/world', (req, res) => {
   try {
     const world = gameStateManager.getGameWorld();

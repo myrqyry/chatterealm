@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { ChatMessage, Player } from '../../types/chat';
+import { GameCommand } from '@chatterealm/shared';
 
 class ChatService {
   private socket: Socket;
@@ -70,6 +71,29 @@ class ChatService {
       return data.success;
     } catch (error) {
       console.error('Error sending chat command:', error);
+      return false;
+    }
+  }
+
+  public async sendGameCommand(username: string, displayName: string, command: GameCommand, channelPoints: number): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.apiUrl}/api/test/command`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          displayName,
+          command,
+          channelPoints
+        })
+      });
+
+      const data = await response.json();
+      return data.success;
+    } catch (error) {
+      console.error('Error sending game command:', error);
       return false;
     }
   }

@@ -2,6 +2,9 @@ import { Server } from 'socket.io';
 import axios from 'axios';
 import * as tmi from 'tmi.js';
 import { GameStateManager } from './gameStateManager';
+import ContentModerationService from './contentModerationService';
+import { gameService } from './GameService';
+import { NPC, Player, Item } from 'shared';
 
 // Twitch IRC message types
 interface TwitchMessage {
@@ -13,6 +16,7 @@ interface TwitchMessage {
   isModerator: boolean;
   isBroadcaster: boolean;
   channelPoints?: number;
+  history: string[];
 }
 
 export interface ChatCommand {
@@ -45,6 +49,7 @@ export class TwitchService {
   private tmiClient: tmi.Client | null = null;
   protected gameStateManager: GameStateManager;
   private connected: boolean = false;
+  private userChatHistory: Map<string, string[]> = new Map();
 
   // Rate limiting configuration
   private readonly GLOBAL_COOLDOWN_MS = 500; // 500ms between any commands
@@ -244,7 +249,7 @@ export class TwitchService {
       }
 
       // Find enemy at player's position
-      const enemy = this.gameStateManager.getGameWorld().npcs.find(npc =>
+      const enemy = this.gameStateManager.getGameWorld().npcs.find((npc: NPC) =>
         npc.position.x === player.position.x &&
         npc.position.y === player.position.y &&
         npc.isAlive
@@ -273,7 +278,7 @@ export class TwitchService {
       }
 
       // Find items at player's position
-      const items = this.gameStateManager.getGameWorld().items.filter(item =>
+      const items = this.gameStateManager.getGameWorld().items.filter((item: Item) =>
         item.position &&
         item.position.x === player.position.x &&
         item.position.y === player.position.y
@@ -365,8 +370,8 @@ export class TwitchService {
     // !info command - get information about the game
     this.registerCommand('info', async (cmd: ChatCommand) => {
       const world = this.gameStateManager.getGameWorld();
-      const playerCount = world.players.filter(p => p.isAlive).length;
-      const npcCount = world.npcs.filter(n => n.isAlive).length;
+      const playerCount = world.players.filter((p: Player) => p.isAlive).length;
+      const npcCount = world.npcs.filter((n: NPC) => n.isAlive).length;
       const itemCount = world.items.length;
 
       return `@${cmd.displayName} Chat Grid Chronicles - Players: ${playerCount}, NPCs: ${npcCount}, Items: ${itemCount}. Use !help for commands!`;
@@ -376,15 +381,15 @@ export class TwitchService {
     this.registerCommand('leaderboard', async (cmd: ChatCommand) => {
       const world = this.gameStateManager.getGameWorld();
       const topPlayers = world.players
-        .filter(p => p.isAlive)
-        .sort((a, b) => b.level - a.level || b.experience - a.experience)
+        .filter((p: Player) => p.isAlive)
+        .sort((a: Player, b: Player) => b.level - a.level || b.experience - a.experience)
         .slice(0, 5);
 
       if (topPlayers.length === 0) {
         return `@${cmd.displayName} No players in the game yet!`;
       }
 
-      const leaderboard = topPlayers.map((player, index) =>
+      const leaderboard = topPlayers.map((player: Player, index: number) =>
         `${index + 1}. ${player.displayName} (Lvl ${player.level})`
       ).join(', ');
 
@@ -568,16 +573,22 @@ export class TwitchService {
     // Don't process our own messages
     if (self) return;
 
+    const username = userstate.username || 'unknown';
+    const history = this.userChatHistory.get(username) || [];
+    history.push(message);
+    this.userChatHistory.set(username, history.slice(-10)); // Keep last 10 messages
+
     // Convert tmi.js message to our TwitchMessage format
     const twitchMessage: TwitchMessage = {
-      username: userstate.username || 'unknown',
+      username: username,
       displayName: userstate['display-name'] || userstate.username || 'Unknown',
       message: message,
       timestamp: Date.now(),
       isSubscriber: userstate.subscriber || false,
       isModerator: userstate.mod || false,
       isBroadcaster: userstate.badges?.broadcaster === '1' || false,
-      channelPoints: 0 // Would need to implement channel point redemption handling
+      channelPoints: 0, // Would need to implement channel point redemption handling
+      history: history,
     };
 
     await this.processChatMessage(twitchMessage);
@@ -693,6 +704,42 @@ export class TwitchService {
   public async processChatMessage(twitchMessage: TwitchMessage): Promise<void> {
     // Check if message is a command
     if (!twitchMessage.message.startsWith('!')) {
+      const moderationResult = await ContentModerationService.moderateMessage(twitchMessage.message, {
+        userId: twitchMessage.username,
+        userHistory: twitchMessage.history,
+        chatType: 'public',
+      });
+
+      if (moderationResult.isViolation) {
+        switch (moderationResult.suggestedAction) {
+          case 'filter':
+            this.io.emit('chat_message', {
+              message: moderationResult.filteredMessage,
+              timestamp: Date.now(),
+              isResponse: false,
+              isModerated: true,
+            });
+            break;
+          case 'block':
+            // Don't send the message
+            break;
+          case 'ban':
+            // Ban the user
+            break;
+          default:
+            this.io.emit('chat_message', {
+              message: twitchMessage.message,
+              timestamp: Date.now(),
+              isResponse: false,
+            });
+        }
+      } else {
+        this.io.emit('chat_message', {
+          message: twitchMessage.message,
+          timestamp: Date.now(),
+          isResponse: false,
+        });
+      }
       return; // Not a command
     }
 
@@ -843,9 +890,9 @@ export class TwitchService {
     }
   }
 
-  protected getExistingPlayer(username: string): any {
+  protected getExistingPlayer(username: string): Player | undefined {
     // Get player from GameStateManager
-    return this.gameStateManager.getGameWorld().players.find(p => p.id === username);
+    return this.gameStateManager.getGameWorld().players.find((p: Player) => p.id === username);
   }
 
   private getPlayerStatsForClass(playerClass: string): any {
