@@ -3,6 +3,8 @@ export * from './types/game';
 export * from './types/characterClasses';
 export * from './types/biomes';
 export * from './types/network';
+export * from './types/moderation';
+export * from './types/commands';
 
 // Export all constants
 export * from './constants/gameConstants';

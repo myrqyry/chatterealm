@@ -148,7 +148,7 @@ export class LootService extends LootManager {
     if (itemIndex === -1) return { success: false, message: 'Item not found' };
 
     const item = items[itemIndex];
-    if (item.position.x !== player.position.x || item.position.y !== player.position.y) {
+    if (!item.position || item.position.x !== player.position.x || item.position.y !== player.position.y) {
       return { success: false, message: 'Item is not at the same position as the player' };
     }
 

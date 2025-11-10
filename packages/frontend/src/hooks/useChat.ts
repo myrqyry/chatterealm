@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { chatService } from '../services/chat/ChatService';
 import { messageHandler } from '../services/chat/MessageHandler';
 import { ChatMessage, Player } from '../types/chat';
+import NaturalLanguageCommandParser from '../services/commandParser';
 
 interface UseChatHook {
   messages: ChatMessage[];
@@ -70,7 +71,14 @@ export const useChat = (onWorldUpdate: (players: Player[]) => void): UseChatHook
     if (!inputMessage.trim()) return;
 
     messageHandler.addSentMessage(inputMessage, username, displayName);
-    const success = await chatService.sendChatCommand(username, displayName, inputMessage, channelPoints);
+    const commandParser = new NaturalLanguageCommandParser();
+    const command = await commandParser.parseCommand(inputMessage);
+    let success = false;
+    if (command) {
+        success = await chatService.sendGameCommand(username, displayName, command, channelPoints);
+    } else {
+        success = await chatService.sendChatCommand(username, displayName, inputMessage, channelPoints);
+    }
 
     if (success) {
       setInputMessage('');

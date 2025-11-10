@@ -1,4 +1,4 @@
-import { GameWorld, GAME_CONFIG, BiomeType, Player, NPC, LootResult } from 'shared';
+import { GameWorld, GAME_CONFIG, BiomeType, Player, NPC, LootResult, Building } from 'shared';
 import { PlayerMovementService, MoveResult } from './PlayerMovementService';
 import { CombatService, CombatResult } from './CombatService';
 import { LootService } from './LootService';
@@ -220,8 +220,8 @@ export class GameStateManager extends EventEmitter {
   public getGameWorldManager(): GameWorldManager { return this.gameWorldManager; }
   public getNPCManager(): NPCManager { return this.npcManager; }
 
-  public getBuildingAt(position: any): any {
-    return this.getGameWorld().buildings.find(b => b.position.x === position.x && b.position.y === position.y);
+  public getBuildingAt(position: any): Building | undefined {
+    return this.getGameWorld().buildings.find((b: Building) => b.position.x === position.x && b.position.y === position.y);
   }
 
   public getTerrainAt(position: any): any {
@@ -238,8 +238,8 @@ export class GameStateManager extends EventEmitter {
 
   public attackEnemy(playerId: string, enemyPosition: any): CombatResult {
     const world = this.getGameWorld();
-    const attacker = world.players.find(p => p.id === playerId);
-    const defender = world.npcs.find(n => n.position.x === enemyPosition.x && n.position.y === enemyPosition.y);
+    const attacker = world.players.find((p: Player) => p.id === playerId);
+    const defender = world.npcs.find((n: NPC) => n.position.x === enemyPosition.x && n.position.y === enemyPosition.y);
     if (!attacker || !defender) {
       return { success: false, message: 'Attacker or defender not found' };
     }
