@@ -712,6 +712,13 @@ export class TwitchService {
 
       if (moderationResult.isViolation) {
         switch (moderationResult.suggestedAction) {
+          case 'block':
+            // Message is blocked, do nothing.
+            break;
+          case 'ban':
+            // TODO: Implement user banning logic.
+            console.warn(`Banning user ${twitchMessage.username} is not yet implemented.`);
+            break;
           case 'filter':
             this.io.emit('chat_message', {
               message: moderationResult.filteredMessage,
@@ -720,13 +727,7 @@ export class TwitchService {
               isModerated: true,
             });
             break;
-          case 'block':
-            // Don't send the message
-            break;
-          case 'ban':
-            // Ban the user
-            break;
-          default:
+          default: // 'allow', 'flag', or unknown
             this.io.emit('chat_message', {
               message: twitchMessage.message,
               timestamp: Date.now(),

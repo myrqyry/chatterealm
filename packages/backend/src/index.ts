@@ -214,8 +214,13 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
-app.post('/api/ai-proxy', (req, res) => {
+app.post('/api/ai-proxy', AIProxyService.validateRequest, (req, res) => {
   AIProxyService.handleRequest(req, res);
+});
+
+app.post('/api/game/command', (req, res) => {
+  // TODO: Implement game command handler
+  res.json({ success: true });
 });
 
 app.get('/api/world', (req, res) => {

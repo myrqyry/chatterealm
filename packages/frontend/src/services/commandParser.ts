@@ -27,9 +27,8 @@ class NaturalLanguageCommandParser {
         }),
       });
 
-      const text = await response.json();
-      const parsedCommand = GameCommandSchema.parse(JSON.parse(text));
-      return parsedCommand;
+      const parsedCommand = await response.json();
+      return GameCommandSchema.parse(parsedCommand);
     } catch (error) {
       console.error('Failed to parse command:', error);
       return null;

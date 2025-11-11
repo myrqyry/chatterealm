@@ -21,6 +21,7 @@
     "express-validator": "^7.3.0",
     "helmet": "^8.1.0",
     "jsdom": "^22.1.0",
+    "lru-cache": "^11.2.2",
     "shared": "workspace:*",
     "socket.io": "^4.8.1",
     "svg2roughjs": "^3.2.1",
