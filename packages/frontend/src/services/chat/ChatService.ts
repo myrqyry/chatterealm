@@ -77,7 +77,7 @@ class ChatService {
 
   public async sendGameCommand(username: string, displayName: string, command: GameCommand, channelPoints: number): Promise<boolean> {
     try {
-      const response = await fetch(`${this.apiUrl}/api/test/command`, {
+      const response = await fetch(`${this.apiUrl}/api/game/command`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -76,8 +76,7 @@ Return only the 3 suggestions as a JSON array of strings.`;
           }),
         });
 
-        const text = await response.json();
-        const parsed = JSON.parse(text);
+        const parsed = await response.json();
         setSuggestions(parsed.suggestions);
       } catch (error) {
         console.error('Failed to generate suggestions:', error);

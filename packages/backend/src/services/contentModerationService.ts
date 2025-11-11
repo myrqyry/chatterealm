@@ -1,18 +1,14 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { ModerationResult, ModerationResultSchema } from 'shared';
+import GeminiClient from './geminiClient';
+import LRUCache from 'lru-cache';
+
+const CACHE_SIZE = 10000;
 
 class ContentModerationService {
-  private client: GoogleGenerativeAI;
-  private violationCache: Map<string, ModerationResult> = new Map();
-
-  constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not set');
-    }
-    this.client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  }
+  private client = GeminiClient.getInstance();
+  private violationCache: LRUCache<string, ModerationResult> = new LRUCache({ max: CACHE_SIZE });
 
   async moderateMessage(
     message: string,
@@ -49,28 +45,33 @@ Consider:
 
 Provide detailed analysis and recommended action.`;
 
-    const response = await this.client.getGenerativeModel({ model: 'gemini-pro' }).generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: zodToJsonSchema(ModerationResultSchema),
-        temperature: 0.3,
-      },
-    });
+    try {
+      const response = await this.client.getGenerativeModel({ model: 'gemini-pro' }).generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: zodToJsonSchema(ModerationResultSchema),
+          temperature: 0.3,
+        },
+      });
 
-    const result = ModerationResultSchema.parse(JSON.parse(response.response.text()));
+      const result = ModerationResultSchema.parse(JSON.parse(response.response.text()));
+      return result;
+    } catch (error) {
+      console.error('Error moderating message:', error);
+      // Return a default "allow" response in case of an error
+      return {
+        isViolation: false,
+        severity: 'none',
+        categories: ['none'],
+        explanation: 'Error processing moderation request.',
+        suggestedAction: 'allow',
+      };
+    }
 
     // Cache result if it's a violation
     if (result.isViolation) {
       this.violationCache.set(cacheKey, result);
-
-      // Limit cache size
-      if (this.violationCache.size > 10000) {
-        const firstKey = this.violationCache.keys().next().value;
-        if (firstKey) {
-          this.violationCache.delete(firstKey);
-        }
-      }
     }
 
     return result;
