@@ -1,5 +1,5 @@
 import { PlayerService } from '../PlayerService';
-import { GameWorld } from 'shared';
+import { GameWorld } from '@chatterealm/shared';
 import { GameWorldManager } from '../GameWorldManager';
 import { NPCManager } from '../NPCManager';
 import { createMockPlayer } from '../../testUtils/mockGameWorld';

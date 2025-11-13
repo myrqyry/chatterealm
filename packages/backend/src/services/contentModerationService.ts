@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { ModerationResult, ModerationResultSchema } from 'shared';
+import { ModerationResult, ModerationResultSchema } from '@chatterealm/shared';
 import GeminiClient from './geminiClient';
 import LRUCache from 'lru-cache';
 

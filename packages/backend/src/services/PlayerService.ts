@@ -1,4 +1,4 @@
-import { Player as PlayerData, GameWorld, PlayerProfile } from 'shared';
+import { Player as PlayerData, GameWorld, PlayerProfile } from '@chatterealm/shared';
 import { Player } from '../models/Player';
 import { GameWorldManager } from './GameWorldManager';
 

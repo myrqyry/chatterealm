@@ -1,4 +1,4 @@
-import { NPC, Position, BiomeType, GAME_CONFIG, WORLD_CONSTANTS } from 'shared';
+import { NPC, Position, BiomeType, GAME_CONFIG, WORLD_CONSTANTS } from '@chatterealm/shared';
 
 export class NPCManager {
   private occupiedPositions: Set<string>;

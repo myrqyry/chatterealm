@@ -1,4 +1,4 @@
-import { Player as PlayerData, Position, Stats, PlayerClass } from 'shared';
+import { Player as PlayerData, Position, Stats, PlayerClass } from '@chatterealm/shared';
 
 export class Player {
   id: string;

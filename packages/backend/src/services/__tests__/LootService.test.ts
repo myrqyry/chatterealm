@@ -1,7 +1,7 @@
 import { LootService } from '../LootService';
 import { GameStateManager } from '../gameStateManager';
 import { CataclysmService } from '../CataclysmService';
-import { Player, Item, ItemType, ItemRarity, GameWorld, Position } from 'shared';
+import { Player, Item, ItemType, ItemRarity, GameWorld, Position } from '@chatterealm/shared';
 import { createMockPlayer } from '../../testUtils/mockGameWorld';
 import { LootManager } from '../LootManager';
 import { NPCManager } from '../NPCManager';
