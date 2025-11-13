@@ -1,4 +1,4 @@
-import { RateLimiterOptions } from 'shared';
+import { RateLimiterOptions } from '@chatterealm/shared';
 
 const DEFAULT_OPTIONS: Required<RateLimiterOptions> = {
   maxEvents: 10, // Max events per window

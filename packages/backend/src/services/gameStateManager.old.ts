@@ -1,7 +1,7 @@
 // Consolidated GameStateManager
 // Preserves previous refactor (event queue, helper methods, cataclysm, NPCs, items, movement, combat)
 
-import { Player, NPC, Item, BiomeType, Position, GameWorld, ItemType, ItemRarity, GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from 'shared';
+import { Player, NPC, Item, BiomeType, Position, GameWorld, ItemType, ItemRarity, GAME_CONFIG, MOVEMENT_CONSTANTS, COMBAT_CONSTANTS, WORLD_CONSTANTS } from '@chatterealm/shared';
 
 export interface GameActionResult {
   success: boolean;

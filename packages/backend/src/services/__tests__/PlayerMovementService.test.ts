@@ -1,6 +1,6 @@
 import { PlayerMovementService } from '../PlayerMovementService';
 import { createMockGameWorld, createMockPlayer } from '../../testUtils/mockGameWorld';
-import { GameWorld, Player, Position } from 'shared';
+import { GameWorld, Player, Position } from '@chatterealm/shared';
 
 describe('PlayerMovementService', () => {
   let gameWorld: GameWorld;

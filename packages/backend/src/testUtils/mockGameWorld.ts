@@ -1,4 +1,4 @@
-import { GameWorld, BiomeType, PlayerClass, Player, GAME_CONFIG } from 'shared';
+import { GameWorld, BiomeType, PlayerClass, Player, GAME_CONFIG } from '@chatterealm/shared';
 
 export const createMockGameWorld = (gridWidth: number, gridHeight: number): GameWorld => {
   const grid: BiomeType[][] = [];

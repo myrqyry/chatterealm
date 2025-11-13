@@ -1,4 +1,4 @@
-import { GameWorld, Position, BiomeType, Player, GAME_CONFIG } from 'shared';
+import { GameWorld, Position, BiomeType, Player, GAME_CONFIG } from '@chatterealm/shared';
 import { LootManager } from './LootManager';
 import { NPCManager } from './NPCManager';
 

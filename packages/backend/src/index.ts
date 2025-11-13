@@ -33,7 +33,7 @@ import { LootService } from './services/LootService';
 import { PlayerMovementService } from './services/PlayerMovementService';
 import { CombatService } from './services/CombatService';
 import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
-import { GAME_CONFIG } from 'shared';
+import { GAME_CONFIG } from '@chatterealm/shared';
 import { validateEnv } from './config/env';
 import AIProxyService from './services/aiProxyService';
 

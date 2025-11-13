@@ -4,7 +4,7 @@ import * as tmi from 'tmi.js';
 import { GameStateManager } from './gameStateManager';
 import ContentModerationService from './contentModerationService';
 import { gameService } from './GameService';
-import { NPC, Player, Item } from 'shared';
+import { NPC, Player, Item } from '@chatterealm/shared';
 
 // Twitch IRC message types
 interface TwitchMessage {

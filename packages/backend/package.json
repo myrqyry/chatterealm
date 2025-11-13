@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^1.29.1",
     "axios": "^1.11.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",

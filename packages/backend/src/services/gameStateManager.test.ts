@@ -1,5 +1,5 @@
 import { GameStateManager } from './gameStateManager';
-import { GameWorld, Player, PlayerClass, BiomeType, Position, GAME_CONFIG } from 'shared';
+import { GameWorld, Player, PlayerClass, BiomeType, Position, GAME_CONFIG } from '@chatterealm/shared';
 import { createMockGameWorld, createMockPlayer } from '../testUtils/mockGameWorld';
 
 describe('GameStateManager', () => {
