@@ -1,4 +1,4 @@
-import { Item, ItemType, ItemRarity, Position, BiomeType, Player, NPC, GAME_CONFIG } from 'shared';
+import { Item, ItemType, ItemRarity, Position, BiomeType, Player, NPC, GAME_CONFIG } from '@chatterealm/shared';
 
 export interface ItemResult {
   success: boolean;

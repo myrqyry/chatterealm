@@ -4,7 +4,7 @@ import { GameActionResult } from './CataclysmService';
 import { MoveResult } from './PlayerMovementService';
 import { CombatResult } from './CombatService';
 import { ItemResult } from './LootManager';
-import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from 'shared';
+import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from '@chatterealm/shared';
 import { CharacterHandler } from '../handlers/CharacterHandler';
 import { RateLimiter } from './RateLimiter';
 
@@ -24,6 +24,7 @@ export interface PlayerCommand {
 
 import { gameService } from './GameService';
 import { GameStateManager } from './gameStateManager';
+import { createPlayer } from '../models/Player';
 
 // Central socket room name used across this module
 const SOCKET_MAIN_ROOM = 'main_room';
@@ -46,9 +47,17 @@ export class WebSocketServer {
     errorCount: 0
   };
   private gameStateManager: GameStateManager | undefined;
+  private commandHandlers: { [key: string]: (room: any, playerId: string, data: any) => any };
 
   constructor(httpServer: HTTPServer, gameStateManager?: GameStateManager) {
     this.gameStateManager = gameStateManager;
+    this.commandHandlers = {
+      move: (room, playerId, data) => room.movePlayer(playerId, data.position),
+      attack: (room, playerId, data) => room.attackEnemy(playerId, data.targetPosition),
+      pickup: (room, playerId, data) => room.pickupItem(playerId, data.itemId),
+      loot_item: (room, playerId, data) => room.lootItem(playerId, data.itemId),
+      inspect_item: (room, playerId, data) => room.inspectItem(playerId, data.itemId),
+    };
     // Initialize Socket.IO server with CORS configuration
     this.io = new SocketIOServer(httpServer, {
       cors: {
@@ -207,46 +216,15 @@ export class WebSocketServer {
       socket.data.commandQueue = [];
 
       // Create player object with all required properties
-      const player: Player = {
-        id: playerData.id,
-        displayName: playerData.displayName,
-        twitchUsername: '', // Initialized to empty string as it's not part of JoinGameData
-        avatar: playerData.avatar || '👤', // Default avatar emoji
-        position: (playerData as any).position || { x: 0, y: 0 }, // Will be set by GameStateManager
-        class: playerData.class || PlayerClass.KNIGHT, // Default to knight
-        health: 100, // Full health at spawn
-        mana: 100, // Full mana at spawn
-        stamina: 100, // Full stamina at spawn
-        hunger: 100, // Not hungry at spawn
-        thirst: 100, // Not thirsty at spawn
-        stats: {
-          hp: 100,
-          maxHp: 100,
-          attack: 10,
-          defense: 5,
-          speed: 5
-        },
-        level: 1,
-        experience: 0,
-        inventory: [],
-        equipment: {
-          weapon: undefined,
-          armor: undefined,
-          accessory: undefined
-        },
-        achievements: [],
-        titles: [],
-        isAlive: true,
-        lastMoveTime: 0,
-        spawnTime: Date.now(),
-        connected: true,
-        lastActive: Date.now()
-      };
+      const player = createPlayer({
+        ...playerData,
+        position: playerData.position || { x: 0, y: 0 },
+      });
 
-      const room = await gameService.joinRoom(SOCKET_MAIN_ROOM, player);
+      const room = await gameService.joinRoom(SOCKET_MAIN_ROOM, player.getData());
 
       if (!room) {
-        console.error(`[SPAWN_ERROR] Failed to add player ${player.displayName} to room ${SOCKET_MAIN_ROOM}`);
+        console.error(`[SPAWN_ERROR] Failed to add player ${player.name} to room ${SOCKET_MAIN_ROOM}`);
         socket.emit('error', { message: 'Failed to join room' });
         return;
       }
@@ -305,7 +283,7 @@ export class WebSocketServer {
 
       socket.emit('join_acknowledged', { status: 'success' });
 
-      console.log(`[JOIN_SUCCESS] Player ${player.displayName} fully joined the game`);
+      console.log(`[JOIN_SUCCESS] Player ${player.name} fully joined the game`);
       clearTimeout(cleanupTimeout); // Cancel cleanup on success
     } catch (error) {
       console.error('Player join failed:', error);
@@ -368,31 +346,15 @@ export class WebSocketServer {
       }
 
       const { playerId, type, data } = command;
-      let result;
+      const handler = this.commandHandlers[type];
 
-      switch (type) {
-        case 'move':
-          result = room.movePlayer(playerId, data.position);
-          break;
-        case 'attack':
-          result = room.attackEnemy(playerId, data.targetPosition);
-          break;
-        case 'pickup':
-          result = room.pickupItem(playerId, data.itemId);
-          break;
-        case 'loot_item':
-          result = room.lootItem(playerId, data.itemId);
-          break;
-        case 'inspect_item':
-          result = room.inspectItem(playerId, data.itemId);
-          break;
-        default:
-          socket.emit('error', { message: `Unknown command type: ${type}` });
-          return;
-      }
-
-      if (result && !result.success) {
-        socket.emit('action_failed', { message: result.message });
+      if (handler) {
+        const result = handler(room, playerId, data);
+        if (result && !result.success) {
+          socket.emit('action_failed', { message: result.message });
+        }
+      } else {
+        socket.emit('error', { message: `Unknown command type: ${type}` });
       }
 
     } catch (error) {

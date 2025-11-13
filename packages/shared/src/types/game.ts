@@ -182,6 +182,7 @@ export interface JoinGameData {
   displayName: string;
   class: PlayerClass;
   avatar?: string;
+  position?: Position;
 }
 
 export interface Item {

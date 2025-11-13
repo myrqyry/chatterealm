@@ -1,4 +1,4 @@
-import { Player, NPC, Position, Stats, Item, ItemType, ItemRarity, COMBAT_CONSTANTS, GAME_CONFIG } from 'shared';
+import { Player, NPC, Position, Stats, Item, ItemType, ItemRarity, COMBAT_CONSTANTS, GAME_CONFIG } from '@chatterealm/shared';
 
 export interface CombatResult {
   success: boolean;

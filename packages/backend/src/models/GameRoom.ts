@@ -1,4 +1,4 @@
-import { GameWorld, Player as PlayerData, NPC, Item, PlayerProfile } from 'shared';
+import { GameWorld, Player as PlayerData, NPC, Item, PlayerProfile } from '@chatterealm/shared';
 import { GameStateManager } from '../services/gameStateManager';
 import { Player } from './Player';
 import { PlayerService } from '../services/PlayerService';

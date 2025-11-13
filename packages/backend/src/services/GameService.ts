@@ -1,5 +1,5 @@
 import { GameRoom } from '../models/GameRoom';
-import { Player as PlayerData } from 'shared';
+import { Player as PlayerData } from '@chatterealm/shared';
 
 class GameService {
   private rooms: Map<string, GameRoom> = new Map();

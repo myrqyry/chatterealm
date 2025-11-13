@@ -79,3 +79,32 @@ export class Player {
     };
   }
 }
+
+export function createPlayer(playerData: Partial<PlayerData>): Player {
+  const player = new Player({
+    id: playerData.id || '',
+    displayName: playerData.displayName || 'Anonymous',
+    position: playerData.position || { x: 0, y: 0 },
+    stats: playerData.stats || { hp: 100, maxHp: 100, attack: 10, defense: 5, speed: 5 },
+    class: playerData.class || PlayerClass.KNIGHT,
+    connected: true,
+    lastActive: Date.now(),
+    twitchUsername: playerData.twitchUsername || '',
+    avatar: playerData.avatar || 'default_avatar.png',
+    health: playerData.health || 100,
+    mana: playerData.mana || 100,
+    stamina: playerData.stamina || 100,
+    hunger: playerData.hunger || 100,
+    thirst: playerData.thirst || 100,
+    level: playerData.level || 1,
+    experience: playerData.experience || 0,
+    inventory: playerData.inventory || [],
+    equipment: playerData.equipment || {},
+    achievements: playerData.achievements || [],
+    titles: playerData.titles || [],
+    isAlive: playerData.isAlive || true,
+    lastMoveTime: playerData.lastMoveTime || 0,
+    spawnTime: playerData.spawnTime || Date.now(),
+  });
+  return player;
+}
