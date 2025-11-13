@@ -1,6 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { gameService } from '../services/GameService';
-import { Player, PlayerClass, CHARACTER_CLASSES } from 'shared';
+import { Player, PlayerClass, CHARACTER_CLASSES } from '@chatterealm/shared';
 
 export class CharacterHandler {
   constructor(

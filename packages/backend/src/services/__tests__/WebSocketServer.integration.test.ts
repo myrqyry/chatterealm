@@ -2,7 +2,7 @@ import { createServer, Server as HTTPServer } from 'http';
 import { AddressInfo } from 'net';
 import { io as ioc, Socket as ClientSocket } from 'socket.io-client';
 import { WebSocketServer } from '../webSocketServer';
-import { Player, PlayerClass } from 'shared';
+import { Player, PlayerClass } from '@chatterealm/shared';
 import { gameService } from '../GameService';
 import { GameStateDelta } from '../../models/GameRoom';
 

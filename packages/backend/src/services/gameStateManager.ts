@@ -1,4 +1,4 @@
-import { GameWorld, GAME_CONFIG, BiomeType, Player, NPC, LootResult, Building } from 'shared';
+import { GameWorld, GAME_CONFIG, BiomeType, Player, NPC, LootResult, Building } from '@chatterealm/shared';
 import { PlayerMovementService, MoveResult } from './PlayerMovementService';
 import { CombatService, CombatResult } from './CombatService';
 import { LootService } from './LootService';

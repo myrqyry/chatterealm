@@ -1,4 +1,4 @@
-import { Player, Position, GameWorld, BiomeType, MOVEMENT_CONSTANTS } from 'shared';
+import { Player, Position, GameWorld, BiomeType, MOVEMENT_CONSTANTS } from '@chatterealm/shared';
 
 export interface MoveResult {
   success: boolean;
