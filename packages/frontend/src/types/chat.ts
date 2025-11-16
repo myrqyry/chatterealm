@@ -5,6 +5,7 @@ export interface ChatMessage {
   originalMessage?: string;
   username?: string;
   displayName?: string;
+  isError?: boolean;
 }
 
 export interface Player {
