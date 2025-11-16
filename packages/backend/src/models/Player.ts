@@ -1,4 +1,14 @@
-import { Player as PlayerData, Position, Stats, PlayerClass } from '@chatterealm/shared';
+import {
+  Player as PlayerData,
+  Position,
+  Stats,
+  PlayerClass,
+  Item,
+  CharacterClass,
+  CharacterVisual,
+  ClassAbility,
+  Buff,
+} from '@chatterealm/shared';
 
 export class Player {
   id: string;
@@ -10,15 +20,72 @@ export class Player {
   lastActive: number;
   bio: string;
 
-  constructor(playerData: PlayerData) {
-    this.id = playerData.id;
-    this.name = playerData.displayName;
-    this.position = playerData.position;
-    this.stats = playerData.stats;
-    this.class = playerData.class;
-    this.connected = true;
-    this.lastActive = Date.now();
+  // Add all other PlayerData properties
+  twitchUsername?: string;
+  avatar: string;
+  health: number;
+  mana: number;
+  stamina: number;
+  hunger: number;
+  thirst: number;
+  level: number;
+  experience: number;
+  inventory: Item[];
+  equipment: {
+    weapon?: Item;
+    armor?: Item;
+    accessory?: Item;
+  };
+  achievements: string[];
+  titles: string[];
+  isAlive: boolean;
+  lastMoveTime: number;
+  spawnTime: number;
+  buffs?: Buff[];
+  characterClass?: CharacterClass;
+  visual?: CharacterVisual;
+  abilities?: ClassAbility[];
+  resources?: { [key: string]: number };
+  characterStats?: {
+    vitality: number;
+    intellect: number;
+    agility: number;
+    perception: number;
+    resonance: number;
+    scavenge: number;
+  };
+
+  constructor(playerData: Partial<PlayerData>) {
+    this.id = playerData.id || '';
+    this.name = playerData.displayName || 'Anonymous';
+    this.position = playerData.position || { x: 0, y: 0 };
+    this.stats = playerData.stats || { hp: 100, maxHp: 100, attack: 10, defense: 5, speed: 5 };
+    this.class = playerData.class || PlayerClass.KNIGHT;
+    this.connected = playerData.connected ?? true;
+    this.lastActive = playerData.lastActive ?? Date.now();
     this.bio = playerData.bio || '';
+    this.twitchUsername = playerData.twitchUsername || '';
+    this.avatar = playerData.avatar || 'default_avatar.png';
+    this.health = playerData.health ?? 100;
+    this.mana = playerData.mana ?? 100;
+    this.stamina = playerData.stamina ?? 100;
+    this.hunger = playerData.hunger ?? 100;
+    this.thirst = playerData.thirst ?? 100;
+    this.level = playerData.level ?? 1;
+    this.experience = playerData.experience ?? 0;
+    this.inventory = playerData.inventory ?? [];
+    this.equipment = playerData.equipment ?? {};
+    this.achievements = playerData.achievements ?? [];
+    this.titles = playerData.titles ?? [];
+    this.isAlive = playerData.isAlive ?? true;
+    this.lastMoveTime = playerData.lastMoveTime ?? 0;
+    this.spawnTime = playerData.spawnTime ?? Date.now();
+    this.buffs = playerData.buffs ?? [];
+    this.characterClass = playerData.characterClass;
+    this.visual = playerData.visual;
+    this.abilities = playerData.abilities ?? [];
+    this.resources = playerData.resources ?? {};
+    this.characterStats = playerData.characterStats ?? { vitality: 1, intellect: 1, agility: 1, perception: 1, resonance: 1, scavenge: 1 };
   }
 
   public move(direction: 'up' | 'down' | 'left' | 'right'): void {
@@ -59,52 +126,29 @@ export class Player {
       class: this.class,
       connected: this.connected,
       lastActive: this.lastActive,
-      twitchUsername: '', // Add missing properties with default values
-      avatar: '',
-      health: this.stats.hp,
-      mana: 0,
-      stamina: 0,
-      hunger: 0,
-      thirst: 0,
-      level: 1,
-      experience: 0,
-      inventory: [],
-      equipment: {},
-      achievements: [],
-      titles: [],
-      isAlive: this.stats.hp > 0,
-      lastMoveTime: 0,
-      spawnTime: 0,
       bio: this.bio,
+      twitchUsername: this.twitchUsername,
+      avatar: this.avatar,
+      health: this.health,
+      mana: this.mana,
+      stamina: this.stamina,
+      hunger: this.hunger,
+      thirst: this.thirst,
+      level: this.level,
+      experience: this.experience,
+      inventory: this.inventory,
+      equipment: this.equipment,
+      achievements: this.achievements,
+      titles: this.titles,
+      isAlive: this.isAlive,
+      lastMoveTime: this.lastMoveTime,
+      spawnTime: this.spawnTime,
+      buffs: this.buffs,
+      characterClass: this.characterClass,
+      visual: this.visual,
+      abilities: this.abilities,
+      resources: this.resources,
+      characterStats: this.characterStats,
     };
   }
-}
-
-export function createPlayer(playerData: Partial<PlayerData>): Player {
-  const player = new Player({
-    id: playerData.id || '',
-    displayName: playerData.displayName || 'Anonymous',
-    position: playerData.position || { x: 0, y: 0 },
-    stats: playerData.stats || { hp: 100, maxHp: 100, attack: 10, defense: 5, speed: 5 },
-    class: playerData.class || PlayerClass.KNIGHT,
-    connected: true,
-    lastActive: Date.now(),
-    twitchUsername: playerData.twitchUsername || '',
-    avatar: playerData.avatar || 'default_avatar.png',
-    health: playerData.health || 100,
-    mana: playerData.mana || 100,
-    stamina: playerData.stamina || 100,
-    hunger: playerData.hunger || 100,
-    thirst: playerData.thirst || 100,
-    level: playerData.level || 1,
-    experience: playerData.experience || 0,
-    inventory: playerData.inventory || [],
-    equipment: playerData.equipment || {},
-    achievements: playerData.achievements || [],
-    titles: playerData.titles || [],
-    isAlive: playerData.isAlive || true,
-    lastMoveTime: playerData.lastMoveTime || 0,
-    spawnTime: playerData.spawnTime || Date.now(),
-  });
-  return player;
 }

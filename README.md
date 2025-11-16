@@ -58,7 +58,7 @@ Or run them separately:
 # Frontend (runs on http://localhost:5173)
 pnpm --filter frontend dev
 
-# Backend (runs on http://localhost:3001)
+# Backend (runs on http://localhost:8081)
 pnpm --filter backend dev
 ```
 
@@ -216,7 +216,7 @@ VITE_WS_URL=wss://api.chatterealm.com
 Create `packages/backend/.env.development` or `.env.production`:
 
 ```env
-PORT=3001
+PORT=8081
 NODE_ENV=development
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=100
