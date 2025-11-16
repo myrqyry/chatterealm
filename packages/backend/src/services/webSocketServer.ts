@@ -4,7 +4,7 @@ import { GameActionResult } from './CataclysmService';
 import { MoveResult } from './PlayerMovementService';
 import { CombatResult } from './CombatService';
 import { ItemResult } from './LootManager';
-import { Player, GameWorld, PlayerClass, JoinGameData, SocketEvents } from '@chatterealm/shared';
+import { Player as PlayerData, GameWorld, PlayerClass, JoinGameData, SocketEvents } from '@chatterealm/shared';
 import { CharacterHandler } from '../handlers/CharacterHandler';
 import { RateLimiter } from './RateLimiter';
 
@@ -24,7 +24,7 @@ export interface PlayerCommand {
 
 import { gameService } from './GameService';
 import { GameStateManager } from './gameStateManager';
-import { createPlayer } from '../models/Player';
+import { Player } from '../models/Player';
 
 // Central socket room name used across this module
 const SOCKET_MAIN_ROOM = 'main_room';
@@ -216,10 +216,7 @@ export class WebSocketServer {
       socket.data.commandQueue = [];
 
       // Create player object with all required properties
-      const player = createPlayer({
-        ...playerData,
-        position: playerData.position || { x: 0, y: 0 },
-      });
+      const player = new Player(playerData);
 
       const room = await gameService.joinRoom(SOCKET_MAIN_ROOM, player.getData());
 
