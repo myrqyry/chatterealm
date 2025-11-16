@@ -25,6 +25,19 @@ class MessageHandler {
     this.notifyUpdate();
   }
 
+  public addErrorMessage(message: string): void {
+    const errorMsg: ChatMessage = {
+      message,
+      timestamp: Date.now(),
+      isResponse: true, // Treat it like a system response
+      username: 'System',
+      displayName: 'System',
+      isError: true,
+    };
+    this.messages = [...this.messages, errorMsg];
+    this.notifyUpdate();
+  }
+
   public getMessages(): ChatMessage[] {
     return this.messages;
   }

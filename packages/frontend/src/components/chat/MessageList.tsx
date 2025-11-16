@@ -15,11 +15,25 @@ const MessageList: React.FC<MessageListProps> = ({ messages, username }) => {
         </p>
       ) : (
         messages.map((msg, index) => (
-          <div key={index} className={`chat-message ${msg.isResponse ? 'bot' : 'user'}`}>
+          <div
+            key={index}
+            className={`chat-message ${msg.isResponse ? 'bot' : 'user'} ${
+              msg.isError ? 'error' : ''
+            }`}
+          >
             <div className="message-sender">
-              {msg.isResponse ? '🤖 Bot' : `👤 ${msg.displayName || username}`}
+              {msg.isError
+                ? '🚫 System Error'
+                : msg.isResponse
+                ? '🤖 Bot'
+                : `👤 ${msg.displayName || username}`}
             </div>
-            <div className="message-text">{msg.message}</div>
+            <div
+              className="message-text"
+              style={{ color: msg.isError ? '#ff5f5f' : 'inherit' }}
+            >
+              {msg.message}
+            </div>
             <div className="message-time">
               {new Date(msg.timestamp).toLocaleTimeString()}
             </div>

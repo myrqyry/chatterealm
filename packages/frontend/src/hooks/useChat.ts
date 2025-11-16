@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { chatService } from '../services/chat/ChatService';
 import { messageHandler } from '../services/chat/MessageHandler';
+import { moderationService } from '../services/chat/ModerationService';
 import { ChatMessage, Player } from '../types/chat';
 import NaturalLanguageCommandParser from '../services/commandParser';
 
@@ -70,14 +71,27 @@ export const useChat = (onWorldUpdate: (players: Player[]) => void): UseChatHook
   const sendChatCommand = async () => {
     if (!inputMessage.trim()) return;
 
+    const isFlagged = await moderationService.isMessageFlagged(inputMessage);
+    if (isFlagged) {
+      messageHandler.addErrorMessage(
+        'Your message was flagged as inappropriate and was not sent.',
+      );
+      return;
+    }
+
     messageHandler.addSentMessage(inputMessage, username, displayName);
     const commandParser = new NaturalLanguageCommandParser();
     const command = await commandParser.parseCommand(inputMessage);
     let success = false;
     if (command) {
-        success = await chatService.sendGameCommand(username, displayName, command, channelPoints);
+      success = await chatService.sendGameCommand(username, displayName, command, channelPoints);
     } else {
-        success = await chatService.sendChatCommand(username, displayName, inputMessage, channelPoints);
+      success = await chatService.sendChatCommand(
+        username,
+        displayName,
+        inputMessage,
+        channelPoints,
+      );
     }
 
     if (success) {
