@@ -7,52 +7,6 @@ import { GameWorldManager } from './GameWorldManager';
 import { NPCManager } from './NPCManager';
 import { EventEmitter } from 'events';
 
-// --- Service Fallbacks (Null Object Pattern) ---
-
-class NullPlayerMovementService extends PlayerMovementService {
-  constructor() {
-    // Pass a dummy GameWorld that is immediately discarded.
-    super({
-      id: 'null-world',
-      grid: [],
-      players: [],
-      npcs: [],
-      items: [],
-      buildings: [],
-      worldAge: 0,
-      phase: 'exploration',
-      cataclysmCircle: {
-        center: { x: 0, y: 0 },
-        radius: 0,
-        isActive: false,
-        shrinkRate: 0,
-        nextShrinkTime: 0,
-      },
-      cataclysmRoughnessMultiplier: 0,
-      lastResetTime: 0,
-    });
-  }
-  movePlayer(playerId: string, newPosition: any, world?: GameWorld): MoveResult {
-    return { success: false, message: 'PlayerMovementService unavailable' };
-  }
-}
-
-class NullCombatService extends CombatService {
-  processAttack(attacker: Player, defender: NPC, attackerPosition: { x: number, y: number }, defenderPosition: { x: number, y: number }): CombatResult {
-    return { success: false, message: 'CombatService unavailable' };
-  }
-}
-
-class NullLootService extends LootService {
-  constructor() {
-    super();
-  }
-  startLooting(playerId: string, buildingId: string, gameWorld: any): LootResult {
-    return { success: false, message: 'LootService unavailable' };
-  }
-}
-
-
 // --- Interfaces ---
 
 interface GameServices {
@@ -119,37 +73,52 @@ export class GameStateManager extends EventEmitter {
 
   private initializeServices(serviceConfig?: Partial<GameServices>): GameServices {
     const services: Partial<GameServices> = {};
+    const errors: Array<{ service: string; error: Error }> = [];
 
+    // Initialize PlayerMovementService (critical)
     try {
-      services.playerMovement = serviceConfig?.playerMovement || new PlayerMovementService(this.getGameWorld());
+      services.playerMovement = serviceConfig?.playerMovement ??
+        new PlayerMovementService(this.getGameWorld());
       this.healthStatus.playerMovement = true;
+      console.log('✅ PlayerMovementService initialized');
     } catch (error) {
-      console.error('PlayerMovementService initialization failed:', error);
-      this.healthStatus.playerMovement = false;
-      this.emit('warning', 'PlayerMovementService unavailable - using fallback');
-      services.playerMovement = new NullPlayerMovementService();
+      const err = error as Error;
+      errors.push({ service: 'PlayerMovementService', error: err });
+      console.error('❌ PlayerMovementService initialization failed:', err);
     }
 
+    // Initialize CombatService (critical)
     try {
-      services.combat = serviceConfig?.combat || new CombatService();
+      services.combat = serviceConfig?.combat ?? new CombatService();
       this.healthStatus.combat = true;
+      console.log('✅ CombatService initialized');
     } catch (error) {
-      console.error('CombatService initialization failed:', error);
-      this.healthStatus.combat = false;
-      this.emit('warning', 'CombatService unavailable - using fallback');
-      services.combat = new NullCombatService();
+      const err = error as Error;
+      errors.push({ service: 'CombatService', error: err });
+      console.error('❌ CombatService initialization failed:', err);
     }
 
+    // Initialize LootService (critical)
     try {
-      services.loot = serviceConfig?.loot || new LootService();
+      services.loot = serviceConfig?.loot ?? new LootService();
       this.healthStatus.loot = true;
+      console.log('✅ LootService initialized');
     } catch (error) {
-      console.error('LootService initialization failed:', error);
-      this.healthStatus.loot = false;
-      this.emit('warning', 'LootService unavailable - using fallback');
-      services.loot = new NullLootService();
+      const err = error as Error;
+      errors.push({ service: 'LootService', error: err });
+      console.error('❌ LootService initialization failed:', err);
     }
 
+    // Fail fast if any critical service failed
+    if (errors.length > 0) {
+      const errorMessage = errors
+        .map(e => `${e.service}: ${e.error.message}`)
+        .join('; ');
+      throw new Error(`Failed to initialize critical services: ${errorMessage}`);
+    }
+
+    // All services initialized successfully
+    this.emit('servicesReady', services);
     return services as GameServices;
   }
 

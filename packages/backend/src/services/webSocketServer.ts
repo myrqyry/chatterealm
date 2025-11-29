@@ -34,7 +34,6 @@ export class WebSocketServer {
   private characterHandler: CharacterHandler;
   private connectedClients: Map<string, ClientData> = new Map();
   private playerSockets: Map<string, string> = new Map(); // playerId -> socketId
-  private authenticationLocks: Set<string> = new Set();
   private gameLoopInterval: NodeJS.Timeout | null = null;
   private isGameLoopRunning: boolean = false;
   private cleanupInterval: NodeJS.Timeout | null = null; // Add cleanup interval for stale entries
@@ -187,37 +186,23 @@ export class WebSocketServer {
   }
 
   private async handlePlayerJoin(socket: Socket, playerData: JoinGameData): Promise<void> {
-    const lockKey = `join_${playerData.id}`;
-
-    if (this.authenticationLocks.has(lockKey)) {
-      socket.emit('error', { message: 'Join already in progress' });
-      return;
-    }
-
-    // Set lock with automatic cleanup
-    this.authenticationLocks.add(lockKey);
-    const cleanupTimeout = setTimeout(() => {
-      this.authenticationLocks.delete(lockKey);
-      console.warn(`[AUTH] Cleaned up stale lock for player: ${playerData.id}`);
-    }, 30000); // 30-second timeout
-
     try {
-      // Add atomic check-and-set operation
-      const existingSocket = this.playerSockets.get(playerData.id);
-      if (existingSocket && this.io.sockets.sockets.has(existingSocket)) {
-        throw new Error('Player already connected');
+      // Step 1: Validate - prevent duplicate joins atomically
+      const existingSocketId = this.playerSockets.get(playerData.id);
+      if (existingSocketId) {
+        const existingSocket = this.io.sockets.sockets.get(existingSocketId);
+        if (existingSocket && existingSocket.connected) {
+          socket.emit('error', { message: 'Player already connected from another session' });
+          return;
+        }
+        // Clean up stale mapping if socket is disconnected
+        this.cleanupPlayerSession(playerData.id, existingSocketId);
       }
 
       console.log(`[JOIN_START] Processing join for socket ${socket.id} with player data:`, playerData);
-      console.log(`[JOIN_START] ConnectedClients before join: ${this.connectedClients.size}`);
 
-      // Set authentication state to prevent race conditions
-      socket.data.isAuthenticating = true;
-      socket.data.commandQueue = [];
-
-      // Create player object with all required properties
+      // Step 2: Create player and join room
       const player = new Player(playerData);
-
       const room = await gameService.joinRoom(SOCKET_MAIN_ROOM, player.getData());
 
       if (!room) {
@@ -226,30 +211,21 @@ export class WebSocketServer {
         return;
       }
 
-      console.log(`[JOIN_REGISTERING] About to register socket ${socket.id} in connectedClients`);
-
-      // Use authoritative player instance created by the room
+      // Step 3: Get authoritative player instance from room
       const addedPlayer = room.getPlayers().find(p => p.id === playerData.id);
       if (!addedPlayer) {
-        console.error(`[SPAWN_ERROR] Player added but authoritative instance not found for id ${playerData.id}`);
-        socket.emit('error', { message: 'Failed to join room (internal)' });
+        socket.emit('error', { message: 'Failed to join room - internal error' });
         return;
       }
 
-      // Track client connection using authoritative player id
-      const clientData: ClientData = {
-        playerId: addedPlayer.id,
-        socketId: socket.id,
-        connectedAt: Date.now()
-      };
+      // Step 4: Register session atomically
+      this.registerPlayerSession(socket.id, addedPlayer.id);
 
-      this.connectedClients.set(socket.id, clientData);
-      this.playerSockets.set(addedPlayer.id, socket.id);
+      // Step 5: Join socket rooms and notify
+      await socket.join(`player_${addedPlayer.id}`);
+      await socket.join(SOCKET_MAIN_ROOM);
 
-      console.log(`[JOIN_REGISTERED] Socket ${socket.id} registered in connectedClients`);
-      console.log(`[JOIN_REGISTERED] ConnectedClients after join: ${this.connectedClients.size}`);
-      console.log(`[JOIN_REGISTERED] ConnectedClients keys: [${Array.from(this.connectedClients.keys()).join(', ')}]`);
-
+      // Set socket data for command handling
       socket.data.isAuthenticated = true;
       delete socket.data.isAuthenticating;
 
@@ -261,36 +237,43 @@ export class WebSocketServer {
         socket.data.commandQueue = [];
       }
 
-      // Join player to their personal room for targeted updates
-      socket.join(`player_${addedPlayer.id}`);
-
       // Send success response with initial game state using authoritative player
       socket.emit(SocketEvents.GAME_JOINED, {
         player: addedPlayer,
         gameWorld: room.getGameState(),
       });
 
-      // Broadcast player joined to all other clients in the main room
-      socket.to(SOCKET_MAIN_ROOM).emit(SocketEvents.PLAYER_JOINED, {
-        player: addedPlayer
-      });
-
-      // Join the main game room
-      socket.join(SOCKET_MAIN_ROOM);
-
       socket.emit('join_acknowledged', { status: 'success' });
 
-      console.log(`[JOIN_SUCCESS] Player ${player.name} fully joined the game`);
-      clearTimeout(cleanupTimeout); // Cancel cleanup on success
+      this.io.to(SOCKET_MAIN_ROOM).emit(SocketEvents.PLAYER_JOINED, { player: addedPlayer });
+
+      console.log(`✅ Player ${addedPlayer.displayName} joined successfully (socket: ${socket.id})`);
     } catch (error) {
-      console.error('Player join failed:', error);
-      socket.emit('join_failed', {
-        message: error instanceof Error ? error.message : 'Join failed'
-      });
-    } finally {
-      this.authenticationLocks.delete(lockKey);
-      clearTimeout(cleanupTimeout);
+      console.error('Join error:', error);
+      socket.emit('error', { message: 'Failed to join game' });
     }
+  }
+
+  // Helper: Atomic session registration
+  private registerPlayerSession(socketId: string, playerId: string): void {
+    const clientData: ClientData = {
+      playerId,
+      socketId,
+      connectedAt: Date.now()
+    };
+
+    this.connectedClients.set(socketId, clientData);
+    this.playerSockets.set(playerId, socketId);
+  }
+
+  // Helper: Clean up stale session
+  private cleanupPlayerSession(playerId: string, socketId: string): void {
+    this.connectedClients.delete(socketId);
+    // Only delete from playerSockets if it matches the socketId being cleaned up
+    if (this.playerSockets.get(playerId) === socketId) {
+      this.playerSockets.delete(playerId);
+    }
+    console.log(`🧹 Cleaned up session for player ${playerId}`);
   }
 
   private handlePlayerCommand(socket: Socket, command: PlayerCommand): void {
@@ -363,34 +346,30 @@ export class WebSocketServer {
 
   private handlePlayerDisconnect(socket: Socket): void {
     this.rateLimiter.cleanup(socket.id);
+
+    const clientData = this.connectedClients.get(socket.id);
+    if (!clientData) {
+      console.log(`⚠️ Disconnect from unregistered socket ${socket.id}`);
+      return;
+    }
+
     try {
-      const clientData = this.connectedClients.get(socket.id);
-      if (clientData) {
-        const roomId = 'main_room';
-        const room = gameService.getRoom(roomId);
-        if (room) {
-            const player = room.removePlayer(clientData.playerId);
-            if (player) {
-              // Broadcast player disconnected to all clients in the room
-              this.io.to(roomId).emit(SocketEvents.PLAYER_DISCONNECTED, {
-                playerId: clientData.playerId,
-                player: player,
-              });
-            }
+      // Remove player from game room
+      const room = gameService.getRoom('main_room');
+      if (room) {
+        const player = room.removePlayer(clientData.playerId);
+        if (player) {
+          this.io.to('main_room').emit(SocketEvents.PLAYER_DISCONNECTED, {
+            playerId: clientData.playerId,
+            player
+          });
         }
-
-        // Ensure explicit cleanup of mappings from connectedClients and playerSockets
-        this.connectedClients.delete(socket.id);
-        // Only delete from playerSockets if it still points to the disconnecting socket
-        if (this.playerSockets.get(clientData.playerId) === socket.id) {
-          this.playerSockets.delete(clientData.playerId);
-        }
-
-        // Ensure any authentication locks are cleared for this player
-        this.authenticationLocks.delete(clientData.playerId);
-
-        console.log(`Client disconnected: ${socket.id}`);
       }
+
+      // Clean up session
+      this.cleanupPlayerSession(clientData.playerId, socket.id);
+
+      console.log(`👋 Player ${clientData.playerId} disconnected cleanly`);
     } catch (error) {
       console.error('Error handling player disconnect:', error);
     }

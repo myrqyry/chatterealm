@@ -441,221 +441,70 @@ export const useGameStore = create<GameState>()(
 
         clearCache: () => set({ cache: new Map() }),
 
-        // Settings updates
-        updateGameSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            game: { ...state.unifiedSettings.game, ...settings }
-          }
-        })),
+        // Unified settings updates
+        updateGameSettings: (settings) => get().updateUnifiedSettings({ game: { ...get().unifiedSettings.game, ...settings } }),
+        updateAudioSettings: (settings) => get().updateUnifiedSettings({ audio: { ...get().unifiedSettings.audio, ...settings } }),
+        updateNotificationSettings: (settings) => get().updateUnifiedSettings({ notifications: { ...get().unifiedSettings.notifications, ...settings } }),
+        updateVisualSettings: (settings) => get().updateUnifiedSettings({ visual: { ...get().unifiedSettings.visual, ...settings } }),
+        updateWorldSettings: (settings) => get().updateUnifiedSettings({ world: { ...get().unifiedSettings.world, ...settings } }),
+        updateAnimationSettings: (settings) => get().updateUnifiedSettings({ animations: { ...get().unifiedSettings.animations, ...settings } }),
 
-        updateAudioSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            audio: { ...state.unifiedSettings.audio, ...settings }
-          }
-        })),
-
-        updateNotificationSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            notifications: { ...state.unifiedSettings.notifications, ...settings }
-          }
-        })),
-
-        updateVisualSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            visual: { ...state.unifiedSettings.visual, ...settings }
-          }
-        })),
-
-        updateWorldSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            world: { ...state.unifiedSettings.world, ...settings }
-          }
-        })),
-
-        updateAnimationSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            animations: { ...state.unifiedSettings.animations, ...settings }
-          }
-        })),
-
-        // Legacy update methods - kept for backward compatibility but deprecated
-        updateSettings: (settings) => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            game: { ...state.unifiedSettings.game, ...settings }
-          }
-        })),
-
+        // Simplified main update method
         updateUnifiedSettings: (settings) => set((state) => ({
           unifiedSettings: { ...state.unifiedSettings, ...settings }
         })),
 
         // Settings resets
-        resetGameSettings: () => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            game: createDefaultUnifiedSettings().game
-          }
-        })),
+        resetGameSettings: () => get().updateUnifiedSettings({ game: createDefaultUnifiedSettings().game }),
+        resetAudioSettings: () => get().updateUnifiedSettings({ audio: createDefaultUnifiedSettings().audio }),
+        resetNotificationSettings: () => get().updateUnifiedSettings({ notifications: createDefaultUnifiedSettings().notifications }),
+        resetVisualSettings: () => get().updateUnifiedSettings({ visual: createDefaultUnifiedSettings().visual }),
+        resetWorldSettings: () => get().updateUnifiedSettings({ world: createDefaultUnifiedSettings().world }),
+        resetAnimationSettings: () => get().updateUnifiedSettings({ animations: createDefaultUnifiedSettings().animations }),
 
-        resetAudioSettings: () => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            audio: createDefaultUnifiedSettings().audio
-          }
-        })),
-
-        resetNotificationSettings: () => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            notifications: createDefaultUnifiedSettings().notifications
-          }
-        })),
-
-        resetVisualSettings: () => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            visual: createDefaultUnifiedSettings().visual
-          }
-        })),
-
-        resetWorldSettings: () => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            world: createDefaultUnifiedSettings().world
-          }
-        })),
-
-        resetAnimationSettings: () => set((state) => ({
-          unifiedSettings: {
-            ...state.unifiedSettings,
-            animations: createDefaultUnifiedSettings().animations
-          }
-        })),
-
-        resetAllSettings: () => set({
-          unifiedSettings: createDefaultUnifiedSettings()
-        }),
+        resetAllSettings: () => set({ unifiedSettings: createDefaultUnifiedSettings() }),
 
         exportSettings: () => {
           const state = get();
           return JSON.stringify({
-            settings: state.unifiedSettings,
             version: '2.0',
+            settings: state.unifiedSettings,
             exportedAt: Date.now()
           }, null, 2);
         },
 
         importSettings: (settingsJson: string) => {
           try {
-            const importedData = JSON.parse(settingsJson);
-            if (importedData && typeof importedData === 'object') {
-              // Handle legacy format (version 1.0) for backward compatibility
-              if (!importedData.version || importedData.version === '1.0') {
-                const legacySettings = importedData.settings || importedData;
-                const legacyAnimationSettings = importedData.animationSettings || {};
+            const data = JSON.parse(settingsJson);
 
-                // Migrate legacy settings to unified format
-                const migratedSettings: UnifiedSettings = {
-                  game: {
-                    autoSaveEnabled: legacySettings.autoSaveEnabled ?? true,
-                    tutorialEnabled: legacySettings.tutorialEnabled ?? true,
-                    minimapEnabled: legacySettings.minimapEnabled ?? true,
-                    showNPCNames: legacySettings.showNPCNames ?? true,
-                    showItemNames: legacySettings.showItemNames ?? true,
-                    movementStyle: legacySettings.movementStyle ?? MovementStyle.GRID,
-                    showDamageNumbers: legacySettings.showDamageNumbers ?? true,
-                    autoCombatEnabled: legacySettings.autoCombatEnabled ?? false,
-                  },
-                  audio: {
-                    audioMasterVolume: legacySettings.audioMasterVolume ?? 80,
-                    sfxVolume: legacySettings.sfxVolume ?? 70,
-                    musicVolume: legacySettings.musicVolume ?? 60,
-                    soundEnabled: legacySettings.soundEnabled ?? true,
-                    musicEnabled: legacySettings.musicEnabled ?? true,
-                  },
-                  notifications: {
-                    desktopNotifications: legacySettings.desktopNotifications ?? true,
-                    soundNotifications: legacySettings.soundNotifications ?? true,
-                    battleNotifications: legacySettings.battleNotifications ?? true,
-                    systemNotifications: legacySettings.systemNotifications ?? true,
-                    playerJoinNotifications: legacySettings.playerJoinNotifications ?? [NotificationType.DESKTOP, NotificationType.SOUND, NotificationType.INGAME],
-                    itemDropNotifications: legacySettings.itemDropNotifications ?? [NotificationType.SOUND, NotificationType.INGAME],
-                    levelUpNotifications: legacySettings.levelUpNotifications ?? [NotificationType.DESKTOP, NotificationType.SOUND, NotificationType.INGAME],
-                    cataclysmNotifications: legacySettings.cataclysmNotifications ?? [NotificationType.DESKTOP, NotificationType.INGAME],
-                  },
-                  visual: {
-                    theme: (legacySettings.theme ?? 'dark') as Theme,
-                    language: legacySettings.language ?? 'en',
-                    fontSize: legacySettings.fontSize ?? 100,
-                    highContrast: legacySettings.highContrast ?? false,
-                    reduceMotion: legacySettings.reduceMotion ?? false,
-                    // Visual overlay/display flags were previously mixed into animationSettings
-                    showGrid: legacySettings.showGrid ?? legacyAnimationSettings.showGrid ?? true,
-                    showParticles: legacySettings.showParticles ?? legacyAnimationSettings.showParticles ?? true,
-                    showHealthBars: legacySettings.showHealthBars ?? legacyAnimationSettings.showHealthBars ?? true,
-                    backgroundColor: legacySettings.backgroundColor ?? legacyAnimationSettings.backgroundColor ?? '#191724',
-                    renderScale: 0.75, // Default render scale for performance
-                  },
-                  world: {
-                    worldWidth: legacyAnimationSettings.worldWidth ?? 40,
-                    worldHeight: legacyAnimationSettings.worldHeight ?? 30,
-                    grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? 0.1,
-                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? 0.025,
-                    flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? 0.01,
-                    windSpeed: legacyAnimationSettings.windSpeed ?? 0.02,
-                    nightMode: false, // Default to day mode for legacy settings
-                  },
-                  animations: {
-                    animationSpeed: legacyAnimationSettings.animationSpeed ?? 1.0,
-                    breathingRate: legacyAnimationSettings.breathingRate ?? 0.05,
-                    particleCount: legacyAnimationSettings.particleCount ?? legacyAnimationSettings.particles ?? 5,
-                    showParticles: legacyAnimationSettings.showParticles ?? legacySettings.showParticles ?? true,
-                    showGrid: legacyAnimationSettings.showGrid ?? legacySettings.showGrid ?? true,
-                    grassWaveSpeed: legacyAnimationSettings.grassWaveSpeed ?? legacySettings.grassWaveSpeed ?? 0.1,
-                    treeSwaySpeed: legacyAnimationSettings.treeSwaySpeed ?? legacySettings.treeSwaySpeed ?? 0.025,
-                    flowerSpawnRate: legacyAnimationSettings.flowerSpawnRate ?? legacySettings.flowerSpawnRate ?? 0.01,
-                    windSpeed: legacyAnimationSettings.windSpeed ?? legacySettings.windSpeed ?? 0.02,
-                    roughness: legacyAnimationSettings.roughness ?? 1.5,
-                    bowing: legacyAnimationSettings.bowing ?? 1.2,
-                    fillWeight: legacyAnimationSettings.fillWeight ?? 1.5,
-                    hachureAngle: legacyAnimationSettings.hachureAngle ?? 45,
-                    hachureGap: legacyAnimationSettings.hachureGap ?? 4,
-                    fillStyle: legacyAnimationSettings.fillStyle ?? 'hachure',
-                    seed: legacyAnimationSettings.seed ?? 1,
-                    strokeWidth: 3.0,
-                    simplification: 0.8,
-                    dashOffset: 0,
-                    dashGap: 0,
-                    zigzagOffset: 0,
-                    curveFitting: 0.95,
-                    curveTightness: 0,
-                    curveStepCount: 9,
-                    fillShapeRoughnessGain: 0.8,
-                    disableMultiStroke: false,
-                    disableMultiStrokeFill: false,
-                    preserveVertices: false,
-                  },
-                };
-                set({ unifiedSettings: migratedSettings });
-              } else {
-                // Handle new unified format
-                if (importedData.settings && typeof importedData.settings === 'object') {
-                  set({ unifiedSettings: { ...get().unifiedSettings, ...importedData.settings } });
-                }
-              }
-              return true;
+            if (!data || typeof data !== 'object') {
+              throw new Error('Invalid settings format');
             }
+
+            // Only accept v2.0 format (legacy migration removed for simplicity)
+            if (data.version !== '2.0') {
+              console.error('Unsupported settings version. Please export settings again.');
+              return false;
+            }
+
+            // Validate settings structure
+            if (!data.settings || typeof data.settings !== 'object') {
+              throw new Error('Missing settings object');
+            }
+
+            // Merge with defaults to ensure all fields exist
+            set({
+              unifiedSettings: {
+                ...createDefaultUnifiedSettings(),
+                ...data.settings
+              }
+            });
+
+            return true;
           } catch (error) {
             console.error('Failed to import settings:', error);
+            return false;
           }
-          return false;
         },
       }
     },

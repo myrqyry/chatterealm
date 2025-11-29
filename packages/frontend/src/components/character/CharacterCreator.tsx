@@ -55,28 +55,65 @@ export const CharacterCreator: React.FC = () => {
     };
   }, [selectedEmoji, selectedClass]);
 
+  const validateCharacter = (): boolean => {
+    // Validate name
+    const trimmedName = characterName.trim();
+    if (!trimmedName) {
+      setError('Character name is required');
+      return false;
+    } else if (trimmedName.length < 2) {
+      setError('Name must be at least 2 characters');
+      return false;
+    } else if (trimmedName.length > 20) {
+      setError('Name must be 20 characters or less');
+      return false;
+    } else if (!/^[a-zA-Z0-9_\s-]+$/.test(trimmedName)) {
+      setError('Name can only contain letters, numbers, spaces, hyphens, and underscores');
+      return false;
+    }
+
+    // Validate class
+    if (!selectedClass) {
+      setError('Please select a character class');
+      return false;
+    }
+
+    // Validate avatar (should always be selected but safe to check)
+    if (!selectedEmoji) {
+      setError('Please select an avatar');
+      return false;
+    }
+
+    if (!characterPreview) {
+      setError('Please wait for character preview to generate');
+      return false;
+    }
+
+    return true;
+  };
+
   const createCharacter = async () => {
-    if (!selectedClass || !characterPreview || !characterName.trim()) {
-      setError("Please select a class, and enter a name.");
+    setError(null);
+
+    if (!validateCharacter()) {
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     const characterData = {
       id: `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: characterName.trim(),
       emoji: selectedEmoji,
       characterClass: selectedClass,
-      visual: characterPreview,
-      stats: { ...selectedClass.baseStats },
+      visual: characterPreview!,
+      stats: { ...selectedClass!.baseStats },
       level: 1,
       experience: 0,
       resources: {
-        [selectedClass.primaryResource]: 100
+        [selectedClass!.primaryResource]: 100
       },
-      abilities: selectedClass.abilities.filter(ability => ability.unlockLevel <= 1),
+      abilities: selectedClass!.abilities.filter(ability => ability.unlockLevel <= 1),
       inventory: [],
       equipment: {},
       position: { x: 0, y: 0 },

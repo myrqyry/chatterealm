@@ -20,6 +20,9 @@ export class PlayerMovementService {
   private reservedPositions: Set<string> = new Set();
   private availableSpawnPoints: Set<string> = new Set();
   private playerMovementQueues: Map<string, Position[]> = new Map();
+  private pathCache = new Map<string, { path: Position[]; timestamp: number }>();
+  private readonly PATH_CACHE_TTL = 5000; // 5 seconds
+  private readonly MAX_CACHE_SIZE = 1000;
 
   constructor(gameWorld: GameWorld) {
     this.initializeOccupiedPositions(gameWorld);
@@ -155,41 +158,117 @@ export class PlayerMovementService {
    */
   public movePlayer(playerId: string, newPosition: Position, gameWorld: GameWorld): MoveResult {
     const player = gameWorld.players.find(p => p.id === playerId);
+
     if (!player) {
-      return { success: false, message: 'Player not found.' };
+      return { success: false, message: 'Player not found' };
     }
 
-    if (!player.isAlive) {
-      return { success: false, message: 'Cannot move while defeated.' };
+    const currentPosition = player.position;
+
+    // Fast path: Check if movement is to an adjacent tile
+    const isAdjacent = this.isAdjacentPosition(currentPosition, newPosition);
+
+    if (isAdjacent) {
+      // Skip pathfinding for adjacent movements
+      const terrain = gameWorld.grid[newPosition.y]?.[newPosition.x];
+
+      if (!terrain) {
+        return { success: false, message: 'Invalid position' };
+      }
+
+      if (terrain.type === BiomeType.MOUNTAIN) {
+        return { success: false, message: 'Cannot move into mountain' };
+      }
+
+      if (this.isPositionOccupied(newPosition)) {
+        return { success: false, message: 'Position occupied' };
+      }
+
+      // Execute direct movement
+      return this.executeMovePlayer(player, currentPosition, newPosition, terrain);
     }
 
-    // Validate the move
-    if (!this.isValidMove(player.position, newPosition, gameWorld.grid)) {
-      return { success: false, message: 'Invalid move.' };
+    // Complex path: Use pathfinding with caching
+    const path = this.findPathCached(currentPosition, newPosition, gameWorld);
+
+    if (!path || path.length === 0) {
+      return { success: false, message: 'No valid path to destination' };
     }
 
-    // Check if destination is occupied
-    if (this.isPositionOccupied(newPosition)) {
-      return { success: false, message: 'Destination is occupied.' };
-    }
+    // Move to first position in path
+    const nextPosition = path[0];
+    const terrain = gameWorld.grid[nextPosition.y][nextPosition.x];
 
-    // Update positions
-    const oldKey = `${player.position.x},${player.position.y}`;
-    const newKey = `${newPosition.x},${newPosition.y}`;
+    return this.executeMovePlayer(player, currentPosition, nextPosition, terrain);
+  }
+
+  // Helper: Check if positions are adjacent
+  private isAdjacentPosition(from: Position, to: Position): boolean {
+    const dx = Math.abs(to.x - from.x);
+    const dy = Math.abs(to.y - from.y);
+    return (dx <= 1 && dy <= 1) && (dx + dy > 0); // Adjacent but not same position
+  }
+
+  // Helper: Execute player movement
+  private executeMovePlayer(
+    player: any,
+    from: Position,
+    to: Position,
+    terrain: any
+  ): MoveResult {
+    const oldKey = `${from.x},${from.y}`;
+    const newKey = `${to.x},${to.y}`;
     
+    // Update occupancy tracking
     this.occupiedPositions.delete(oldKey);
     this.occupiedPositions.add(newKey);
+
+    // Update available spawn points
     this.availableSpawnPoints.add(oldKey);
     this.availableSpawnPoints.delete(newKey);
-    
-    player.position = { ...newPosition };
+
+    // Update player position
+    player.position = to;
     player.lastMoveTime = Date.now();
 
     return {
       success: true,
-      message: `Moved to (${newPosition.x}, ${newPosition.y}).`,
-      newPosition
+      message: `Moved to (${to.x}, ${to.y})`,
+      newPosition: to,
+      path: [to]
     };
+  }
+
+  // Helper: Cached pathfinding
+  private findPathCached(start: Position, target: Position, world: GameWorld): Position[] | null {
+    const cacheKey = `${start.x},${start.y}->${target.x},${target.y}`;
+
+    // Check cache
+    const cached = this.pathCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.PATH_CACHE_TTL) {
+      return [...cached.path]; // Return copy to prevent mutation
+    }
+
+    // Compute path
+    const path = this.findPath(start, target, world.grid);
+
+    if (path) {
+      // Add to cache with size limit
+      if (this.pathCache.size >= this.MAX_CACHE_SIZE) {
+        // Remove oldest entry
+        const oldestKey = this.pathCache.keys().next().value;
+        if (oldestKey) {
+            this.pathCache.delete(oldestKey);
+        }
+      }
+
+      this.pathCache.set(cacheKey, {
+        path: [...path],
+        timestamp: Date.now()
+      });
+    }
+
+    return path;
   }
 
   /**
