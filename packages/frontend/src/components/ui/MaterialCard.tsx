@@ -1,63 +1,44 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, Typography, Box } from '@mui/material';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/ui/card";
+import { cn } from "@/lib/utils";
 
 interface MaterialCardProps {
   title?: string;
   subtitle?: string;
   children: React.ReactNode;
-  elevation?: number;
-  sx?: any;
+  className?: string;
 }
 
 const MaterialCard: React.FC<MaterialCardProps> = ({
   title,
   subtitle,
   children,
-  elevation = 1,
-  sx = {}
+  className
 }) => {
   return (
-    <Card
-      elevation={elevation}
-      sx={{
-        backgroundColor: 'background.paper',
-        backgroundImage: 'none',
-        border: '1px solid',
-        borderColor: 'divider',
-        borderRadius: '16px',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        ...sx
-      }}
-    >
+    <Card className={cn(
+      "rounded-xl border bg-background text-foreground shadow-sm",
+      "transition-all duration-300 ease-in-out",
+      className
+    )}>
       {(title || subtitle) && (
-        <CardHeader
-          title={title && (
-            <Typography
-              variant="h6"
-              sx={{
-                fontFamily: 'JetBrains Mono',
-                fontWeight: 600,
-                color: 'text.primary'
-              }}
-            >
+        <CardHeader className="flex flex-col space-y-1.5 p-4 pb-2">
+          {title && (
+            <CardTitle className="font-['JetBrains_Mono'] font-semibold text-lg">
               {title}
-            </Typography>
+            </CardTitle>
           )}
-          subheader={subtitle && (
-            <Typography
-              variant="body2"
-              sx={{
-                fontFamily: 'JetBrains Mono',
-                color: 'text.secondary'
-              }}
-            >
+          {subtitle && (
+            <CardDescription className="font-['JetBrains_Mono'] text-sm text-muted-foreground">
               {subtitle}
-            </Typography>
+            </CardDescription>
           )}
-          sx={{ pb: 1 }}
-        />
+        </CardHeader>
       )}
-      <CardContent sx={{ pt: title || subtitle ? 0 : 2 }}>
+      <CardContent className={cn(
+        "p-4",
+        (title || subtitle) ? "pt-0" : "pt-4"
+      )}>
         {children}
       </CardContent>
     </Card>

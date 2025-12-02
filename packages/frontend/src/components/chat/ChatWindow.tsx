@@ -3,6 +3,8 @@ import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import { ChatMessage, Player } from '../../types/chat';
 import SmartSuggestions from './SmartSuggestions';
+import MaterialButton from '../../ui/MaterialButton';
+import MaterialCard from '../../ui/MaterialCard';
 
 interface ChatWindowProps {
   messages: ChatMessage[];
@@ -47,9 +49,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* User Settings */}
-      <div className="user-settings">
-        <h3>👤 User Settings</h3>
-        <div className="user-input-grid">
+      <MaterialCard title="👤 User Settings" className="mb-4">
+        <div className="user-input-grid grid grid-cols-1 md:grid-cols-3 gap-2">
           <input
             type="text"
             placeholder="Username"
@@ -65,44 +66,48 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                 setInputMessage(`testuser${value}`);
               }
             }}
+            className="px-3 py-2 border rounded"
           />
           <input
             type="text"
             placeholder="Display Name"
             value={displayName}
             onChange={(e) => setInputMessage(e.target.value)}
+            className="px-3 py-2 border rounded"
           />
           <input
             type="number"
             placeholder="Channel Points"
             value={channelPoints}
             onChange={(e) => setChannelPoints(Number(e.target.value))}
+            className="px-3 py-2 border rounded"
           />
         </div>
-      </div>
+      </MaterialCard>
 
       {/* Players List */}
-      <div className="players-list">
-        <h3>🎭 Active Players ({players.length})</h3>
+      <MaterialCard title={`🎭 Active Players (${players.length})`} className="mb-4">
         {players.length === 0 ? (
-          <p style={{ color: '#908caa', padding: '10px' }}>No players in game</p>
+          <p className="text-gray-500 p-2">No players in game</p>
         ) : (
-          players.map(player => (
-            <div key={player.id} className="player-card">
-              <span className="player-avatar-small">{player.avatar}</span>
-              <div className="player-info">
-                <h4>{player.displayName}</h4>
-                <div className="player-stats">
-                  HP: {player.stats.hp}/{player.stats.maxHp} |
-                  ATK: {player.stats.attack} |
-                  DEF: {player.stats.defense} |
-                  Pos: ({player.position.x}, {player.position.y})
+          <div className="grid grid-cols-1 gap-2">
+            {players.map(player => (
+              <MaterialCard key={player.id} className="flex items-center space-x-3">
+                <span className="text-2xl">{player.avatar}</span>
+                <div className="flex-1">
+                  <div className="font-semibold">{player.displayName}</div>
+                  <div className="text-sm text-gray-500">
+                    HP: {player.stats.hp}/{player.stats.maxHp} |
+                    ATK: {player.stats.attack} |
+                    DEF: {player.stats.defense} |
+                    Pos: ({player.position.x}, {player.position.y})
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))
+              </MaterialCard>
+            ))}
+          </div>
         )}
-      </div>
+      </MaterialCard>
 
       <MessageList messages={messages} username={username} />
 
@@ -127,32 +132,32 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* Preset Commands */}
-      <div className="quick-commands">
-        <h3>⚡ Quick Commands</h3>
-        <div className="command-buttons">
+      <MaterialCard title="⚡ Quick Commands" className="mb-4">
+        <div className="flex flex-wrap gap-2">
           {presetCommands.map(command => (
-            <button
+            <MaterialButton
               key={command}
               onClick={() => setInputMessageAndFocus(command)}
-              className="command-btn"
+              variant="outline"
+              size="sm"
+              className="mb-2"
             >
               {command}
-            </button>
+            </MaterialButton>
           ))}
         </div>
-      </div>
+      </MaterialCard>
 
       {/* Help */}
-      <div className="help-section">
-        <h3>📖 How to Use</h3>
-        <ul className="help-list">
+      <MaterialCard title="📖 How to Use">
+        <ul className="space-y-2 list-disc list-inside">
           <li>Change your username and display name above</li>
           <li>Type commands starting with <code>!</code> (like <code>!help</code>)</li>
           <li>Click preset commands or type your own</li>
           <li>Watch the chat responses and player list update in real-time</li>
           <li>Try <code>!spawn knight</code> to join the game!</li>
         </ul>
-      </div>
+      </MaterialCard>
     </div>
   );
 };

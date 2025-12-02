@@ -49,3 +49,105 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/* Material 3 Design Tokens - CSS Variables */
+:root {
+  /* Material 3 Color System */
+  --m3-color-primary: #006C54;
+  --m3-color-primary-container: #7FF8E0;
+  --m3-color-on-primary: #FFFFFF;
+  --m3-color-on-primary-container: #00201A;
+  --m3-color-secondary: #4A635E;
+  --m3-color-secondary-container: #CDEBDD;
+  --m3-color-on-secondary: #FFFFFF;
+  --m3-color-on-secondary-container: #05201C;
+  --m3-color-tertiary: #42627B;
+  --m3-color-tertiary-container: #CDE6FF;
+  --m3-color-on-tertiary: #FFFFFF;
+  --m3-color-on-tertiary-container: #001E30;
+  --m3-color-error: #BA1A1A;
+  --m3-color-error-container: #FFDAD6;
+  --m3-color-on-error: #FFFFFF;
+  --m3-color-on-error-container: #410002;
+
+  /* Material 3 Surface Colors */
+  --m3-color-surface: #F8F9FA;
+  --m3-color-surface-variant: #E2E6E9;
+  --m3-color-surface-container: #F1F3F4;
+  --m3-color-on-surface: #191C1D;
+  --m3-color-on-surface-variant: #43474B;
+
+  /* Material 3 Background Colors */
+  --m3-color-background: #F8F9FA;
+  --m3-color-on-background: #191C1D;
+
+  /* Material 3 Outline */
+  --m3-color-outline: #73777F;
+
+  /* Material 3 Elevation Shadows */
+  --m3-shadow-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12), 0px 1px 3px 0px rgba(0, 0, 0, 0.20);
+  --m3-shadow-2: 0px 2px 4px -1px rgba(0, 0, 0, 0.14), 0px 4px 5px 0px rgba(0, 0, 0, 0.12), 0px 1px 10px 0px rgba(0, 0, 0, 0.20);
+  --m3-shadow-3: 0px 3px 5px -1px rgba(0, 0, 0, 0.14), 0px 5px 8px 0px rgba(0, 0, 0, 0.12), 0px 1px 14px 0px rgba(0, 0, 0, 0.20);
+  --m3-shadow-4: 0px 4px 5px -2px rgba(0, 0, 0, 0.14), 0px 6px 10px 0px rgba(0, 0, 0, 0.12), 0px 2px 16px 0px rgba(0, 0, 0, 0.20);
+  --m3-shadow-5: 0px 5px 8px -3px rgba(0, 0, 0, 0.14), 0px 7px 10px 0px rgba(0, 0, 0, 0.12), 0px 4px 18px 0px rgba(0, 0, 0, 0.20);
+
+  /* Material 3 Spacing System */
+  --m3-spacing-0: 0px;
+  --m3-spacing-1: 4px;
+  --m3-spacing-2: 8px;
+  --m3-spacing-3: 12px;
+  --m3-spacing-4: 16px;
+  --m3-spacing-5: 24px;
+  --m3-spacing-6: 32px;
+  --m3-spacing-7: 40px;
+  --m3-spacing-8: 48px;
+  --m3-spacing-9: 56px;
+  --m3-spacing-10: 64px;
+  --m3-spacing-11: 72px;
+  --m3-spacing-12: 80px;
+
+  /* Material 3 Radius System */
+  --m3-radius-sm: 2px;
+  --m3-radius-md: 4px;
+  --m3-radius-lg: 6px;
+  --m3-radius-xl: 8px;
+  --m3-radius-full: 100rem;
+
+  /* Material 3 Transition Timings */
+  --m3-transition-fast: 50ms;
+  --m3-transition-normal: 100ms;
+  --m3-transition-slow: 150ms;
+  --m3-transition-extra-slow: 200ms;
+
+  /* Material 3 Typography */
+  --m3-typography-headline-large: 57px;
+  --m3-typography-headline-medium: 45px;
+  --m3-typography-headline-small: 36px;
+  --m3-typography-title-large: 28px;
+  --m3-typography-title-medium: 24px;
+  --m3-typography-title-small: 20px;
+  --m3-typography-body-large: 18px;
+  --m3-typography-body-medium: 16px;
+  --m3-typography-body-small: 14px;
+  --m3-typography-label-large: 16px;
+  --m3-typography-label-medium: 14px;
+  --m3-typography-label-small: 12px;
+}
+
+/* Material 3 Utility Classes */
+.m3-shadow-1 { box-shadow: var(--m3-shadow-1); }
+.m3-shadow-2 { box-shadow: var(--m3-shadow-2); }
+.m3-shadow-3 { box-shadow: var(--m3-shadow-3); }
+.m3-shadow-4 { box-shadow: var(--m3-shadow-4); }
+.m3-shadow-5 { box-shadow: var(--m3-shadow-5); }
+
+.m3-transition-fast { transition-duration: var(--m3-transition-fast); }
+.m3-transition-normal { transition-duration: var(--m3-transition-normal); }
+.m3-transition-slow { transition-duration: var(--m3-transition-slow); }
+.m3-transition-extra-slow { transition-duration: var(--m3-transition-extra-slow); }
+
+.m3-radius-sm { border-radius: var(--m3-radius-sm); }
+.m3-radius-md { border-radius: var(--m3-radius-md); }
+.m3-radius-lg { border-radius: var(--m3-radius-lg); }
+.m3-radius-xl { border-radius: var(--m3-radius-xl); }
+.m3-radius-full { border-radius: var(--m3-radius-full); }

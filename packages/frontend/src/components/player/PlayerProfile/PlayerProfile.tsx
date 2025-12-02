@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlayerProfile } from 'shared';
+import MaterialCard from '../../../ui/MaterialCard';
 
 interface PlayerProfileProps {
   profile: PlayerProfile;
@@ -7,13 +8,9 @@ interface PlayerProfileProps {
 
 const PlayerProfileComponent: React.FC<PlayerProfileProps> = ({ profile }) => {
   return (
-    <div className="p-4 bg-gray-800 text-white rounded-lg">
+    <MaterialCard title={`${profile.displayName} - Level ${profile.level}`} subtitle={`${profile.class}`}>
       <div className="flex items-center mb-4">
         <div className="text-4xl mr-4">{profile.avatar}</div>
-        <div>
-          <h2 className="text-2xl font-bold">{profile.displayName}</h2>
-          <p className="text-gray-400">Level {profile.level} {profile.class}</p>
-        </div>
       </div>
       <div>
         <h3 className="text-lg font-semibold">Bio</h3>
@@ -35,7 +32,7 @@ const PlayerProfileComponent: React.FC<PlayerProfileProps> = ({ profile }) => {
           ))}
         </ul>
       </div>
-    </div>
+    </MaterialCard>
   );
 };
 

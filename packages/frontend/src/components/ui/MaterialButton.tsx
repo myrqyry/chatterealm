@@ -1,18 +1,21 @@
 import React from 'react';
-import { Button, ButtonProps, CircularProgress } from '@mui/material';
+import { Button } from "@/components/ui/ui/button";
+import { cn } from "@/lib/utils";
 
-interface MaterialButtonProps extends Omit<ButtonProps, 'variant'> {
-  variant?: 'text' | 'outlined' | 'contained';
+interface MaterialButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   loading?: boolean;
   children: React.ReactNode;
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
 const MaterialButton = React.forwardRef<HTMLButtonElement, MaterialButtonProps>(({
-  variant = 'contained',
+  variant = "default",
   loading = false,
   disabled,
   children,
-  sx = {},
+  className,
+  size = "default",
   ...props
 }, ref) => {
   return (
@@ -20,28 +23,22 @@ const MaterialButton = React.forwardRef<HTMLButtonElement, MaterialButtonProps>(
       ref={ref}
       variant={variant}
       disabled={disabled || loading}
-      sx={{
-        fontFamily: 'JetBrains Mono',
-        fontWeight: 500,
-        textTransform: 'none',
-        borderRadius: 2,
-        px: 3,
-        py: 1,
-        minHeight: 40,
-        ...sx
-      }}
+      className={cn(
+        "font-['JetBrains_Mono'] font-medium text-sm",
+        loading && "relative",
+        className
+      )}
+      size={size}
       {...props}
     >
       {loading && (
-        <CircularProgress
-          size={16}
-          sx={{
-            mr: 1,
-            color: variant === 'contained' ? 'inherit' : 'primary.main'
-          }}
-        />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center w-full h-full">
+          <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+        </span>
       )}
-      {children}
+      <span className={cn(loading && "invisible")}>
+        {children}
+      </span>
     </Button>
   );
 });

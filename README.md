@@ -4,11 +4,11 @@ A real-time multiplayer chat application with game-like features, built with Rea
 
 ## 🏗️ Architecture
 
-ChatterRealm is built as a monorepo with three main packages:
+ChatterRealm follows the **Gold Standard** architecture with a monorepo structure:
 
-- **Frontend** (`packages/frontend`): React-based UI with Material-UI, Tailwind CSS, and GSAP animations
-- **Backend** (`packages/backend`): Express server with Socket.IO for real-time communication
-- **Shared** (`packages/shared`): Shared TypeScript types and constants
+- **Frontend** (`packages/frontend`): React + TypeScript + Vite with TanStack Query, Zustand, and shadcn/ui
+- **Backend** (`packages/backend`): Node.js with Express and Socket.IO for real-time communication
+- **Shared** (`packages/shared`): Shared TypeScript types and constants with OpenAPI schema generation
 
 ## 🚀 Quick Start
 
@@ -135,25 +135,30 @@ chatterealm/
 
 ## 🛠️ Technology Stack
 
-### Frontend
-- **React 18** - UI framework
-- **TypeScript** - Type safety
+### Frontend (Gold Standard)
+- **React 18 + TypeScript** - Strictly typed UI framework
 - **Vite 6** - Build tool and dev server
-- **Material-UI (MUI)** - Component library
+- **TanStack Query** - Server state management (MANDATORY for data fetching)
+- **Zustand** - Client state management
+- **shadcn/ui** - Component library (replacing Material-UI)
 - **Tailwind CSS 4** - Utility-first CSS
 - **Socket.IO Client** - Real-time communication
-- **GSAP** - Advanced animations
-- **Tone.js** - Audio synthesis
-- **Zustand** - State management
-- **Vitest** - Testing framework
+- **Framer Motion** - UI animations
+- **GSAP** - Complex animations
+- **Vitest + React Testing Library** - Testing framework
 
 ### Backend
-- **Express 4** - Web framework
+- **Node.js + Express** - Web framework
 - **Socket.IO** - WebSocket server
 - **TypeScript** - Type safety
+- **OpenAPI + Orval** - API schema generation
 - **express-rate-limit** - API rate limiting
 - **CORS** - Cross-origin resource sharing
-- **Jest** - Testing framework
+- **Vitest** - Testing framework
+
+### Build & CI/CD
+- **pnpm + Turborepo** - Monorepo orchestration
+- **GitHub Actions** - CI/CD pipeline
 
 ## 🎮 Features
 
@@ -229,23 +234,67 @@ RATE_LIMIT_MAX_REQUESTS=100
 - Environment-based configuration for production
 - No secrets in source code
 
+## 🧪 Testing
+
+ChatterRealm follows a comprehensive testing strategy with the Gold Standard stack:
+
+### Test Infrastructure
+
+- **Vitest** - Fast unit and integration testing
+- **React Testing Library** - User-centric component testing
+- **TanStack Query Test Utilities** - Custom utilities for testing TanStack Query components
+- **Zustand Store Testing** - Comprehensive store testing utilities
+
+### Test Coverage
+
+- ✅ **Component Tests**: Comprehensive tests for all UI components
+- ✅ **Store Tests**: Zustand store behavior and edge cases
+- ✅ **Integration Tests**: TanStack Query integration patterns
+- ✅ **Backend Tests**: API and service layer testing
+- ✅ **Edge Cases**: Comprehensive error handling and validation
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run frontend tests
+pnpm --filter frontend test
+
+# Run frontend tests with UI
+pnpm --filter frontend test:ui
+
+# Run backend tests
+pnpm --filter backend test
+```
+
+### Test Utilities
+
+The project includes custom test utilities for:
+
+- **TanStack Query**: `packages/frontend/src/test/utils/tanstack-query-utils.ts`
+- **Component Testing**: `packages/frontend/src/test/utils/component-utils.ts`
+- **Store Testing**: `packages/frontend/src/test/utils/store-utils.ts`
+
 ## 📝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run tests and linting
+4. Run tests and linting (`pnpm test && pnpm lint`)
 5. Commit your changes (`git commit -m 'Add amazing feature'`)
 6. Push to the branch (`git push origin feature/amazing-feature`)
 7. Open a Pull Request
 
 ### Contribution Guidelines
 
-- Follow the existing code style
-- Add tests for new features
+- Follow the existing code style (ESLint, TypeScript strict mode)
+- Add comprehensive tests for new features (unit, integration, edge cases)
 - Update documentation as needed
 - Keep commits focused and atomic
 - Write clear commit messages
+- Follow the "Type-First" workflow (backend models before frontend code)
 
 ## 📄 License
 
@@ -257,8 +306,11 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 ## 🗺️ Roadmap
 
+- ✅ **Comprehensive test coverage** - Completed with Vitest + React Testing Library
+- ✅ **TanStack Query integration** - Completed with custom test utilities
+- ✅ **Zustand store testing** - Completed with comprehensive test suites
+- ✅ **Component testing framework** - Completed with custom utilities
 - [ ] Enhanced error boundaries and error handling
-- [ ] Comprehensive test coverage
 - [ ] Performance optimization and bundle size reduction
 - [ ] API documentation
 - [ ] Deployment guides
@@ -266,8 +318,11 @@ For issues, questions, or contributions, please open an issue on GitHub.
 
 ## 📚 Additional Documentation
 
-- [Styling Strategy](packages/frontend/styling-consistency-strategy.md) - Guidelines for using Material-UI and Tailwind CSS together
-- [Animation Libraries](packages/frontend/animation-libraries.md) - Overview of GSAP and animation patterns (if exists)
+- [Styling Strategy](packages/frontend/styling-consistency-strategy.md) - Guidelines for using shadcn/ui and Tailwind CSS together
+- [Animation Libraries](packages/frontend/animation-libraries.md) - Overview of Framer Motion and GSAP animation patterns
+- [Testing Documentation](packages/frontend/TESTING.md) - Comprehensive guide to testing architecture and utilities
+- [TanStack Query Usage](packages/frontend/TANSTACK_QUERY.md) - Guide to using TanStack Query in the project
+- [Zustand Patterns](packages/frontend/ZUSTAND_PATTERNS.md) - Guide to using Zustand stores effectively
 
 ---
 

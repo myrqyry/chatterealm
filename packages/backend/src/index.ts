@@ -36,6 +36,17 @@ import { HandDrawnBuildingService } from './services/HandDrawnBuildingService';
 import { GAME_CONFIG } from '@chatterealm/shared';
 import { validateEnv } from './config/env';
 import AIProxyService from './services/aiProxyService';
+import swaggerUi from 'swagger-ui-express';
+import { generateOpenApiSchema } from './api/schemas';
+import fs from 'fs';
+import path from 'path';
+import { z } from 'zod';
+import {
+  GameCommandRequestSchema,
+  CreatePlayerRequestSchema,
+  UpdatePlayerRequestSchema,
+  AIProxyRequestSchema
+} from './api/schemas';
 
 const app = express();
 const env = validateEnv();
@@ -187,6 +198,52 @@ const apiLimiter = rateLimit({
 
 app.use('/api/', apiLimiter);
 
+// OpenAPI specification endpoint
+app.get('/api/openapi.json', (req, res) => {
+  try {
+    const openApiSpec = generateOpenApiSchema();
+    res.json(openApiSpec);
+  } catch (error) {
+    console.error('Error generating OpenAPI specification:', error);
+    res.status(500).json({ error: 'Failed to generate OpenAPI specification' });
+  }
+});
+
+// Swagger UI endpoint
+const swaggerUiOptions = {
+  explorer: true,
+  customCss: `
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info .title { font-size: 2rem; }
+  `,
+  customSiteTitle: 'ChatterRealm API Documentation',
+};
+
+app.use('/api/docs',
+  swaggerUi.setup(null, swaggerUiOptions),
+  (req, res, next) => {
+    try {
+      const openApiSpec = generateOpenApiSchema();
+      req.swaggerDoc = openApiSpec;
+      swaggerUi.setup(req.swaggerDoc, swaggerUiOptions)(req, res, next);
+    } catch (error) {
+      console.error('Error setting up Swagger UI:', error);
+      res.status(500).send('Failed to load API documentation');
+    }
+  }
+);
+
+// Serve the generated OpenAPI JSON file
+app.get('/api/spec', (req, res) => {
+  try {
+    const openApiSpec = generateOpenApiSchema();
+    res.json(openApiSpec);
+  } catch (error) {
+    console.error('Error serving OpenAPI spec:', error);
+    res.status(500).json({ error: 'Failed to serve OpenAPI specification' });
+  }
+});
+
 // Health check endpoint
 app.get('/', (req, res) => {
   const uptime = process.uptime();
@@ -218,9 +275,40 @@ app.post('/api/ai-proxy', AIProxyService.validateRequest, (req, res) => {
   AIProxyService.handleRequest(req, res);
 });
 
-app.post('/api/game/command', (req, res) => {
-  // TODO: Implement game command handler
-  res.json({ success: true });
+app.post('/api/game/command', async (req, res) => {
+  try {
+    // Validate request body using Zod schema
+    const validatedData = GameCommandRequestSchema.parse(req.body);
+
+    // Process the game command
+    const result = await gameStateManager.handleGameCommand(
+      validatedData.playerId,
+      validatedData.command,
+      validatedData.args || []
+    );
+
+    res.json({
+      success: true,
+      message: result.message || 'Command executed successfully'
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Handle Zod validation errors
+      res.status(400).json({
+        error: 'Validation failed',
+        details: error.issues.map(issue => ({
+          path: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    } else {
+      console.error('Error processing game command:', error);
+      res.status(500).json({
+        error: 'Failed to process game command',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      });
+    }
+  }
 });
 
 app.get('/api/world', (req, res) => {
@@ -246,6 +334,123 @@ app.get('/api/players', (req, res) => {
   } catch (error) {
     console.error('Error fetching players:', error);
     res.status(500).json({ error: 'Failed to fetch players' });
+  }
+});
+
+// Create new player endpoint with Zod validation
+app.post('/api/players', async (req, res) => {
+  try {
+    // Validate request body using Zod schema
+    const validatedData = CreatePlayerRequestSchema.parse(req.body);
+
+    // Create new player
+    const newPlayer = await gameStateManager.createPlayer({
+      name: validatedData.name,
+      emoji: validatedData.emoji,
+      characterClass: validatedData.class,
+      color: validatedData.color,
+      isHandDrawn: validatedData.isHandDrawn || false,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: newPlayer,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Handle Zod validation errors
+      res.status(400).json({
+        error: 'Validation failed',
+        details: error.issues.map(issue => ({
+          path: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    } else {
+      console.error('Error creating player:', error);
+      res.status(500).json({
+        error: 'Failed to create player',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      });
+    }
+  }
+});
+
+// Get specific player endpoint
+app.get('/api/players/:playerId', (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const world = gameStateManager.getGameWorld();
+
+    if (!world) {
+      return res.status(404).json({ error: 'Game world not initialized' });
+    }
+
+    const player = world.players.find(p => p.id === playerId);
+    if (!player) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+
+    res.json(player);
+  } catch (error) {
+    console.error('Error fetching player:', error);
+    res.status(500).json({
+      error: 'Failed to fetch player',
+      message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
+
+// Update player endpoint with Zod validation
+app.put('/api/players/:playerId', async (req, res) => {
+  try {
+    const { playerId } = req.params;
+
+    // Validate request body using Zod schema
+    const validatedData = UpdatePlayerRequestSchema.parse(req.body);
+
+    // Ensure the player ID matches
+    if (validatedData.id && validatedData.id !== playerId) {
+      return res.status(400).json({
+        error: 'Player ID mismatch',
+        message: 'Request body ID does not match URL parameter'
+      });
+    }
+
+    // Update player
+    const updatedPlayer = await gameStateManager.updatePlayer(playerId, {
+      name: validatedData.name,
+      emoji: validatedData.emoji,
+      characterClass: validatedData.class,
+      color: validatedData.color,
+      isHandDrawn: validatedData.isHandDrawn,
+    });
+
+    if (!updatedPlayer) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+
+    res.json({
+      success: true,
+      data: updatedPlayer,
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Handle Zod validation errors
+      res.status(400).json({
+        error: 'Validation failed',
+        details: error.issues.map(issue => ({
+          path: issue.path.join('.'),
+          message: issue.message
+        }))
+      });
+    } else {
+      console.error('Error updating player:', error);
+      res.status(500).json({
+        error: 'Failed to update player',
+        message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+      });
+    }
   }
 });
 

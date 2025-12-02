@@ -8,6 +8,8 @@ import { EmojiPicker } from './EmojiPicker';
 import { ClassCard } from './ClassCard';
 import { CharacterStats } from './CharacterStats';
 import { ClassBackgroundEffects } from './ClassEffects';
+import MaterialCard from '../ui/MaterialCard';
+import MaterialButton from '../ui/MaterialButton';
 
 export const CharacterCreator: React.FC = () => {
   const [selectedEmoji, setSelectedEmoji] = useState('🧙‍♂️');
@@ -138,7 +140,7 @@ export const CharacterCreator: React.FC = () => {
 
         <div className="preview-section">
           <h2 className="text-2xl font-bold mb-4 text-green-400">Character Preview</h2>
-
+  
           <div className="preview-container bg-black p-8 rounded-lg relative h-64 flex items-center justify-center">
             {isLoading && <div className="text-white">Loading Preview...</div>}
             {error && !isLoading && <div className="text-red-500">{error}</div>}
@@ -150,16 +152,18 @@ export const CharacterCreator: React.FC = () => {
                 }}
               />
             )}
-
+  
             {selectedClass && (
               <div className="class-effects absolute inset-0 pointer-events-none">
                 <ClassBackgroundEffects characterClass={selectedClass} />
               </div>
             )}
           </div>
-
+  
           {selectedClass && (
-            <CharacterStats characterClass={selectedClass} />
+            <MaterialCard className="mt-4">
+              <CharacterStats characterClass={selectedClass} />
+            </MaterialCard>
           )}
         </div>
 
@@ -200,14 +204,16 @@ export const CharacterCreator: React.FC = () => {
               onChange={(e) => setCharacterName(e.target.value)}
             />
           </div>
-
-          <button
-            className="create-character-btn mt-6 w-full bg-green-600 hover:bg-green-500 text-white py-3 rounded-lg font-semibold disabled:bg-gray-500"
+    
+          <MaterialButton
+            variant="default"
+            size="lg"
+            className="mt-6 w-full"
             disabled={!selectedClass || !characterName.trim() || isLoading}
             onClick={createCharacter}
           >
             {isLoading ? 'Entering Wasteland...' : 'Enter the Wasteland'}
-          </button>
+          </MaterialButton>
         </div>
       </div>
     </div>

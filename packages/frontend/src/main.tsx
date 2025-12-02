@@ -1,12 +1,23 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
-import { createMaterialTheme } from './utils/materialTheme'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import App from './App.tsx'
 import './index.css'
 
-const theme = createMaterialTheme()
+// Create QueryClient with default options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+});
 
 // Development-only: capture unhandled promise rejections with extra context
 // determine dev mode safely (works in Vite and non-Vite environments)
@@ -42,11 +53,11 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <App />
       </ErrorBoundary>
-    </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   </React.StrictMode>,
 )

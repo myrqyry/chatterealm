@@ -1,5 +1,7 @@
 import React from 'react';
-import { FormControlLabel, Checkbox, Typography, Box } from '@mui/material';
+import { Label } from "@/components/ui/ui/label";
+import { Checkbox } from "@/components/ui/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 interface SettingCheckboxProps {
   label: string;
@@ -21,34 +23,24 @@ const SettingCheckbox: React.FC<SettingCheckboxProps> = ({
   };
 
   return (
-    <Box className={`flex items-start mb-2 ${className}`}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={checked}
-            onChange={handleChange}
-            className="text-primary"
-          />
-        }
-        label={
-          <Box className="ml-2">
-            <Typography className="text-primary text-sm font-medium mb-0.5">
-              {label}
-            </Typography>
-            {description && (
-              <Typography className="text-secondary text-xs italic">
-                {description}
-              </Typography>
-            )}
-          </Box>
-        }
-        sx={{
-          alignItems: 'flex-start',
-          margin: 0,
-          width: '100%',
-        }}
+    <div className={`flex items-start mb-2 ${className}`}>
+      <Checkbox
+        id={label.replace(/\s+/g, '-').toLowerCase()}
+        checked={checked}
+        onCheckedChange={onChange}
+        className="mt-0.5"
       />
-    </Box>
+      <div className="ml-2">
+        <Label htmlFor={label.replace(/\s+/g, '-').toLowerCase()} className="text-sm font-medium mb-0.5">
+          {label}
+        </Label>
+        {description && (
+          <p className="text-xs text-muted-foreground italic">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
   );
 };
 

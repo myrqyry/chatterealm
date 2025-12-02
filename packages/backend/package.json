@@ -26,7 +26,10 @@
     "shared": "workspace:*",
     "socket.io": "^4.8.1",
     "svg2roughjs": "^3.2.1",
-    "tmi.js": "^1.8.5"
+    "swagger-ui-express": "^5.0.1",
+    "tmi.js": "^1.8.5",
+    "zod": "^4.1.12",
+    "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
     "@types/compression": "^1.8.1",
