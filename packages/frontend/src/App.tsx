@@ -3,6 +3,8 @@ import { useTheme } from './hooks/useTheme';
 import { useState, useEffect } from 'react';
 import { initializeSounds } from './services/soundService';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GameNotificationService } from './services/notification/GameNotificationService';
+import NotificationContainer from './components/notifications/NotificationContainer';
 
 // Import new layout components
 import BaseLayout from './components/layout/BaseLayout';
@@ -31,7 +33,19 @@ function App() {
     handleStartCataclysm,
     handlePickUpItem,
     movePlayer,
+    gameWorld,
+    player,
+    notifications,
+    removeNotification,
   } = useGameStore();
+
+  const [notificationService] = useState(() => new GameNotificationService());
+
+  useEffect(() => {
+    if (gameWorld && player) {
+      notificationService.processGameStateUpdate(gameWorld, player);
+    }
+  }, [gameWorld, player, notificationService]);
 
   // Apply theme globally
   useTheme();
@@ -83,6 +97,10 @@ function App() {
   return (
     <Router>
       <div className="flex gap-0 min-h-screen p-0 bg-background font-inter text-text-primary box-border w-full max-w-none overflow-hidden app-container">
+        <NotificationContainer
+          notifications={notifications}
+          onDismiss={removeNotification}
+        />
         <button 
           onClick={handleEnableSound} 
           disabled={soundEnabled}
